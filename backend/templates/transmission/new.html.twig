@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New Transmission{% endblock %}
+
+{% block body %}
+    <h1>Create new Transmission</h1>
+
+    {{ include('transmission/_form.html.twig') }}
+
+    <a href="{{ path('app_transmission_index') }}">back to list</a>
+{% endblock %}

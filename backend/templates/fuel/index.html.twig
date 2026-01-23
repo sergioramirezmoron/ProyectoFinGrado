@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Fuel index{% endblock %}
+
+{% block body %}
+    <h1>Fuel index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for fuel in fuels %}
+            <tr>
+                <td>{{ fuel.id }}</td>
+                <td>{{ fuel.name }}</td>
+                <td>
+                    <a href="{{ path('app_fuel_show', {'id': fuel.id}) }}">show</a>
+                    <a href="{{ path('app_fuel_edit', {'id': fuel.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="3">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_fuel_new') }}">Create new</a>
+{% endblock %}

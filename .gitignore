@@ -1,0 +1,17 @@
+# Archivos de Sistema Operativo
+.DS_Store
+Thumbs.db
+
+# Configuración de Editores (VSCode, PHPStorm...)
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Dependencias (Por seguridad, aunque ya estén en los gitignore de las subcarpetas)
+node_modules/
+vendor/
+
+# Variables de Entorno (Secretos)
+.env.local
+.env.*.local

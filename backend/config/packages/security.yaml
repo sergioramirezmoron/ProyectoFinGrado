@@ -1,0 +1,56 @@
+security:
+    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+
+    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
+    providers:
+        # used to reload user from session & other features (e.g. switch_user)
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        # 1. FIREWALL DE LOGIN (Genera el Token) 🔑
+        # Este intercepta la petición a /api/login_check y devuelve el JWT
+        login:
+            pattern: ^/api/login
+            stateless: true
+            json_login:
+                check_path: /api/login_check
+                username_path: email       # Importante: coincidimos con tu JSON { "email": ... }
+                password_path: password
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+
+        # 2. FIREWALL DE LA API (Valida el Token) 🛡️
+        # Protege todas las demás rutas de /api
+        api:
+            pattern:   ^/api
+            stateless: true
+            jwt: ~  # Activa la seguridad JWT para leer el token Bearer
+
+        # 3. FIREWALL GENERAL (Por si acaso, para lo que no sea API)
+        main:
+            lazy: true
+            provider: app_user_provider
+
+    # Control de acceso: Qué roles pueden entrar dónde
+    access_control:
+        - { path: ^/api/login, roles: PUBLIC_ACCESS } # Todo el mundo puede intentar loguearse
+        - { path: ^/api,       roles: PUBLIC_ACCESS } # Dejamos entrar a la API (API Platform gestiona la seguridad interna)
+        # Si quisieras cerrar toda la API: - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+
+when@test:
+    security:
+        password_hashers:
+            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+                algorithm: auto
+                cost: 4 # Lowest possible value for bcrypt
+                time_cost: 3 # Lowest possible value for argon
+                memory_cost: 10 # Lowest possible value for argon

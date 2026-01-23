@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New EnviromentalBadge{% endblock %}
+
+{% block body %}
+    <h1>Create new EnviromentalBadge</h1>
+
+    {{ include('enviromental_badge/_form.html.twig') }}
+
+    <a href="{{ path('app_enviromental_badge_index') }}">back to list</a>
+{% endblock %}

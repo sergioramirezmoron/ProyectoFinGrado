@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit EnviromentalBadge{% endblock %}
+
+{% block body %}
+    <h1>Edit EnviromentalBadge</h1>
+
+    {{ include('enviromental_badge/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_enviromental_badge_index') }}">back to list</a>
+
+    {{ include('enviromental_badge/_delete_form.html.twig') }}
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}VehicleImage{% endblock %}
+
+{% block body %}
+    <h1>VehicleImage</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ vehicle_image.id }}</td>
+            </tr>
+            <tr>
+                <th>Filename</th>
+                <td>{{ vehicle_image.filename }}</td>
+            </tr>
+            <tr>
+                <th>IsMain</th>
+                <td>{{ vehicle_image.isMain ? 'Yes' : 'No' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_vehicle_image_index') }}">back to list</a>
+
+    <a href="{{ path('app_vehicle_image_edit', {'id': vehicle_image.id}) }}">edit</a>
+
+    {{ include('vehicle_image/_delete_form.html.twig') }}
+{% endblock %}

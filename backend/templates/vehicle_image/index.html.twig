@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}VehicleImage index{% endblock %}
+
+{% block body %}
+    <h1>VehicleImage index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Filename</th>
+                <th>IsMain</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for vehicle_image in vehicle_images %}
+            <tr>
+                <td>{{ vehicle_image.id }}</td>
+                <td>{{ vehicle_image.filename }}</td>
+                <td>{{ vehicle_image.isMain ? 'Yes' : 'No' }}</td>
+                <td>
+                    <a href="{{ path('app_vehicle_image_show', {'id': vehicle_image.id}) }}">show</a>
+                    <a href="{{ path('app_vehicle_image_edit', {'id': vehicle_image.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_vehicle_image_new') }}">Create new</a>
+{% endblock %}
