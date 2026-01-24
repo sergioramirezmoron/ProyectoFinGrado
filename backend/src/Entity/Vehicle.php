@@ -52,6 +52,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
         new GetCollection(),
         new Get(),
         new Post(security: "is_granted('ROLE_SALES')"),
+        new Post(security: "is_granted('ROLE_ADMIN')"),
         new Put(security: "is_granted('ROLE_SALES')"),
         new Patch(security: "is_granted('ROLE_SALES')"),
         new Delete(security: "is_granted('ROLE_ADMIN')")

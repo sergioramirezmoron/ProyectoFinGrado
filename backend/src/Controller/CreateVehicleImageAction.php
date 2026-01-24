@@ -2,45 +2,33 @@
 
 namespace App\Controller;
 
-use App\Entity\Vehicle;
 use App\Entity\VehicleImage;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response; // <--- Importante
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 #[AsController]
 final class CreateVehicleImageAction extends AbstractController
 {
-    // Cambiamos el tipo de retorno a Response
     public function __invoke(Request $request, EntityManagerInterface $entityManager): Response
     {
         // 1. Recogemos el archivo
         $uploadedFile = $request->files->get('file');
         
-        // 2. Recogemos los datos
-        $vehicleIri = $request->request->get('vehicle');
-        // El isMain viene como string "true"/"false", hay que convertirlo
-        $isMain = $request->request->get('isMain') === 'true'; 
+        // 2. Recogemos si es portada (React envía 'main', NO 'isMain')
+        // React envía '1' o '0' dentro del FormData
+        $isMain = $request->request->get('main') === '1' || $request->request->get('main') === 'true';
 
         if (!$uploadedFile) {
             throw new BadRequestHttpException('No se ha enviado ningún archivo "file"');
         }
-        if (!$vehicleIri) {
-            throw new BadRequestHttpException('No se ha enviado el campo "vehicle"');
-        }
 
-        // 3. Buscamos el vehículo
-        $vehicleId = basename($vehicleIri); 
-        $vehicle = $entityManager->getRepository(Vehicle::class)->find($vehicleId);
+        // --- SECCIÓN ELIMINADA: YA NO BUSCAMOS NI EXIGIMOS EL VEHÍCULO ---
 
-        if (!$vehicle) {
-            throw new BadRequestHttpException('El vehículo no existe');
-        }
-
-        // 4. Subimos el archivo
+        // 3. Subimos el archivo (Tu lógica manual)
         $destination = $this->getParameter('kernel.project_dir') . '/public/images/vehicles';
         $newFilename = uniqid() . '.' . $uploadedFile->guessExtension();
 
@@ -50,25 +38,23 @@ final class CreateVehicleImageAction extends AbstractController
             throw new BadRequestHttpException('Error al subir la imagen: ' . $e->getMessage());
         }
 
-        // 5. Creamos la entidad
+        // 4. Creamos la entidad HUÉRFANA (Sin vehículo asignado aún)
         $vehicleImage = new VehicleImage();
         $vehicleImage->setFilename($newFilename);
-        $vehicleImage->setVehicle($vehicle);
         $vehicleImage->setIsMain($isMain);
-
-        // --- CAMBIO CLAVE AQUÍ ---
         
-        // 6. Guardamos manualmente en BD (porque rompemos el flujo automático)
+        // NO HACEMOS setVehicle() PORQUE AÚN NO EXISTE EL COCHE
+
+        // 5. Guardamos en BD
         $entityManager->persist($vehicleImage);
         $entityManager->flush();
 
-        // 7. Devolvemos una respuesta JSON manual (Código 201 Created)
-        // Usamos los 'groups' para que solo devuelva los datos que queremos ver
+        // 6. Devolvemos la respuesta
         return $this->json(
             $vehicleImage, 
             201, 
             [], 
-            ['groups' => ['vehicleImage:read', 'vehicle:read']]
+            ['groups' => ['vehicleImage:read']] // Quitamos vehicle:read porque es null
         );
     }
 }

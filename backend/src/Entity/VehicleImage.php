@@ -43,7 +43,7 @@ class VehicleImage
     private ?bool $isMain = null;
 
     #[ORM\ManyToOne(inversedBy: 'vehicleImages')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     #[Groups(['vehicleImage:read', 'vehicleImage:write'])]
     private ?Vehicle $vehicle = null;
 

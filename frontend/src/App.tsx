@@ -4,6 +4,8 @@ import AdminLayout from "./layouts/AdminLayout";
 import Login from "./pages/auth/Login";
 import { ProtectedRoute } from "./components/layout/ProtectedRoute";
 import Dashboard from "./pages/admin/Dashboard";
+import VehicleList from "./pages/admin/VehicleList";
+import VehicleForm from "./pages/admin/VehicleForm";
 
 // Layouts (Los crearemos ahora)
 
@@ -40,7 +42,8 @@ function App() {
                 <Dashboard />
               }
             />
-            <Route path="coches" element={<h1>Gestión de Flota</h1>} />
+            <Route path="coches" element={<VehicleList />} />
+            <Route path="coches/nuevo" element={<VehicleForm />} />
           </Route>
         </Route>
 
