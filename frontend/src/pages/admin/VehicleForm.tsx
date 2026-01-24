@@ -111,76 +111,69 @@ const VehicleForm = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
 
-  // 1. CARGA DE DATOS ROBUSTA (Solución al problema de que no cargan las marcas)
+  // 1. CARGAR DATOS
   useEffect(() => {
     const fetchOptions = async () => {
-      // Helper para que si falla UNA cosa (ej: colores), no rompa TODO el formulario
-      const load = async (url: string) => {
-        try {
-          const res = await api.get<HydraResponse<SelectOption>>(url);
-          return res.data.member || res.data["hydra:member"] || [];
-        } catch (err) {
-          console.warn(`⚠️ Aviso: No se pudo cargar ${url}`, err);
-          return []; // Devolvemos array vacío para seguir funcionando
-        }
-      };
-
       try {
-        const [
-          brandsData,
-          fuelsData,
-          transmissionsData,
-          badgesData,
-          provincesData,
-          bodyTypesData,
-          modelsData,
-          colorsData,
-        ] = await Promise.all([
-          load("/brands"),
-          load("/fuels"),
-          load("/transmissions"),
-          load("/enviromental_badges"),
-          load("/provinces"),
-          load("/body_types"),
-          load("/models"),
-          load("/colors"),
+        const results = await Promise.all([
+          api.get<HydraResponse<SelectOption>>("/brands"),
+          api.get<HydraResponse<SelectOption>>("/fuels"),
+          api.get<HydraResponse<SelectOption>>("/transmissions"),
+          api.get<HydraResponse<SelectOption>>("/enviromental_badges"),
+          api.get<HydraResponse<SelectOption>>("/provinces"),
+          api.get<HydraResponse<SelectOption>>("/body_types"),
+          api.get<HydraResponse<Model>>("/models"),
+          api.get<HydraResponse<SelectOption>>("/colors"),
         ]);
 
+        const getMembers = <T,>(res: { data: HydraResponse<T> }): T[] =>
+          res.data.member || res.data["hydra:member"] || [];
+
+        // Guardamos las opciones en sus estados
         setOptions({
-          brands: brandsData,
-          fuels: fuelsData,
-          transmissions: transmissionsData,
-          badges: badgesData,
-          provinces: provincesData,
-          bodyTypes: bodyTypesData,
-          colors: colorsData,
+          brands: getMembers(results[0]),
+          fuels: getMembers(results[1]),
+          transmissions: getMembers(results[2]),
+          badges: getMembers(results[3]),
+          provinces: getMembers(results[4]),
+          bodyTypes: getMembers(results[5]),
+          colors: getMembers(results[7]),
         });
 
-        setAllModels(modelsData as Model[]);
+        // Guardamos TODOS los modelos para poder filtrarlos luego
+        const loadedModels = getMembers(results[6]);
+        setAllModels(loadedModels);
+        console.log("Modelos cargados:", loadedModels.length); // Debug
+
       } catch (error) {
-        console.error("Error crítico cargando opciones:", error);
+        console.error("Error cargando opciones:", error);
       }
     };
     fetchOptions();
   }, []);
 
-  // 2. FILTRAR MODELOS
+  // 2. FILTRAR MODELOS CUANDO CAMBIA LA MARCA
   useEffect(() => {
     if (!formData.brand) {
       setFilteredModels([]);
       return;
     }
+
+    // Buscamos los modelos cuya marca coincida con la seleccionada
     const filtered = allModels.filter((m) => {
       const modelBrandIRI = typeof m.brand === "string" ? m.brand : m.brand?.["@id"];
       return modelBrandIRI === formData.brand;
     });
+
     setFilteredModels(filtered);
-  }, [formData.brand, allModels]);
+    console.log("Modelos filtrados:", filtered.length); // Debug
+  }, [formData.brand, allModels]); // Se ejecuta cuando cambia la marca O cuando llegan los modelos
 
   // 3. HANDLERS
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => {
+      // Si cambiamos la marca, borramos el modelo seleccionado
       if (name === "brand") return { ...prev, [name]: value, model: "" };
       return { ...prev, [name]: value };
     });
@@ -214,7 +207,7 @@ const VehicleForm = () => {
     throw new Error("ID de imagen no devuelto por el servidor.");
   };
 
-  // 5. ENVÍO FINAL (Solución al problema del Alquiler)
+  // 5. ENVÍO FINAL (CON LIMPIEZA DE DATOS Y CORRECCIÓN DE TIPOS)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -225,16 +218,18 @@ const VehicleForm = () => {
 
       const cleanValue = (val: string) => (val && val.trim() !== "" ? val : undefined);
 
-      // LÓGICA DE PRECIOS CORREGIDA PARA SYMFONY
+      // PREPARACIÓN DE PRECIOS (CLAVE PARA QUE FUNCIONE EL ALQUILER)
       let finalDailyPrice = undefined;
       let finalPrice = undefined;
 
       if (formData.type === "RENT") {
-          // ALQUILER: Se envía como STRING (porque en BD es Decimal/String)
+          // Si es alquiler, enviamos el precio diario como STRING (Symfony Decimal)
+          // y el precio total como undefined
           finalDailyPrice = formData.dailyPrice ? formData.dailyPrice.toString() : undefined;
           finalPrice = undefined;
       } else {
-          // VENTA: Se envía como FLOAT (porque en BD es Float)
+          // Si es venta, enviamos el precio total como FLOAT
+          // y el precio diario como undefined
           finalPrice = formData.price ? parseFloat(formData.price) : undefined;
           finalDailyPrice = undefined;
       }
@@ -248,23 +243,25 @@ const VehicleForm = () => {
         fuelType: formData.fuelType, 
         transmission: formData.transmission,
         
-        // Relaciones opcionales limpias
+        // Campos opcionales limpios
         bodyType: cleanValue(formData.bodyType),
         enviromentalBadge: cleanValue(formData.enviromentalBadge),
         province: cleanValue(formData.province),
         color: cleanValue(formData.color),
         
-        // Números
+        // Números obligatorios
         year: parseInt(formData.year.toString()),
         kilometres: parseInt(formData.kilometres.toString()),
         power: parseInt(formData.power.toString()),
         doors: parseInt(formData.doors.toString()),
         owners: parseInt(formData.owners.toString()),
+        
+        // Opcional numérico
         displacement: formData.displacement ? parseInt(formData.displacement.toString()) : null,
         
         vehicleImages: uploadedImageIRIs,
         
-        // Precios listos para Symfony
+        // Precios corregidos
         dailyPrice: finalDailyPrice,
         price: finalPrice,
       };
