@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Save,
   X,
@@ -16,16 +16,26 @@ import api from "../../api/axios";
 import { AxiosError } from "axios";
 import type {
   SelectOption,
-  VehicleModel as Model, // Alias para mantener consistencia con tu código
+  VehicleModel as Model,
   FormOptions,
   VehicleFormData,
   Violation,
   HydraResponse,
+  Vehicle,
 } from "../../types/vehicle";
+
+// Interface for objects that might have an @id (like the API relations)
+interface EntityWithId {
+  "@id"?: string;
+}
 
 const VehicleForm = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEditMode = !!id;
   const [loading, setLoading] = useState(false);
+  
+  const [dataReady, setDataReady] = useState(false);
 
   const [options, setOptions] = useState<FormOptions>({
     brands: [],
@@ -65,21 +75,23 @@ const VehicleForm = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
 
-  // 1. CARGAR DATOS
+  // 1. CARGA UNIFICADA (Opciones + Datos del Vehículo)
   useEffect(() => {
-    const fetchOptions = async () => {
-      // Helper para manejo de errores individual
+    const initData = async () => {
+      setLoading(true);
+      
       const load = async (url: string) => {
         try {
           const res = await api.get<HydraResponse<SelectOption>>(url);
           return res.data.member || res.data["hydra:member"] || [];
         } catch (err) {
-          console.warn(`⚠️ Aviso: No se pudo cargar ${url}`, err);
+          console.warn(`⚠️ Error cargando ${url}`, err);
           return [];
         }
       };
 
       try {
+        // A. Cargar TODAS las opciones primero
         const [
           brandsData,
           fuelsData,
@@ -100,6 +112,7 @@ const VehicleForm = () => {
           load("/colors"),
         ]);
 
+        // Guardar opciones
         setOptions({
           brands: brandsData,
           fuels: fuelsData,
@@ -109,37 +122,85 @@ const VehicleForm = () => {
           bodyTypes: bodyTypesData,
           colors: colorsData,
         });
-
         setAllModels(modelsData as Model[]);
-        console.log("Modelos cargados:", modelsData.length);
+
+        // B. Si es EDITAR, cargar datos del coche después
+        if (isEditMode && id) {
+          const response = await api.get<Vehicle>(`/vehicles/${id}`);
+          const vehicle = response.data;
+
+          // FIX: Use specific type instead of 'any' to avoid TS error
+          const getIRI = (obj: EntityWithId | null | undefined): string => {
+            return obj?.["@id"] ?? "";
+          };
+
+          setFormData({
+            brand: getIRI(vehicle.brand),
+            model: getIRI(vehicle.model),
+            type: vehicle.type,
+            status: vehicle.status,
+            description: vehicle.description || "",
+            
+            fuelType: getIRI(vehicle.fuelType),
+            transmission: getIRI(vehicle.transmission),
+            bodyType: getIRI(vehicle.bodyType),
+            enviromentalBadge: getIRI(vehicle.enviromentalBadge),
+            province: getIRI(vehicle.province),
+            color: getIRI(vehicle.color),
+            
+            year: vehicle.year,
+            kilometres: vehicle.kilometres,
+            power: vehicle.power,
+            displacement: vehicle.displacement || 0,
+            doors: vehicle.doors || 5,
+            owners: vehicle.owners || 1,
+            
+            price: vehicle.price ? vehicle.price.toString() : "",
+            dailyPrice: vehicle.dailyPrice ? vehicle.dailyPrice.toString() : "",
+          });
+
+          // Imágenes existentes
+          if (vehicle.vehicleImages && vehicle.vehicleImages.length > 0) {
+            const existingPreviews = vehicle.vehicleImages.map(
+              (img) => `http://127.0.0.1:8000${img.imageUrl}`
+            );
+            setPreviews(existingPreviews);
+          }
+        }
+
       } catch (error) {
-        console.error("Error crítico cargando opciones:", error);
+        console.error("Error inicializando el formulario:", error);
+        alert("Error cargando los datos.");
+      } finally {
+        setLoading(false);
+        setDataReady(true); 
       }
     };
-    fetchOptions();
-  }, []);
 
-  // 2. FILTRAR MODELOS CUANDO CAMBIA LA MARCA
+    initData();
+  }, [id, isEditMode]); 
+
+  // 2. FILTRAR MODELOS (Reactivo)
   useEffect(() => {
-    if (!formData.brand) {
+    if (!formData.brand || allModels.length === 0) {
       setFilteredModels([]);
       return;
     }
 
     const filtered = allModels.filter((m) => {
-      const modelBrandIRI =
-        typeof m.brand === "string" ? m.brand : m.brand?.["@id"];
+      const modelBrandIRI = typeof m.brand === "string" ? m.brand : m.brand?.["@id"];
       return modelBrandIRI === formData.brand;
     });
 
     setFilteredModels(filtered);
   }, [formData.brand, allModels]);
 
+
   // 3. HANDLERS
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >,
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => {
@@ -182,10 +243,10 @@ const VehicleForm = () => {
     setLoading(true);
 
     try {
-      const imagePromises = selectedFiles.map((file, index) =>
-        uploadImage(file, index === 0),
+      const newImagePromises = selectedFiles.map((file, index) =>
+        uploadImage(file, index === 0 && previews.length === 0)
       );
-      const uploadedImageIRIs = await Promise.all(imagePromises);
+      const newUploadedImageIRIs = await Promise.all(newImagePromises);
 
       const cleanValue = (val: string) =>
         val && val.trim() !== "" ? val : undefined;
@@ -197,10 +258,8 @@ const VehicleForm = () => {
         finalDailyPrice = formData.dailyPrice
           ? formData.dailyPrice.toString()
           : undefined;
-        finalPrice = undefined;
       } else {
         finalPrice = formData.price ? parseFloat(formData.price) : undefined;
-        finalDailyPrice = undefined;
       }
 
       const vehiclePayload = {
@@ -211,12 +270,10 @@ const VehicleForm = () => {
         type: formData.type,
         fuelType: formData.fuelType,
         transmission: formData.transmission,
-
         bodyType: cleanValue(formData.bodyType),
         enviromentalBadge: cleanValue(formData.enviromentalBadge),
         province: cleanValue(formData.province),
         color: cleanValue(formData.color),
-
         year: parseInt(formData.year.toString()),
         kilometres: parseInt(formData.kilometres.toString()),
         power: parseInt(formData.power.toString()),
@@ -226,33 +283,42 @@ const VehicleForm = () => {
           ? parseInt(formData.displacement.toString())
           : null,
 
-        vehicleImages: uploadedImageIRIs,
+        ...(newUploadedImageIRIs.length > 0 && {
+          vehicleImages: newUploadedImageIRIs,
+        }),
 
         dailyPrice: finalDailyPrice,
         price: finalPrice,
       };
 
-      await api.post("/vehicles", vehiclePayload);
+      if (isEditMode && id) {
+        await api.patch(`/vehicles/${id}`, vehiclePayload, {
+          headers: { "Content-Type": "application/merge-patch+json" },
+        });
+      } else {
+        await api.post("/vehicles", vehiclePayload);
+      }
 
       navigate("/admin/coches");
-    } catch (err) {
+    } catch (err: unknown) { // FIX: Use unknown instead of any
       const error = err as AxiosError<{
         "hydra:description": string;
         violations?: Violation[];
       }>;
+      
       console.error("Error al guardar:", error);
-
-      let errorMessage =
-        error.response?.data?.["hydra:description"] ||
-        "Revisa los datos del formulario.";
+      
+      let serverMessage =
+        error.response?.data?.["hydra:description"] || "Revisa los datos.";
+        
       if (error.response?.data?.violations) {
-        errorMessage =
-          "Faltan datos obligatorios:\n" +
-          error.response.data.violations
-            .map((v) => `- ${v.propertyPath}: ${v.message}`)
+         const details = error.response.data.violations
+            .map((v) => `• ${v.message}`)
             .join("\n");
+         serverMessage += `\n\n${details}`;
       }
-      alert(`Error: ${errorMessage}`);
+      
+      alert(`Error: ${serverMessage}`);
     } finally {
       setLoading(false);
     }
@@ -262,12 +328,20 @@ const VehicleForm = () => {
     "w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 hover:bg-white";
   const labelClass = "text-sm font-semibold text-gray-700 mb-1 block";
 
+  if (isEditMode && !dataReady) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto space-y-8 pb-20 p-6">
       <div className="flex items-center justify-between border-b pb-6 border-gray-200">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-            Registrar Nuevo Vehículo
+            {isEditMode ? "Editar Vehículo" : "Registrar Nuevo Vehículo"}
           </h1>
           <p className="text-gray-500 text-sm mt-1">
             Completa la ficha técnica para añadir el vehículo a la flota.
@@ -300,6 +374,7 @@ const VehicleForm = () => {
                 <label className={labelClass}>Marca *</label>
                 <select
                   name="brand"
+                  value={formData.brand} 
                   onChange={handleChange}
                   className={inputClass}
                   required
@@ -316,11 +391,11 @@ const VehicleForm = () => {
                 <label className={labelClass}>Modelo *</label>
                 <select
                   name="model"
+                  value={formData.model} 
                   onChange={handleChange}
                   className={`${inputClass} disabled:opacity-50 disabled:cursor-not-allowed`}
                   required
                   disabled={!formData.brand}
-                  value={formData.model}
                 >
                   <option value="">
                     {!formData.brand
@@ -338,6 +413,7 @@ const VehicleForm = () => {
                 <label className={labelClass}>Carrocería</label>
                 <select
                   name="bodyType"
+                  value={formData.bodyType}
                   onChange={handleChange}
                   className={inputClass}
                 >
@@ -358,6 +434,7 @@ const VehicleForm = () => {
                   />
                   <select
                     name="color"
+                    value={formData.color}
                     onChange={handleChange}
                     className={`${inputClass} pl-10`}
                   >
@@ -379,6 +456,7 @@ const VehicleForm = () => {
                   />
                   <select
                     name="province"
+                    value={formData.province}
                     onChange={handleChange}
                     className={`${inputClass} pl-10`}
                     required
@@ -396,6 +474,7 @@ const VehicleForm = () => {
                 <label className={labelClass}>Etiqueta DGT</label>
                 <select
                   name="enviromentalBadge"
+                  value={formData.enviromentalBadge}
                   onChange={handleChange}
                   className={inputClass}
                 >
@@ -423,6 +502,7 @@ const VehicleForm = () => {
                 <label className={labelClass}>Combustible *</label>
                 <select
                   name="fuelType"
+                  value={formData.fuelType}
                   onChange={handleChange}
                   className={inputClass}
                   required
@@ -439,6 +519,7 @@ const VehicleForm = () => {
                 <label className={labelClass}>Cambio *</label>
                 <select
                   name="transmission"
+                  value={formData.transmission}
                   onChange={handleChange}
                   className={inputClass}
                   required
@@ -456,6 +537,7 @@ const VehicleForm = () => {
                 <input
                   type="number"
                   name="power"
+                  value={formData.power}
                   placeholder="150"
                   onChange={handleChange}
                   className={inputClass}
@@ -467,6 +549,7 @@ const VehicleForm = () => {
                 <input
                   type="number"
                   name="displacement"
+                  value={formData.displacement}
                   placeholder="2000"
                   onChange={handleChange}
                   className={inputClass}
@@ -477,6 +560,7 @@ const VehicleForm = () => {
                 <input
                   type="number"
                   name="year"
+                  value={formData.year}
                   defaultValue={2024}
                   onChange={handleChange}
                   className={inputClass}
@@ -488,6 +572,7 @@ const VehicleForm = () => {
                 <input
                   type="number"
                   name="kilometres"
+                  value={formData.kilometres}
                   placeholder="0"
                   onChange={handleChange}
                   className={inputClass}
@@ -532,6 +617,7 @@ const VehicleForm = () => {
             </h3>
             <textarea
               name="description"
+              value={formData.description}
               onChange={handleChange}
               rows={5}
               className={inputClass}
@@ -664,7 +750,7 @@ const VehicleForm = () => {
               </span>
             ) : (
               <>
-                <Save size={24} /> PUBLICAR VEHÍCULO
+                <Save size={24} /> {isEditMode ? "ACTUALIZAR VEHÍCULO" : "PUBLICAR VEHÍCULO"}
               </>
             )}
           </button>

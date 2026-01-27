@@ -44,6 +44,7 @@ function App() {
             />
             <Route path="coches" element={<VehicleList />} />
             <Route path="coches/nuevo" element={<VehicleForm />} />
+            <Route path="/admin/coches/editar/:id" element={<VehicleForm />} />
           </Route>
         </Route>
 
