@@ -1,80 +1,110 @@
-// 1. Sub-interfaces para mantenerlo ordenado
-export interface Brand {
-    id?: string;
-    name: string;
+// ==========================================
+// 1. TIPOS GENÉRICOS (Para Dropdowns y API)
+// ==========================================
+
+export interface SelectOption {
+  id: number;
+  "@id": string; // El IRI de API Platform (ej: "/api/brands/1")
+  name: string;
 }
 
-export interface Model {
-    id?: string;
-    name: string;
+// El Modelo es especial porque necesita la marca para filtrarse
+export interface VehicleModel extends SelectOption {
+  brand: string | { "@id": string };
 }
 
-export interface Fuel {
-    name: string;
+export interface HydraResponse<T> {
+  "hydra:member"?: T[];
+  member?: T[];
+  "hydra:totalItems"?: number;
+  "hydra:view"?: {
+    "hydra:last"?: string;
+    "hydra:next"?: string;
+  };
 }
 
-export interface Transmission {
-    name: string;
+export interface Violation {
+  propertyPath: string;
+  message: string;
 }
 
-export interface BodyType {
-    name: string;
+// ==========================================
+// 2. INTERFACES DEL FORMULARIO (Escritura)
+// ==========================================
+
+export interface FormOptions {
+  brands: SelectOption[];
+  fuels: SelectOption[];
+  transmissions: SelectOption[];
+  badges: SelectOption[];
+  provinces: SelectOption[];
+  bodyTypes: SelectOption[];
+  colors: SelectOption[];
 }
 
-export interface Color {
-    name: string;
+export interface VehicleFormData {
+  brand: string;
+  model: string;
+  description: string;
+  status: string;
+  type: "SALE" | "RENT";
+
+  // Relaciones
+  fuelType: string;
+  transmission: string;
+  enviromentalBadge: string;
+  province: string;
+  bodyType: string;
+  color: string;
+
+  // Números
+  year: number;
+  kilometres: number;
+  power: number;
+  displacement: number;
+  doors: number;
+  owners: number;
+  
+  price?: string;
+  dailyPrice?: string;
 }
 
-export interface Province {
-    name: string;
-}
-
-export interface EnviromentalBadge {
-    name: string;
-    imageUrl?: string;
-}
+// ==========================================
+// 3. ENTIDAD COMPLETA (Lectura / Listado)
+// ==========================================
+// Esto lo usarás cuando hagas la página de "Ver Coche" o "Lista de Coches"
 
 export interface VehicleImage {
-    id: number;
-    imageUrl: string; // La ruta completa o parcial que devuelve tu backend
-    filename: string;
-    main: boolean;
+  id: number;
+  "@id": string;
+  imageUrl: string;
+  filename: string;
+  main: boolean;
 }
 
-// 2. La Interfaz Principal
 export interface Vehicle {
-    id: number;
-    '@id'?: string; // Identificador de JSON-LD
-    
-    // Relaciones
-    brand: Brand;
-    model: Model;
-    fuelType: Fuel;
-    transmission: Transmission;
-    bodyType?: BodyType;
-    enviromentalBadge?: EnviromentalBadge;
-    color?: Color;
-    province?: Province;
-
-    // Datos numéricos y texto
-    year: number;
-    kilometres: number;
-    power: number;
-    displacement?: number;
-    doors?: number;
-    owners?: number;
-    description?: string;
-    
-    // Estado y Tipo (Crucial para tu lógica de negocio)
-    status: string; // Ej: "AVAILABLE", "RESERVED"
-    type: 'SALE' | 'RENT'; 
-
-    // Precios (Opcionales porque dependen del tipo)
-    price?: number;       // Para Venta
-    dailyPrice?: string;  // Para Alquiler (Viene como string "99.00")
-
-    // Imágenes
-    vehicleImages: VehicleImage[];
-    
-    createdAt: string;
+  id: number;
+  "@id": string;
+  brand: SelectOption;
+  model: SelectOption;
+  fuelType: SelectOption;
+  transmission: SelectOption;
+  bodyType?: SelectOption;
+  enviromentalBadge?: SelectOption;
+  color?: SelectOption;
+  province?: SelectOption;
+  year: number;
+  kilometres: number;
+  power: number;
+  displacement?: number;
+  doors?: number;
+  owners?: number;
+  description?: string;
+  status: string;
+  type: "SALE" | "RENT";
+  price?: number;
+  dailyPrice?: string;
+  vehicleImages: VehicleImage[];
+  createdAt: string;
+  updatedAt?: string;
 }
