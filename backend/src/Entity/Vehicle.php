@@ -54,7 +54,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
         new Post(security: "is_granted('ROLE_SALES')"),
         new Post(security: "is_granted('ROLE_ADMIN')"),
         new Put(security: "is_granted('ROLE_SALES')"),
+        new Put(security: "is_granted('ROLE_ADMIN')"),
         new Patch(security: "is_granted('ROLE_SALES')"),
+        new Patch(security: "is_granted('ROLE_ADMIN')"),
         new Delete(security: "is_granted('ROLE_ADMIN')")
     ],
     // Grupos de Serialización
@@ -148,6 +150,7 @@ class Vehicle
 
     #[ORM\Column(length: 255)]
     #[Groups(['vehicle:read', 'vehicle:write'])]
+    #[Assert\Choice(choices: ['AVAILABLE', 'SOLD', 'RESERVED', 'DELETED'], message: "Estado no válido")]
     private ?string $status = null;
 
     #[ORM\Column]
