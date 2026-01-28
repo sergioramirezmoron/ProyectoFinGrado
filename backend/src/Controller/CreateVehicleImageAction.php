@@ -19,16 +19,13 @@ final class CreateVehicleImageAction extends AbstractController
         $uploadedFile = $request->files->get('file');
         
         // 2. Recogemos si es portada (React envía 'main', NO 'isMain')
-        // React envía '1' o '0' dentro del FormData
         $isMain = $request->request->get('main') === '1' || $request->request->get('main') === 'true';
 
         if (!$uploadedFile) {
-            throw new BadRequestHttpException('No se ha enviado ningún archivo "file"');
+            throw new BadRequestHttpException('No se ha enviado ningún archivo');
         }
 
-        // --- SECCIÓN ELIMINADA: YA NO BUSCAMOS NI EXIGIMOS EL VEHÍCULO ---
-
-        // 3. Subimos el archivo (Tu lógica manual)
+        // 3. Subimos el archivo
         $destination = $this->getParameter('kernel.project_dir') . '/public/images/vehicles';
         $newFilename = uniqid() . '.' . $uploadedFile->guessExtension();
 
@@ -38,12 +35,10 @@ final class CreateVehicleImageAction extends AbstractController
             throw new BadRequestHttpException('Error al subir la imagen: ' . $e->getMessage());
         }
 
-        // 4. Creamos la entidad HUÉRFANA (Sin vehículo asignado aún)
+        // 4. Creamos la entidad sin vehiculo asociado
         $vehicleImage = new VehicleImage();
         $vehicleImage->setFilename($newFilename);
         $vehicleImage->setIsMain($isMain);
-        
-        // NO HACEMOS setVehicle() PORQUE AÚN NO EXISTE EL COCHE
 
         // 5. Guardamos en BD
         $entityManager->persist($vehicleImage);
@@ -54,7 +49,7 @@ final class CreateVehicleImageAction extends AbstractController
             $vehicleImage, 
             201, 
             [], 
-            ['groups' => ['vehicleImage:read']] // Quitamos vehicle:read porque es null
+            ['groups' => ['vehicleImage:read']]
         );
     }
 }

@@ -35,16 +35,14 @@ final class CurrentUserExtension implements QueryCollectionExtensionInterface, Q
         }
 
         // 2. Obtenemos el usuario logueado
-        /** @var User|null $user */
         $user = $this->security->getUser();
 
-        // Si no hay usuario (anonimo), no ve nada (o lo gestiona el firewall)
+        // Si no hay usuario, no ve nada
         if (!$user) {
             return;
         }
 
-        // 3. SI ERES ADMIN O VENTAS -> VES TODO (Return inmediato, no aplicamos filtros)
-        // Asumimos que el rol es ROLE_ADMIN o ROLE_SALES
+        // 3. SI ERES ADMIN O VENTAS -> VES TODO
         if ($this->security->isGranted('ROLE_ADMIN') || $this->security->isGranted('ROLE_SALES')) {
             return; 
         }

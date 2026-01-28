@@ -22,13 +22,12 @@ class NoOverlappingReservationValidator extends ConstraintValidator
             return;
         }
 
-        // Si faltan datos, no validamos (ya saltarán otros errores)
+        // Si faltan datos, no validamos
         if (!$value->getVehicle() || !$value->getStartDate() || !$value->getEndDate()) {
             return;
         }
 
-        // Buscamos reservas que coincidan ("SOLAPAMIENTO")
-        // Lógica: Una reserva nueva choca si empieza antes de que termine la otra Y termina después de que empiece la otra.
+        // Buscamos reservas que coincidan
         $conflicts = $this->reservationRepo->findOverlappingReservations(
             $value->getVehicle(),
             $value->getStartDate(),

@@ -20,7 +20,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
-#[UniqueEntity(fields: ['email'], message: 'Ya existe una cuenta con este email')] // <--- ESTO EVITA DUPLICADOS
+#[UniqueEntity(fields: ['email'], message: 'Ya existe una cuenta con este email')]
 #[ApiResource(
     operations: [
         new GetCollection(),

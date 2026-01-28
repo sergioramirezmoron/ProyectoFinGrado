@@ -29,16 +29,13 @@ class ApiStructureTest extends ApiTestCase
         $data = $response->toArray();
 
         // 3. OBTENER LA LISTA DE COCHES
-        // Ajuste por si API Platform usa 'member' o 'hydra:member'
         $key = isset($data['hydra:member']) ? 'hydra:member' : 'member';
         $vehicles = $data[$key];
 
         $this->assertNotEmpty($vehicles, 'La BD está vacía, no puedo comprobar la estructura.');
 
-        // 4. ANALIZAR EL PRIMER COCHE (El "Conejillo de Indias") 🐹
+        // 4. ANALIZAR EL PRIMER COCHE
         $vehicle = $vehicles[0];
-
-        // --- AQUÍ ES DONDE COMPROBAMOS QUE REACT NO VA A EXPLOTAR ---
         
         // A) Comprobamos campos básicos
         $this->assertArrayHasKey('id', $vehicle, 'Falta el ID');
@@ -47,10 +44,10 @@ class ApiStructureTest extends ApiTestCase
         $this->assertArrayHasKey('type', $vehicle, 'Falta el TIPO (SALE/RENT)');
         $this->assertArrayHasKey('status', $vehicle, 'Falta el estado');
 
-        // B) Comprobamos RELACIONES (Esto es lo que más falla en React)
+        // B) Comprobamos RELACIONES
         // React espera: vehicle.brand.name
         $this->assertArrayHasKey('brand', $vehicle, 'Falta el objeto Brand');
-        $this->assertIsArray($vehicle['brand'], 'Brand debería ser un objeto, no un string/IRI');
+        $this->assertIsArray($vehicle['brand'], 'Brand debería ser un objeto, no un string');
         $this->assertArrayHasKey('name', $vehicle['brand'], 'Dentro de Brand falta el campo name');
 
         // React espera: vehicle.model.name

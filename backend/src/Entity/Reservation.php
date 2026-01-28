@@ -14,7 +14,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use App\Validator\NoOverlappingReservation;
 
 #[ORM\Entity]
-// 👇👇👇 ESTA LÍNEA ES LA QUE FALTABA PARA QUE EL CÁLCULO FUNCIONE 👇👇👇
 #[ORM\HasLifecycleCallbacks] 
 #[ApiResource(
     operations: [
@@ -68,8 +67,6 @@ class Reservation
     private ?User $user = null;
 
     // --- MÉTODOS ---
-
-    // Calculamos el precio total automáticamente antes de guardar
     #[ORM\PrePersist]
     public function calculateTotalPrice(): void
     {
@@ -78,7 +75,6 @@ class Reservation
             $days = $diff->days;
             if ($days === 0) $days = 1;
             
-            // Convertimos a float por seguridad y si es nulo usamos 0
             $pricePerDay = (float) ($this->vehicle->getDailyPrice() ?? 0);
             $this->totalPrice = $days * $pricePerDay;
         }

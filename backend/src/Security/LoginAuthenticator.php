@@ -22,25 +22,15 @@ class LoginAuthenticator extends AbstractLoginFormAuthenticator
     {
         $email = $request->getPayload()->getString('email');
 
-        // --- BORRADO: $request->getSession()->set(...) ---
-        // En una API no guardamos el "último usuario" en sesión.
-
         return new Passport(
             new UserBadge($email),
             new PasswordCredentials($request->getPayload()->getString('password')),
-            [
-                // Sin CSRF ni RememberMe
-            ]
+            []
         );
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
-        // --- CAMBIO RADICAL PARA REACT ---
-        // 1. Borramos la lógica de getTargetPath (usaba sesión).
-        // 2. Borramos el RedirectResponse (React no quiere redirecciones).
-        // 3. Devolvemos un JSON limpio.
-        
         return new JsonResponse([
             'message' => 'Login satisfactorio',
             'user' => $token->getUserIdentifier(),

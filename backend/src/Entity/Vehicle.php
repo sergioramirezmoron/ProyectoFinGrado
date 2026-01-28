@@ -33,11 +33,19 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity(repositoryClass: VehicleRepository::class)]
 // 1. FILTROS DE BÚSQUEDA
 #[ApiFilter(SearchFilter::class, properties: [
-    'brand.name' => 'partial',
-    'model.name' => 'partial',
-    'province.name' => 'exact',
-    'fuelType.name' => 'exact',
-    'transmission.name' => 'exact',
+    // Cambiamos 'brand.name' por 'brand' para poder filtrar por ID desde el select
+    'brand' => 'exact', 
+    'model' => 'exact', 
+    
+    // Lo mismo para el resto de relaciones
+    'province' => 'exact',
+    'fuelType' => 'exact',
+    'transmission' => 'exact',
+    'enviromentalBadge' => 'exact',
+    'bodyType' => 'exact',
+    'color' => 'exact',
+
+    // Estos se quedan igual
     'status' => 'exact',
     'type' => 'exact'
 ])]
@@ -49,8 +57,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 // --- CONFIGURACIÓN PRINCIPAL DE LA API ---
 #[ApiResource(
     operations: [
-        new GetCollection(),
-        new Get(),
+        new GetCollection(security: "is_granted('PUBLIC_ACCESS')"),
+        new Get(security: "is_granted('PUBLIC_ACCESS')"),
         new Post(security: "is_granted('ROLE_SALES')"),
         new Post(security: "is_granted('ROLE_ADMIN')"),
         new Put(security: "is_granted('ROLE_SALES')"),
@@ -63,7 +71,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
     normalizationContext: ['groups' => ['vehicle:read']],
     denormalizationContext: ['groups' => ['vehicle:write']],
     
-    // AJUSTES MAESTROS (Paginación y Orden)
+    // Paginación y Orden
     paginationItemsPerPage: 20,
     order: ['createdAt' => 'DESC']
 )]
@@ -136,7 +144,7 @@ class Vehicle
 
     #[ORM\Column(nullable: true)]
     #[Groups(['vehicle:read', 'vehicle:write'])]
-    #[Assert\Range(min: 2, max: 10, notInRangeMessage: "El número de puertas debe estar entre 2 y 10")]
+    #[Assert\Range(min: 0, max: 10, notInRangeMessage: "El número de puertas debe estar entre 0 y 10")]
     private ?int $doors = null;
 
     #[ORM\Column]
@@ -422,7 +430,6 @@ class Vehicle
     public function removeVehicleImage(VehicleImage $vehicleImage): static
     {
         if ($this->vehicleImages->removeElement($vehicleImage)) {
-            // set the owning side to null (unless already changed)
             if ($vehicleImage->getVehicle() === $this) {
                 $vehicleImage->setVehicle(null);
             }

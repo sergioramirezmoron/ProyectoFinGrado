@@ -21,7 +21,6 @@ class SimpleFlowTest extends ApiTestCase
         $token = $response->toArray()['token'];
 
         // 2. OBTENER COCHES
-        // Buscamos directamente coches de alquiler para ir al grano
         $response = $client->request('GET', '/api/vehicles?type=RENT', [
             'auth_bearer' => $token
         ]);
@@ -29,7 +28,6 @@ class SimpleFlowTest extends ApiTestCase
         
         $data = $response->toArray();
 
-        // CORRECCIÓN AQUÍ: Tu API devuelve 'member', no 'hydra:member'
         $key = isset($data['hydra:member']) ? 'hydra:member' : 'member';
         
         if (!isset($data[$key])) {
@@ -41,7 +39,6 @@ class SimpleFlowTest extends ApiTestCase
 
         // Cogemos el primer coche de alquiler
         $rentVehicleIri = $vehicles[0]['@id'];
-        echo "\n¡ÉXITO! Usaremos el coche: $rentVehicleIri\n";
 
         // 3. BUSCAR UN USUARIO
         $response = $client->request('GET', '/api/users', ['auth_bearer' => $token]);
