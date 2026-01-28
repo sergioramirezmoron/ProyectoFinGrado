@@ -13,13 +13,11 @@ import {
   Info,
 } from "lucide-react";
 import api from "../../api/axios";
-import { AxiosError } from "axios";
 import type {
   SelectOption,
   VehicleModel as Model,
   FormOptions,
   VehicleFormData,
-  Violation,
   HydraResponse,
   Vehicle,
 } from "../../types/vehicle";
@@ -32,9 +30,13 @@ interface EntityWithId {
 const VehicleForm = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const isEditMode = !!id;
+
+  let isEditMode = false;
+  if (id) {
+    isEditMode = true;
+  }
+
   const [loading, setLoading] = useState(false);
-  
   const [dataReady, setDataReady] = useState(false);
 
   const [options, setOptions] = useState<FormOptions>({
@@ -75,23 +77,22 @@ const VehicleForm = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
 
-  // 1. CARGA UNIFICADA (Opciones + Datos del Vehículo)
+  // 1. CARGA UNIFICADA
   useEffect(() => {
     const initData = async () => {
       setLoading(true);
-      
+
       const load = async (url: string) => {
         try {
           const res = await api.get<HydraResponse<SelectOption>>(url);
           return res.data.member || res.data["hydra:member"] || [];
-        } catch (err) {
-          console.warn(`⚠️ Error cargando ${url}`, err);
+        } catch (error) {
+          console.error(`Error cargando ${url}`, error);
           return [];
         }
       };
 
       try {
-        // A. Cargar TODAS las opciones primero
         const [
           brandsData,
           fuelsData,
@@ -129,7 +130,6 @@ const VehicleForm = () => {
           const response = await api.get<Vehicle>(`/vehicles/${id}`);
           const vehicle = response.data;
 
-          // FIX: Use specific type instead of 'any' to avoid TS error
           const getIRI = (obj: EntityWithId | null | undefined): string => {
             return obj?.["@id"] ?? "";
           };
@@ -140,47 +140,45 @@ const VehicleForm = () => {
             type: vehicle.type,
             status: vehicle.status,
             description: vehicle.description || "",
-            
+
             fuelType: getIRI(vehicle.fuelType),
             transmission: getIRI(vehicle.transmission),
             bodyType: getIRI(vehicle.bodyType),
             enviromentalBadge: getIRI(vehicle.enviromentalBadge),
             province: getIRI(vehicle.province),
             color: getIRI(vehicle.color),
-            
+
             year: vehicle.year,
             kilometres: vehicle.kilometres,
             power: vehicle.power,
             displacement: vehicle.displacement || 0,
             doors: vehicle.doors || 5,
             owners: vehicle.owners || 1,
-            
+
+            // Convertimos a string para evitar problemas de decimales
             price: vehicle.price ? vehicle.price.toString() : "",
             dailyPrice: vehicle.dailyPrice ? vehicle.dailyPrice.toString() : "",
           });
 
-          // Imágenes existentes
           if (vehicle.vehicleImages && vehicle.vehicleImages.length > 0) {
             const existingPreviews = vehicle.vehicleImages.map(
-              (img) => `http://127.0.0.1:8000${img.imageUrl}`
+              (img) => `${import.meta.env.VITE_BACKEND_URL}${img.imageUrl}`
             );
             setPreviews(existingPreviews);
           }
         }
-
       } catch (error) {
-        console.error("Error inicializando el formulario:", error);
-        alert("Error cargando los datos.");
+        throw new Error(`Error cargando opciones ${error}`);
       } finally {
         setLoading(false);
-        setDataReady(true); 
+        setDataReady(true);
       }
     };
 
     initData();
-  }, [id, isEditMode]); 
+  }, [id, isEditMode]);
 
-  // 2. FILTRAR MODELOS (Reactivo)
+  // 2. FILTRAR MODELOS
   useEffect(() => {
     if (!formData.brand || allModels.length === 0) {
       setFilteredModels([]);
@@ -188,13 +186,13 @@ const VehicleForm = () => {
     }
 
     const filtered = allModels.filter((m) => {
-      const modelBrandIRI = typeof m.brand === "string" ? m.brand : m.brand?.["@id"];
+      const modelBrandIRI =
+        typeof m.brand === "string" ? m.brand : m.brand?.["@id"];
       return modelBrandIRI === formData.brand;
     });
 
     setFilteredModels(filtered);
   }, [formData.brand, allModels]);
-
 
   // 3. HANDLERS
   const handleChange = (
@@ -251,15 +249,17 @@ const VehicleForm = () => {
       const cleanValue = (val: string) =>
         val && val.trim() !== "" ? val : undefined;
 
-      let finalDailyPrice = undefined;
-      let finalPrice = undefined;
+      let finalDailyPrice = null;
+      let finalPrice = null;
 
       if (formData.type === "RENT") {
-        finalDailyPrice = formData.dailyPrice
-          ? formData.dailyPrice.toString()
-          : undefined;
+        if (formData.dailyPrice) {
+          finalDailyPrice = formData.dailyPrice.toString();
+        }
       } else {
-        finalPrice = formData.price ? parseFloat(formData.price) : undefined;
+        if (formData.price) {
+          finalPrice = formData.price.toString();
+        }
       }
 
       const vehiclePayload = {
@@ -274,11 +274,15 @@ const VehicleForm = () => {
         enviromentalBadge: cleanValue(formData.enviromentalBadge),
         province: cleanValue(formData.province),
         color: cleanValue(formData.color),
+        
+        // Parseamos enteros
         year: parseInt(formData.year.toString()),
         kilometres: parseInt(formData.kilometres.toString()),
         power: parseInt(formData.power.toString()),
         doors: parseInt(formData.doors.toString()),
         owners: parseInt(formData.owners.toString()),
+        
+        // Cilindrada opcional
         displacement: formData.displacement
           ? parseInt(formData.displacement.toString())
           : null,
@@ -300,25 +304,9 @@ const VehicleForm = () => {
       }
 
       navigate("/admin/coches");
-    } catch (err: unknown) { // FIX: Use unknown instead of any
-      const error = err as AxiosError<{
-        "hydra:description": string;
-        violations?: Violation[];
-      }>;
-      
-      console.error("Error al guardar:", error);
-      
-      let serverMessage =
-        error.response?.data?.["hydra:description"] || "Revisa los datos.";
-        
-      if (error.response?.data?.violations) {
-         const details = error.response.data.violations
-            .map((v) => `• ${v.message}`)
-            .join("\n");
-         serverMessage += `\n\n${details}`;
-      }
-      
-      alert(`Error: ${serverMessage}`);
+    } catch (error) {
+      console.error(error);
+      alert("Error al guardar. Revisa la consola.");
     } finally {
       setLoading(false);
     }
@@ -374,7 +362,7 @@ const VehicleForm = () => {
                 <label className={labelClass}>Marca *</label>
                 <select
                   name="brand"
-                  value={formData.brand} 
+                  value={formData.brand}
                   onChange={handleChange}
                   className={inputClass}
                   required
@@ -391,7 +379,7 @@ const VehicleForm = () => {
                 <label className={labelClass}>Modelo *</label>
                 <select
                   name="model"
-                  value={formData.model} 
+                  value={formData.model}
                   onChange={handleChange}
                   className={`${inputClass} disabled:opacity-50 disabled:cursor-not-allowed`}
                   required
@@ -540,6 +528,7 @@ const VehicleForm = () => {
                   value={formData.power}
                   placeholder="150"
                   onChange={handleChange}
+                  onWheel={(e) => e.currentTarget.blur()}
                   className={inputClass}
                   required
                 />
@@ -552,6 +541,7 @@ const VehicleForm = () => {
                   value={formData.displacement}
                   placeholder="2000"
                   onChange={handleChange}
+                  onWheel={(e) => e.currentTarget.blur()}
                   className={inputClass}
                 />
               </div>
@@ -561,8 +551,8 @@ const VehicleForm = () => {
                   type="number"
                   name="year"
                   value={formData.year}
-                  defaultValue={2024}
                   onChange={handleChange}
+                  onWheel={(e) => e.currentTarget.blur()}
                   className={inputClass}
                   required
                 />
@@ -575,6 +565,7 @@ const VehicleForm = () => {
                   value={formData.kilometres}
                   placeholder="0"
                   onChange={handleChange}
+                  onWheel={(e) => e.currentTarget.blur()}
                   className={inputClass}
                   required
                 />
@@ -586,6 +577,7 @@ const VehicleForm = () => {
                   name="owners"
                   value={formData.owners}
                   onChange={handleChange}
+                  onWheel={(e) => e.currentTarget.blur()}
                   className={inputClass}
                   min="1"
                   required
@@ -598,6 +590,7 @@ const VehicleForm = () => {
                   name="doors"
                   value={formData.doors}
                   onChange={handleChange}
+                  onWheel={(e) => e.currentTarget.blur()}
                   className={inputClass}
                   min="2"
                   max="5"
@@ -668,6 +661,7 @@ const VehicleForm = () => {
                       : formData.dailyPrice
                   }
                   onChange={handleChange}
+                  onWheel={(e) => e.currentTarget.blur()}
                   className="w-full p-4 pl-4 text-2xl font-bold text-gray-900 border-2 border-blue-100 rounded-xl focus:border-blue-500 focus:outline-none bg-blue-50/30"
                   placeholder="0"
                   required
@@ -741,7 +735,7 @@ const VehicleForm = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-indigo-700 transition-all active:scale-[0.98] flex items-center justify-center gap-3 text-lg disabled:opacity-70 disabled:cursor-not-allowed"
+            className="w-full py-4 bg-linear-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-indigo-700 transition-all active:scale-[0.98] flex items-center justify-center gap-3 text-lg disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {loading ? (
               <span className="flex items-center gap-2">
@@ -750,7 +744,8 @@ const VehicleForm = () => {
               </span>
             ) : (
               <>
-                <Save size={24} /> {isEditMode ? "ACTUALIZAR VEHÍCULO" : "PUBLICAR VEHÍCULO"}
+                <Save size={24} />{" "}
+                {isEditMode ? "ACTUALIZAR VEHÍCULO" : "PUBLICAR VEHÍCULO"}
               </>
             )}
           </button>

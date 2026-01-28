@@ -1,39 +1,41 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { LogIn, Mail, Lock, AlertCircle, Loader2 } from 'lucide-react';
-import { useAuth } from '../../hooks/useAuth';
-import api from '../../api/axios';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { LogIn, Mail, Lock, AlertCircle, Loader2 } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
+import api from "../../api/axios";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
-  
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const { login, isAdmin } = useAuth();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isAdmin) {
+      navigate("/admin");
+    }
+  }, [isAdmin, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
-      // 1. Llamamos a Symfony (Endpoint estándar de LexikJWT)
-      const response = await api.post('/login_check', {
+      const response = await api.post("/login_check", {
         email,
-        password
+        password,
       });
 
-      // 2. Si sale bien, guardamos el token usando nuestro Contexto
       login(response.data.token);
 
-      // 3. Redirigimos al Panel de Admin
-      navigate('/admin');
-      
+      navigate("/");
     } catch (err) {
       console.error(err);
-      setError('Credenciales incorrectas. Inténtalo de nuevo.');
+      setError("Credenciales incorrectas. Inténtalo de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -43,7 +45,6 @@ const Login = () => {
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
       {/* Tarjeta con efecto Glassmorphism */}
       <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 p-8 rounded-2xl shadow-2xl w-full max-w-md">
-        
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">
             Bienvenido
@@ -54,7 +55,6 @@ const Login = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          
           {/* Mensaje de Error */}
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
@@ -65,7 +65,9 @@ const Login = () => {
 
           {/* Email */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-300 ml-1">Email</label>
+            <label className="text-sm font-medium text-slate-300 ml-1">
+              Email
+            </label>
             <div className="relative">
               <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
                 <Mail size={18} />
@@ -83,7 +85,9 @@ const Login = () => {
 
           {/* Contraseña */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-300 ml-1">Contraseña</label>
+            <label className="text-sm font-medium text-slate-300 ml-1">
+              Contraseña
+            </label>
             <div className="relative">
               <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
                 <Lock size={18} />
@@ -114,7 +118,6 @@ const Login = () => {
               </>
             )}
           </button>
-
         </form>
       </div>
     </div>

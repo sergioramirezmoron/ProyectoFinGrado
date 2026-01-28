@@ -16,3 +16,12 @@ export interface User {
 export interface LoginResponse {
     token: string;
 }
+
+export interface AuthContextType {
+  user: User | null;
+  token: string | null;
+  isAuthenticated: boolean;
+  isAdmin: boolean;
+  login: (token: string) => void;
+  logout: () => void;
+}

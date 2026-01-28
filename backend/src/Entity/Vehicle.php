@@ -98,7 +98,7 @@ class Vehicle
     #[ORM\Column(nullable: true)]
     #[Groups(['vehicle:read', 'vehicle:write'])]
     #[Assert\PositiveOrZero(message: "El precio no puede ser negativo")]
-    private ?float $price = null;
+    private ?string $price = null;
 
     #[ORM\Column]
     #[Groups(['vehicle:read', 'vehicle:write'])]
@@ -233,12 +233,12 @@ class Vehicle
         return $this;
     }
 
-    public function getPrice(): ?float
+    public function getPrice(): ?string
     {
         return $this->price;
     }
 
-    public function setPrice(?float $price): static
+    public function setPrice(?string $price): static
     {
         $this->price = $price;
         return $this;

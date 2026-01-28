@@ -153,7 +153,7 @@ const VehicleList = () => {
                     {/* COLUMNA 1: FOTO Y NOMBRE */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
-                        <div className="h-16 w-24 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 bg-gray-100">
+                        <div className="h-16 w-24 shrink-0 rounded-lg overflow-hidden border border-gray-200 bg-gray-100">
                           <img
                             src={getThumbnail(vehicle)}
                             alt={`${vehicle.brand.name} ${vehicle.model.name}`}
