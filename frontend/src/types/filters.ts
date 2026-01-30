@@ -10,4 +10,7 @@ export interface FilterState {
   maxPrice: string;
   minYear: string;
   maxYear: string;
+  province: string;
+  color: string;
+  bodyType: string;
 }

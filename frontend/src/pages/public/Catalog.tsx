@@ -1,5 +1,11 @@
 import { useState, useEffect } from "react";
-import { Filter, Search, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
+import {
+  Filter,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  ArrowUpDown,
+} from "lucide-react";
 import api from "../../api/axios";
 import VehicleCard from "../../components/public/VehicleCard";
 import type { Vehicle, SelectOption } from "../../types/vehicle";
@@ -8,19 +14,21 @@ import type { CatalogProps, FilterState } from "../../types/filters";
 const Catalog = ({ mode }: CatalogProps) => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Paginación y Ordenación
   const [page, setPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  const [sort, setSort] = useState("createdAt_desc"); 
+  const [sort, setSort] = useState("createdAt_desc");
 
-  // CONFIGURACIÓN: Ajustado a 20 porque es lo que devuelve la API por defecto
-  const ITEMS_PER_PAGE = 20; 
+  const ITEMS_PER_PAGE = 20;
 
   // Opciones de los selects
   const [brands, setBrands] = useState<SelectOption[]>([]);
   const [fuels, setFuels] = useState<SelectOption[]>([]);
   const [transmissions, setTransmissions] = useState<SelectOption[]>([]);
+  const [provinces, setProvinces] = useState<SelectOption[]>([]);
+  const [colors, setColors] = useState<SelectOption[]>([]);
+  const [bodyTypes, setBodyTypes] = useState<SelectOption[]>([]);
 
   const [filters, setFilters] = useState<FilterState>({
     brand: "",
@@ -30,21 +38,47 @@ const Catalog = ({ mode }: CatalogProps) => {
     maxPrice: "",
     minYear: "",
     maxYear: "",
+    province: "",
+    color: "",
+    bodyType: "",
   });
 
   // 1. CARGAR OPCIONES DEL SIDEBAR
   useEffect(() => {
     const fetchOptions = async () => {
       try {
-        const [brandsRes, fuelsRes, transRes] = await Promise.all([
+        const [
+          brandsRes,
+          fuelsRes,
+          transRes,
+          provincesRes,
+          colorsRes,
+          bodyTypesRes,
+        ] = await Promise.all([
           api.get("/brands"),
           api.get("/fuels"),
           api.get("/transmissions"),
+          api.get("/provinces"),
+          api.get("/colors"),
+          api.get("/body_types"),
         ]);
 
-        setBrands(brandsRes.data["hydra:member"] || brandsRes.data.member || []);
+        setBrands(
+          brandsRes.data["hydra:member"] || brandsRes.data.member || [],
+        );
         setFuels(fuelsRes.data["hydra:member"] || fuelsRes.data.member || []);
-        setTransmissions(transRes.data["hydra:member"] || transRes.data.member || []);
+        setTransmissions(
+          transRes.data["hydra:member"] || transRes.data.member || [],
+        );
+        setProvinces(
+          provincesRes.data["hydra:member"] || provincesRes.data.member || [],
+        );
+        setColors(
+          colorsRes.data["hydra:member"] || colorsRes.data.member || [],
+        );
+        setBodyTypes(
+          bodyTypesRes.data["hydra:member"] || bodyTypesRes.data.member || [],
+        );
       } catch (error) {
         console.error("Error al cargar opciones:", error);
       }
@@ -62,9 +96,12 @@ const Catalog = ({ mode }: CatalogProps) => {
       maxPrice: "",
       minYear: "",
       maxYear: "",
+      province: "",
+      color: "",
+      bodyType: "",
     });
-    setPage(1); 
-    setSort("createdAt_desc"); 
+    setPage(1);
+    setSort("createdAt_desc");
   }, [mode]);
 
   // 3. CARGAR VEHÍCULOS (Lógica central)
@@ -77,39 +114,46 @@ const Catalog = ({ mode }: CatalogProps) => {
         // --- FILTROS BÁSICOS ---
         params.append("type", mode);
         params.append("status", "AVAILABLE");
-        params.append("page", page.toString()); 
+        params.append("page", page.toString());
 
         if (filters.brand) params.append("brand", filters.brand);
         if (filters.fuelType) params.append("fuelType", filters.fuelType);
-        if (filters.transmission) params.append("transmission", filters.transmission);
+        if (filters.transmission)
+          params.append("transmission", filters.transmission);
 
         const priceField = mode === "RENT" ? "dailyPrice" : "price";
-        if (filters.minPrice) params.append(`${priceField}[gte]`, filters.minPrice);
-        if (filters.maxPrice) params.append(`${priceField}[lte]`, filters.maxPrice);
+        if (filters.minPrice)
+          params.append(`${priceField}[gte]`, filters.minPrice);
+        if (filters.maxPrice)
+          params.append(`${priceField}[lte]`, filters.maxPrice);
 
         if (filters.minYear) params.append("year[gte]", filters.minYear);
         if (filters.maxYear) params.append("year[lte]", filters.maxYear);
+
+        if (filters.province) params.append("province", filters.province);
+        if (filters.color) params.append("color", filters.color);
+        if (filters.bodyType) params.append("bodyType", filters.bodyType);
 
         // --- ORDENACIÓN ---
         const [sortField, sortDir] = sort.split("_");
         let actualSortField = sortField;
         if (sortField === "price") {
-            actualSortField = priceField;
+          actualSortField = priceField;
         }
         params.append(`order[${actualSortField}]`, sortDir);
 
         // Llamada API
         const response = await api.get(`/vehicles?${params.toString()}`);
 
-        const data = response.data["hydra:member"] || response.data.member || [];
+        const data =
+          response.data["hydra:member"] || response.data.member || [];
         setVehicles(data);
-        
-        if (response.data["hydra:totalItems"]) {
-            setTotalItems(response.data["hydra:totalItems"]);
-        } else {
-            setTotalItems(0); 
-        }
 
+        if (response.data["hydra:totalItems"]) {
+          setTotalItems(response.data["hydra:totalItems"]);
+        } else {
+          setTotalItems(0);
+        }
       } catch (error) {
         throw new Error(`Error al cargar vehículos: ${error}`);
       } finally {
@@ -122,21 +166,21 @@ const Catalog = ({ mode }: CatalogProps) => {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [filters, mode, page, sort]); 
+  }, [filters, mode, page, sort]);
 
   // --- HANDLERS ---
 
   const handleFilterChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
-    setPage(1); 
+    setPage(1);
   };
 
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSort(e.target.value);
-    setPage(1); 
+    setPage(1);
   };
 
   const clearFilters = () => {
@@ -148,6 +192,9 @@ const Catalog = ({ mode }: CatalogProps) => {
       maxPrice: "",
       minYear: "",
       maxYear: "",
+      province: "",
+      color: "",
+      bodyType: "",
     });
     setPage(1);
     setSort("createdAt_desc");
@@ -159,10 +206,11 @@ const Catalog = ({ mode }: CatalogProps) => {
 
   const handleNextPage = () => {
     const hasMoreKnown = totalItems > 0 && page * ITEMS_PER_PAGE < totalItems;
-    const hasMoreUnknown = totalItems === 0 && vehicles.length === ITEMS_PER_PAGE;
+    const hasMoreUnknown =
+      totalItems === 0 && vehicles.length === ITEMS_PER_PAGE;
 
     if (hasMoreKnown || hasMoreUnknown) {
-        setPage(page + 1);
+      setPage(page + 1);
     }
   };
 
@@ -184,7 +232,6 @@ const Catalog = ({ mode }: CatalogProps) => {
 
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          
           {/* SIDEBAR DE FILTROS */}
           <aside className={`lg:w-1/4 lg:block`}>
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-4">
@@ -216,6 +263,26 @@ const Catalog = ({ mode }: CatalogProps) => {
                     {brands.map((b) => (
                       <option key={b.id} value={b["@id"]}>
                         {b.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* PROVINCIA */}
+                <div>
+                  <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                    Provincia
+                  </label>
+                  <select
+                    name="province"
+                    value={filters.province}
+                    onChange={handleFilterChange}
+                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-black"
+                  >
+                    <option value="">Todas las provincias</option>
+                    {provinces.map((p) => (
+                      <option key={p.id} value={p["@id"]}>
+                        {p.name}
                       </option>
                     ))}
                   </select>
@@ -310,31 +377,71 @@ const Catalog = ({ mode }: CatalogProps) => {
                     ))}
                   </select>
                 </div>
+
+                {/* COLOR */}
+                <div>
+                  <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                    Color
+                  </label>
+                  <select
+                    name="color"
+                    value={filters.color}
+                    onChange={handleFilterChange}
+                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-black"
+                  >
+                    <option value="">Todos los colores</option>
+                    {colors.map((c) => (
+                      <option key={c.id} value={c["@id"]}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* CARROCERÍA */}
+                <div>
+                  <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                    Carrocería
+                  </label>
+                  <select
+                    name="bodyType"
+                    value={filters.bodyType}
+                    onChange={handleFilterChange}
+                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-black"
+                  >
+                    <option value="">Todas las carrocerías</option>
+                    {bodyTypes.map((b) => (
+                      <option key={b.id} value={b["@id"]}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
           </aside>
 
           {/* GRID DE RESULTADOS */}
           <main className="lg:w-3/4">
-            
             {/* BARRA SUPERIOR: CONTADOR Y ORDENACIÓN */}
             <div className="flex flex-col sm:flex-row justify-between items-center mb-6 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-
-                <div className="flex items-center gap-2">
-                    <ArrowUpDown size={16} className="text-gray-400"/>
-                    <span className="text-sm font-semibold text-gray-700">Ordenar:</span>
-                    <select 
-                        value={sort} 
-                        onChange={handleSortChange}
-                        className="bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 outline-none"
-                    >
-                        <option value="createdAt_desc">Más recientes</option>
-                        <option value="price_asc">Precio: Bajo a Alto</option>
-                        <option value="price_desc">Precio: Alto a Bajo</option>
-                        <option value="year_desc">Año: Nuevo a Viejo</option>
-                        <option value="year_asc">Año: Viejo a Nuevo</option>
-                    </select>
-                </div>
+              <div className="flex items-center gap-2">
+                <ArrowUpDown size={16} className="text-gray-400" />
+                <span className="text-sm font-semibold text-gray-700">
+                  Ordenar:
+                </span>
+                <select
+                  value={sort}
+                  onChange={handleSortChange}
+                  className="bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 outline-none"
+                >
+                  <option value="createdAt_desc">Más recientes</option>
+                  <option value="price_asc">Precio: Bajo a Alto</option>
+                  <option value="price_desc">Precio: Alto a Bajo</option>
+                  <option value="year_desc">Año: Nuevo a Viejo</option>
+                  <option value="year_asc">Año: Viejo a Nuevo</option>
+                </select>
+              </div>
             </div>
 
             {loading ? (
@@ -376,34 +483,34 @@ const Catalog = ({ mode }: CatalogProps) => {
 
                 {/* CONTROLES DE PAGINACIÓN */}
                 <div className="flex justify-center items-center gap-4 py-8">
-                    <button
-                        onClick={handlePrevPage}
-                        disabled={page === 1}
-                        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                        <ChevronLeft size={20} /> Anterior
-                    </button>
-                    
-                    <span className="text-gray-600 font-medium">
-                        Página {page}
-                    </span>
+                  <button
+                    onClick={handlePrevPage}
+                    disabled={page === 1}
+                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronLeft size={20} /> Anterior
+                  </button>
 
-                    <button
-                        onClick={handleNextPage}
-                        // --- CORRECCIÓN BOTÓN SIGUIENTE ---
-                        // Se deshabilita si:
-                        // 1. No hay vehículos (lista vacía)
-                        // 2. Sabemos el total y ya llegamos al final.
-                        // 3. NO sabemos el total (es 0) PERO hemos recibido menos items de los que pedimos (significa fin de página).
-                        disabled={
-                            vehicles.length === 0 || 
-                            (totalItems > 0 && page * ITEMS_PER_PAGE >= totalItems) ||
-                            (totalItems === 0 && vehicles.length < ITEMS_PER_PAGE)
-                        }
-                        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                        Siguiente <ChevronRight size={20} />
-                    </button>
+                  <span className="text-gray-600 font-medium">
+                    Página {page}
+                  </span>
+
+                  <button
+                    onClick={handleNextPage}
+                    // --- CORRECCIÓN BOTÓN SIGUIENTE ---
+                    // Se deshabilita si:
+                    // 1. No hay vehículos (lista vacía)
+                    // 2. Sabemos el total y ya llegamos al final.
+                    // 3. NO sabemos el total (es 0) PERO hemos recibido menos items de los que pedimos (significa fin de página).
+                    disabled={
+                      vehicles.length === 0 ||
+                      (totalItems > 0 && page * ITEMS_PER_PAGE >= totalItems) ||
+                      (totalItems === 0 && vehicles.length < ITEMS_PER_PAGE)
+                    }
+                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Siguiente <ChevronRight size={20} />
+                  </button>
                 </div>
               </>
             )}
