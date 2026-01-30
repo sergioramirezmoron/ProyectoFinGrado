@@ -105,7 +105,7 @@ const VehicleCard = ({ vehicle }: VehicleCardProps) => {
                 <span className="text-sm font-medium">{vehicle.transmission.name}</span>
             </div>
 
-            {/* Carrocería (Opcional si existe) */}
+            {/* Carrocería */}
             {vehicle.bodyType && (
                 <div className="flex items-center gap-2 text-slate-600">
                     <CarFront size={16} className="text-slate-400 stroke-[2.5]" />
@@ -135,7 +135,7 @@ const VehicleCard = ({ vehicle }: VehicleCardProps) => {
           </div>
 
           <div className="h-10 w-10 bg-slate-100 rounded-full flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 shadow-sm">
-            <ArrowUpRight size={20} className="stroke-[3]" />
+            <ArrowUpRight size={20} className="stroke-3" />
           </div>
         </div>
       </div>
