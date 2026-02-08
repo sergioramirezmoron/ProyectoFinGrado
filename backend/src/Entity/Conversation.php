@@ -11,6 +11,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use App\Entity\Reservation;
 
 #[ORM\Entity]
 #[ApiResource(
@@ -65,7 +66,7 @@ class Conversation
     private ?Vehicle $vehicle = null;
 
     #[ORM\OneToMany(mappedBy: 'conversation', targetEntity: Message::class, cascade: ['persist', 'remove'])]
-    #[Groups(['conversation:detail', 'conversation:write'])] // Solo cargamos mensajes al entrar al detalle
+    #[Groups(['conversation:detail', 'conversation:write'])]
     private Collection $messages;
 
     #[ORM\Column]
@@ -83,6 +84,11 @@ class Conversation
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[Groups(['conversation:read', 'conversation:write'])]
     private ?User $user = null;
+
+    #[ORM\OneToOne(targetEntity: Reservation::class, cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['conversation:read', 'conversation:write'])]
+    private ?Reservation $reservation = null;
 
     public function __construct()
     {
@@ -178,11 +184,21 @@ class Conversation
         return $this;
     }
 
+    public function getReservation(): ?Reservation
+    {
+        return $this->reservation;
+    }
+
+    public function setReservation(?Reservation $reservation): static
+    {
+        $this->reservation = $reservation;
+        return $this;
+    }
+
     public function addMessage(Message $message): static
     {
         if (!$this->messages->contains($message)) {
             $this->messages->add($message);
-            // ESTO ES LO QUE FALTABA: Decirle al mensaje quién es su padre
             $message->setConversation($this);
         }
 
@@ -192,7 +208,6 @@ class Conversation
     public function removeMessage(Message $message): static
     {
         if ($this->messages->removeElement($message)) {
-            // set the owning side to null (unless already changed)
             if ($message->getConversation() === $this) {
                 $message->setConversation(null);
             }

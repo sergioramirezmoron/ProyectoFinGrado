@@ -11,6 +11,7 @@ use App\Controller\CreateVehicleImageAction;
 use App\Repository\VehicleImageRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName; // Importante para mapear main
 
 #[ORM\Entity(repositoryClass: VehicleImageRepository::class)]
 #[ApiResource(
@@ -63,7 +64,8 @@ class VehicleImage
         return $this;
     }
 
-    #[Groups(['vehicleImage:read', 'vehicle:read'])]
+    #[Groups(['vehicleImage:read', 'vehicle:read', 'conversation:read'])]
+    #[SerializedName("main")]
     public function isMain(): ?bool
     {
         return $this->isMain;
@@ -87,7 +89,7 @@ class VehicleImage
         return $this;
     }
 
-    #[Groups(['vehicleImage:read', 'vehicle:read'])]
+    #[Groups(['vehicleImage:read', 'vehicle:read', 'conversation:read'])]
     public function getImageUrl(): string
     {
         return '/images/vehicles/' . $this->filename;

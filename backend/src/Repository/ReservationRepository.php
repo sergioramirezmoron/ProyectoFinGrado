@@ -17,15 +17,15 @@ class ReservationRepository extends ServiceEntityRepository
         parent::__construct($registry, Reservation::class);
     }
 
-    public function findOverlappingReservations(Vehicle $vehicle, \DateTimeInterface $start, \DateTimeInterface $end): array
+    public function findOverlappingReservations($vehicle, \DateTimeInterface $start, \DateTimeInterface $end): array
     {
         return $this->createQueryBuilder('r')
             ->andWhere('r.vehicle = :vehicle')
-            ->andWhere('r.status != :cancelledStatus') 
-            ->andWhere('r.startDate < :end')  
-            ->andWhere('r.endDate > :start') 
+            ->andWhere('r.startDate < :end')
+            ->andWhere('r.endDate > :start')
+            ->andWhere('r.status NOT IN (:ignoredStatuses)')
+            ->setParameter('ignoredStatuses', ['REJECTED', 'PENDING'])
             ->setParameter('vehicle', $vehicle)
-            ->setParameter('cancelledStatus', 'CANCELLED')
             ->setParameter('start', $start)
             ->setParameter('end', $end)
             ->getQuery()

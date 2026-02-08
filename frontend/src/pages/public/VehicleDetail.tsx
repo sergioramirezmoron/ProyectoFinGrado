@@ -29,9 +29,29 @@ import { es } from "date-fns/locale/es";
 import { eachDayOfInterval, parseISO, format } from "date-fns";
 import SpecItem from "../../helpers/SpecItem";
 import ContactModal from "./ContactModal";
-import type { ApiError, Reservation } from "../../types/reservation";
 
 registerLocale("es", es);
+
+// --- TIPOS (Para eliminar los 'any') ---
+interface Reservation {
+  id: number;
+  startDate: string;
+  endDate: string;
+  status: string; // 'PENDING', 'CONFIRMED', 'REJECTED', 'CANCELLED', 'FINISHED'
+  totalPrice: number;
+}
+
+interface HydraResponse<T> {
+  "hydra:member": T[];
+  "hydra:totalItems"?: number;
+  // Soporte fallback si tu API no devuelve hydra en algunos casos
+  member?: T[];
+}
+
+interface ApiError {
+  detail?: string;
+  "hydra:description"?: string;
+}
 
 const VehicleDetail = () => {
   const { id } = useParams();
@@ -61,10 +81,7 @@ const VehicleDetail = () => {
         const response = await api.get<Vehicle>(`/vehicles/${id}`);
         setVehicle(response.data);
 
-        if (
-          response.data.vehicleImages &&
-          response.data.vehicleImages.length > 0
-        ) {
+        if (response.data.vehicleImages?.length > 0) {
           const main =
             response.data.vehicleImages.find((img) => img.main) ||
             response.data.vehicleImages[0];
@@ -73,13 +90,30 @@ const VehicleDetail = () => {
 
         // 2. CARGAR RESERVAS
         if (response.data.type === "RENT") {
-          const resReservations = await api.get(
-            `/reservations?vehicle.id=${id}&status=CONFIRMED`,
+          // Pedimos TODAS las reservas asociadas a este vehículo (sin filtrar estado en la URL)
+          // para poder decidir nosotros qué bloquear y qué no.
+          const resReservations = await api.get<HydraResponse<Reservation>>(
+            `/reservations?vehicle.id=${id}`,
           );
-          const reservations = resReservations.data.member || [];
+
+          // Compatibilidad con formato Hydra o JSON simple
+          const reservations =
+            resReservations.data["hydra:member"] ||
+            resReservations.data.member ||
+            [];
+
           const newBlockedStrings: string[] = [];
 
-          reservations.forEach((res: Reservation) => {
+          reservations.forEach((res) => {
+            // --- LÓGICA DE BLOQUEO ---
+            // Solo bloqueamos fechas si la reserva está ACTIVA o PENDIENTE.
+            // Si está REJECTED, CANCELLED o FINISHED, NO entra en el if, por lo tanto NO se bloquea.
+            const BLOCKING_STATUSES = ["CONFIRMED", "PENDING"];
+
+            if (!BLOCKING_STATUSES.includes(res.status)) {
+              return; // Ignoramos esta reserva (fechas libres)
+            }
+
             const start = parseISO(res.startDate);
             const end = parseISO(res.endDate);
 
@@ -89,10 +123,11 @@ const VehicleDetail = () => {
                 newBlockedStrings.push(format(date, "yyyy-MM-dd"));
               });
             } catch (e) {
-              setReserveError(
-                "Error al procesar las fechas de reservas. Intenta de nuevo más tarde.",
+              console.error("Fecha inválida en reserva:", res);
+              throw new Error(
+                "Error procesando reservas. Contacta con soporte.",
+                { cause: e },
               );
-              console.error(e);
             }
           });
 
@@ -100,9 +135,6 @@ const VehicleDetail = () => {
         }
       } catch (error) {
         console.error("Error cargando datos", error);
-        throw new Error(
-          "Error al cargar los datos del vehículo. Intenta de nuevo más tarde.",
-        );
       } finally {
         setLoading(false);
       }
@@ -152,6 +184,7 @@ const VehicleDetail = () => {
       setStartDate(null);
       setEndDate(null);
 
+      // Actualización optimista: Bloqueamos visualmente lo que acabamos de reservar
       const newInterval = eachDayOfInterval({ start: startDate, end: endDate });
       const newStrings = newInterval.map((d) => format(d, "yyyy-MM-dd"));
       setBlockedDatesStrings((prev) => [...prev, ...newStrings]);

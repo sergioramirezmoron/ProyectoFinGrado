@@ -36,27 +36,27 @@ class Reservation
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['reservation:read'])]
+    #[Groups(['reservation:read', 'conversation:read'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'date')]
-    #[Groups(['reservation:read', 'reservation:write'])]
+    #[Groups(['reservation:read', 'reservation:write', 'conversation:read'])]
     #[Assert\NotBlank]
     #[Assert\GreaterThan('today', message: "La fecha de inicio debe ser futura")]
     private ?\DateTimeInterface $startDate = null;
 
     #[ORM\Column(type: 'date')]
-    #[Groups(['reservation:read', 'reservation:write'])]
+    #[Groups(['reservation:read', 'reservation:write', 'conversation:read'])]
     #[Assert\NotBlank]
     #[Assert\GreaterThan(propertyPath: 'startDate', message: "La fecha fin debe ser posterior a la de inicio")]
     private ?\DateTimeInterface $endDate = null;
 
     #[ORM\Column(length: 20)]
-    #[Groups(['reservation:read', 'reservation:write'])]
+    #[Groups(['reservation:read', 'reservation:write', 'conversation:read'])]
     private ?string $status = 'PENDING';
 
     #[ORM\Column]
-    #[Groups(['reservation:read'])]
+    #[Groups(['reservation:read', 'conversation:read'])]
     private ?float $totalPrice = null;
 
     #[ORM\ManyToOne]

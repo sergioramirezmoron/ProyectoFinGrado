@@ -22,23 +22,40 @@ class NoOverlappingReservationValidator extends ConstraintValidator
             return;
         }
 
-        // Si faltan datos, no validamos
+        // 1. NUEVO: Si la reserva se está cancelando o rechazando, 
+        // no importa si se solapa con otras. Permitimos guardar.
+        if (in_array($value->getStatus(), ['REJECTED', 'CANCELLED'])) {
+            return;
+        }
+
+        // Si faltan datos (fechas o vehículo), no validamos
         if (!$value->getVehicle() || !$value->getStartDate() || !$value->getEndDate()) {
             return;
         }
 
-        // Buscamos reservas que coincidan
+        // Buscamos reservas que coincidan en fechas
         $conflicts = $this->reservationRepo->findOverlappingReservations(
             $value->getVehicle(),
             $value->getStartDate(),
             $value->getEndDate()
         );
 
-        if (count($conflicts) > 0) {
+        // 2. MEJORA: Filtramos los resultados para ignorar la propia reserva
+        // (por si estamos editando una existente y choca consigo misma)
+        foreach ($conflicts as $conflict) {
+            // Si el ID es el mismo, es la misma reserva -> Ignorar
+            if ($conflict->getId() !== null && $conflict->getId() === $value->getId()) {
+                continue;
+            }
+
+            // Si llegamos aquí, hemos encontrado UN CONFLICTO REAL con OTRA reserva
             $this->context->buildViolation($constraint->message)
-                ->setParameter('{{ start }}', $conflicts[0]->getStartDate()->format('Y-m-d'))
-                ->setParameter('{{ end }}', $conflicts[0]->getEndDate()->format('Y-m-d'))
+                ->setParameter('{{ start }}', $conflict->getStartDate()->format('d/m/Y'))
+                ->setParameter('{{ end }}', $conflict->getEndDate()->format('d/m/Y'))
                 ->addViolation();
+            
+            // Con encontrar una basta, salimos.
+            return;
         }
     }
 }
