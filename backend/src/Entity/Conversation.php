@@ -12,6 +12,8 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Entity\Reservation;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 
 #[ORM\Entity]
 #[ApiResource(
@@ -40,6 +42,8 @@ use App\Entity\Reservation;
     ],
     order: ['updatedAt' => 'DESC']
 )]
+
+#[ApiFilter(SearchFilter::class, properties: ['status' => 'exact'])]
 class Conversation
 {
     #[ORM\Id]

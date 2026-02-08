@@ -19,6 +19,7 @@ import {
 import api from "../../api/axios";
 import { AxiosError } from "axios";
 import type { Conversation, Message } from "../../types/reservation";
+import { useChatNotification } from "../../hooks/useChatNotification";
 
 const Toast = ({
   message,
@@ -105,6 +106,7 @@ const AdminChat = () => {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [activeTab, setActiveTab] = useState<"sales" | "bookings">("bookings");
   const [searchQuery, setSearchQuery] = useState("");
+  const { refreshUnreadCount } = useChatNotification();
 
   const [toast, setToast] = useState<{
     msg: string;
@@ -220,6 +222,7 @@ const AdminChat = () => {
         { status: "READ" },
         { headers: { "Content-Type": "application/merge-patch+json" } },
       );
+      refreshUnreadCount();
     } catch (error) {
       console.error(error);
     }

@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { AxiosError } from "axios";
 import api from "../../api/axios";
-import type { Vehicle } from "../../types/vehicle";
+import type { HydraResponse, Vehicle } from "../../types/vehicle";
 import { useAuth } from "../../hooks/useAuth";
 
 // Imports Calendario
@@ -29,29 +29,9 @@ import { es } from "date-fns/locale/es";
 import { eachDayOfInterval, parseISO, format } from "date-fns";
 import SpecItem from "../../helpers/SpecItem";
 import ContactModal from "./ContactModal";
+import type { ApiError, Reservation } from "../../types/reservation";
 
 registerLocale("es", es);
-
-// --- TIPOS (Para eliminar los 'any') ---
-interface Reservation {
-  id: number;
-  startDate: string;
-  endDate: string;
-  status: string; // 'PENDING', 'CONFIRMED', 'REJECTED', 'CANCELLED', 'FINISHED'
-  totalPrice: number;
-}
-
-interface HydraResponse<T> {
-  "hydra:member": T[];
-  "hydra:totalItems"?: number;
-  // Soporte fallback si tu API no devuelve hydra en algunos casos
-  member?: T[];
-}
-
-interface ApiError {
-  detail?: string;
-  "hydra:description"?: string;
-}
 
 const VehicleDetail = () => {
   const { id } = useParams();
@@ -96,11 +76,7 @@ const VehicleDetail = () => {
             `/reservations?vehicle.id=${id}`,
           );
 
-          // Compatibilidad con formato Hydra o JSON simple
-          const reservations =
-            resReservations.data["hydra:member"] ||
-            resReservations.data.member ||
-            [];
+          const reservations = resReservations.data.member || [];
 
           const newBlockedStrings: string[] = [];
 
@@ -108,10 +84,10 @@ const VehicleDetail = () => {
             // --- LÓGICA DE BLOQUEO ---
             // Solo bloqueamos fechas si la reserva está ACTIVA o PENDIENTE.
             // Si está REJECTED, CANCELLED o FINISHED, NO entra en el if, por lo tanto NO se bloquea.
-            const BLOCKING_STATUSES = ["CONFIRMED", "PENDING"];
+            const BLOCKING_STATUSES = ["CONFIRMED"];
 
             if (!BLOCKING_STATUSES.includes(res.status)) {
-              return; // Ignoramos esta reserva (fechas libres)
+              return;
             }
 
             const start = parseISO(res.startDate);
