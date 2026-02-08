@@ -13,13 +13,55 @@ import {
   XCircle,
   AlertTriangle,
   X,
-  BadgeEuro, // Icono para Ventas
-  CalendarCheck, // Icono para Reservas
+  BadgeEuro,
+  CalendarCheck,
+  Lock, 
 } from "lucide-react";
 import api from "../../api/axios";
 import { AxiosError } from "axios";
-import type { Conversation, Message } from "../../types/reservation";
-import { useChatNotification } from "../../hooks/useChatNotification";
+interface Message {
+  id: number;
+  content: string;
+  createdAt: string;
+  isAdmin: boolean;
+}
+
+interface VehicleImage {
+  imageUrl: string;
+  main: boolean;
+}
+
+interface Vehicle {
+  id?: number;
+  "@id": string;
+  status: string;
+  brand?: { name: string };
+  model?: { name: string };
+  vehicleImages?: VehicleImage[];
+}
+
+interface Reservation {
+  id: number;
+  startDate: string;
+  endDate: string;
+  totalPrice: number;
+  status: string;
+}
+
+interface Conversation {
+  id: number;
+  "@id": string;
+  contactName: string;
+  contactEmail: string;
+  contactPhone: string;
+  vehicle?: Vehicle;
+  reservation?: Reservation;
+  updatedAt: string;
+  status: string;
+  messages: Message[];
+}
+
+// --- COMPONENTES UI INTERNOS ---
 
 const Toast = ({
   message,
@@ -96,6 +138,8 @@ const ConfirmModal = ({
   );
 };
 
+// --- COMPONENTE PRINCIPAL ---
+
 const AdminChat = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedChat, setSelectedChat] = useState<Conversation | null>(null);
@@ -106,7 +150,7 @@ const AdminChat = () => {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [activeTab, setActiveTab] = useState<"sales" | "bookings">("bookings");
   const [searchQuery, setSearchQuery] = useState("");
-  const { refreshUnreadCount } = useChatNotification();
+  // const { refreshUnreadCount } = useChatNotification(); // Descomentar si usas notificaciones globales
 
   const [toast, setToast] = useState<{
     msg: string;
@@ -179,7 +223,8 @@ const AdminChat = () => {
     try {
       if (!isPolling) setLoading(true);
       const response = await api.get("/conversations");
-      const data = response.data["hydra:member"] || response.data.member || [];
+      const data =
+        response.data["hydra:member"] || response.data.member || [];
       setConversations(data);
     } catch (error) {
       console.error("Error cargando chats", error);
@@ -198,6 +243,7 @@ const AdminChat = () => {
         prev.length !== newMessages.length ? newMessages : prev,
       );
 
+      // Sincronizar estado de reserva si cambia en backend
       if (
         selectedChat &&
         JSON.stringify(selectedChat.reservation) !==
@@ -222,7 +268,7 @@ const AdminChat = () => {
         { status: "READ" },
         { headers: { "Content-Type": "application/merge-patch+json" } },
       );
-      refreshUnreadCount();
+      // refreshUnreadCount(); // Descomentar si usas el hook
     } catch (error) {
       console.error(error);
     }
@@ -247,23 +293,27 @@ const AdminChat = () => {
       fetchConversations();
     } catch (error) {
       setToast({ msg: "No se pudo enviar el mensaje", type: "error" });
-      throw new Error("Error enviando mensaje", {
-        cause: error instanceof Error ? error : undefined,
-      });
+      throw new Error("Error enviando mensaje", { cause: error });
     } finally {
       setSending(false);
     }
   };
 
+  // Helper robusto para obtener ID único de vehículo
+  const getVehicleUniqueId = (v: Vehicle | undefined) => {
+    if (!v) return null;
+    if (v.id) return v.id;
+    if (v["@id"]) {
+      const parts = v["@id"].split("/");
+      return parseInt(parts[parts.length - 1], 10);
+    }
+    return null;
+  };
+
   const handleVehicleStatusChange = async (newStatus: string) => {
     if (!selectedChat?.vehicle) return;
 
-    let vehicleId = selectedChat.vehicle.id;
-    if (!vehicleId && selectedChat.vehicle["@id"]) {
-      const parts = selectedChat.vehicle["@id"].split("/");
-      const possibleId = parseInt(parts[parts.length - 1], 10);
-      if (!isNaN(possibleId)) vehicleId = possibleId;
-    }
+    const vehicleId = getVehicleUniqueId(selectedChat.vehicle);
 
     if (!vehicleId) {
       setToast({
@@ -281,17 +331,22 @@ const AdminChat = () => {
         { headers: { "Content-Type": "application/merge-patch+json" } },
       );
 
+      // 1. Actualizar chat seleccionado
       setSelectedChat((prev) =>
         prev
           ? { ...prev, vehicle: { ...prev.vehicle!, status: newStatus } }
           : null,
       );
+
+      // 2. Actualizar TODOS los chats que hablen de este mismo vehículo
       setConversations((prev) =>
-        prev.map((c) =>
-          c.id === selectedChat.id && c.vehicle
-            ? { ...c, vehicle: { ...c.vehicle, status: newStatus } }
-            : c,
-        ),
+        prev.map((c) => {
+          const cVehicleId = getVehicleUniqueId(c.vehicle);
+          if (cVehicleId === vehicleId && c.vehicle) {
+            return { ...c, vehicle: { ...c.vehicle, status: newStatus } };
+          }
+          return c;
+        }),
       );
 
       setToast({ msg: "Estado del vehículo actualizado", type: "success" });
@@ -332,12 +387,22 @@ const AdminChat = () => {
           : null,
       );
 
+      // Sincronizar estado en la lista
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === selectedChat.id && c.reservation
+            ? { ...c, reservation: { ...c.reservation!, status } }
+            : c,
+        ),
+      );
+
       const reply =
         status === "CONFIRMED"
           ? "✅ He aceptado tu solicitud. El vehículo queda reservado para ti."
           : "❌ Lo siento, no podemos aceptar la reserva en estas fechas.";
       await handleSendMessage(undefined, reply);
 
+      // Si se confirma, marcar vehículo como RESERVADO automáticamente
       if (
         status === "CONFIRMED" &&
         selectedChat.vehicle?.status === "AVAILABLE"
@@ -353,14 +418,8 @@ const AdminChat = () => {
         type: "success",
       });
     } catch (error) {
-      let errorMsg = "Error desconocido.";
-      if (error instanceof AxiosError && error.response) {
-        const desc =
-          error.response.data["hydra:description"] ||
-          error.response.data.detail;
-        if (desc) errorMsg = desc;
-      }
-      setToast({ msg: `No se pudo completar: ${errorMsg}`, type: "error" });
+      setToast({ msg: "Error al actualizar reserva", type: "error" });
+      throw new Error("Error actualizando reserva", { cause: error });
     } finally {
       setUpdatingStatus(false);
     }
@@ -390,6 +449,7 @@ const AdminChat = () => {
       style: "currency",
       currency: "EUR",
     }).format(a);
+
   const getStatusColor = (s: string) => {
     switch (s) {
       case "AVAILABLE":
@@ -402,6 +462,11 @@ const AdminChat = () => {
         return "bg-gray-100 text-gray-700 border-gray-200";
     }
   };
+
+  // --- BLOQUEO DE CHAT SI VENDIDO ---
+  // Si está VENDIDO (SOLD), bloqueamos el chat.
+  // Si está RESERVADO (RESERVED), permitimos chat (para dudas del cliente).
+  const isChatLocked = selectedChat?.vehicle?.status === "SOLD";
 
   return (
     <div className="h-[calc(100vh-100px)] bg-white rounded-2xl shadow-sm border border-gray-200 flex overflow-hidden relative">
@@ -437,7 +502,6 @@ const AdminChat = () => {
             <MessageSquare className="text-blue-600" /> Mensajes
           </h2>
 
-          {/* --- PESTAÑAS (TABS) --- */}
           <div className="flex gap-2 mb-4 bg-gray-100 p-1 rounded-xl">
             <button
               onClick={() => setActiveTab("bookings")}
@@ -486,60 +550,78 @@ const AdminChat = () => {
               No hay mensajes en esta sección.
             </div>
           ) : (
-            filteredConversations.map((chat) => (
-              <button
-                key={chat.id}
-                onClick={() => setSelectedChat(chat)}
-                className={`w-full text-left p-4 border-b border-gray-100 hover:bg-white transition-all flex gap-3 group relative ${selectedChat?.id === chat.id ? "bg-white border-l-4 border-l-blue-600 shadow-sm" : "border-l-4 border-l-transparent"}`}
-              >
-                {chat.status === "NEW" && (
-                  <div className="absolute top-4 right-4 w-2.5 h-2.5 bg-red-500 rounded-full shadow-sm animate-pulse"></div>
-                )}
-                <div className="w-12 h-12 rounded-full bg-slate-200 overflow-hidden shrink-0 border border-slate-200 flex items-center justify-center">
-                  {getImageUrl(chat) ? (
-                    <img
-                      src={getImageUrl(chat)!}
-                      className="w-full h-full object-cover"
-                      alt="coche"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = "none";
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-400">
-                      <Car size={20} />
+            filteredConversations.map((chat) => {
+              // Helper para saber si está vendido dentro del map
+              const isSold = chat.vehicle?.status === "SOLD";
+
+              return (
+                <button
+                  key={chat.id}
+                  onClick={() => setSelectedChat(chat)}
+                  className={`w-full text-left p-4 border-b border-gray-100 hover:bg-white transition-all flex gap-3 group relative ${
+                    selectedChat?.id === chat.id
+                      ? "bg-white border-l-4 border-l-blue-600 shadow-sm"
+                      : "border-l-4 border-l-transparent"
+                  } ${isSold ? "bg-gray-50/50" : ""}`}
+                >
+                  {/* --- INDICADOR DE VENDIDO (ETIQUETA ROJA CON CANDADO) --- */}
+                  {isSold && (
+                    <div className="absolute top-2 right-2 bg-red-100 text-red-700 text-[9px] font-extrabold px-2 py-0.5 rounded flex items-center gap-1 border border-red-200 z-10">
+                      <Lock size={8} /> VENDIDO
                     </div>
                   )}
-                </div>
-                <div className="flex-1 min-w-0 pr-4">
-                  <div className="flex justify-between items-baseline mb-1">
-                    <h4
-                      className={`text-sm font-bold truncate ${selectedChat?.id === chat.id ? "text-blue-700" : "text-slate-800"}`}
-                    >
-                      {chat.contactName}
-                    </h4>
-                    <span className="text-[10px] text-gray-400 font-mono">
-                      {formatDate(chat.updatedAt)}
-                    </span>
-                  </div>
-                  <p
-                    className={`text-xs truncate flex items-center gap-1 ${chat.status === "NEW" ? "font-bold text-slate-700" : "text-gray-500"}`}
-                  >
-                    <Car size={12} className="text-gray-400" />{" "}
-                    {chat.vehicle?.brand?.name} {chat.vehicle?.model?.name}
-                  </p>
-                  {chat.reservation && (
-                    <span
-                      className={`text-[9px] px-1.5 py-0.5 rounded ml-auto w-fit mt-1 block ${chat.reservation.status === "PENDING" ? "bg-orange-100 text-orange-600 font-bold" : "bg-gray-100 text-gray-500"}`}
-                    >
-                      {chat.reservation.status === "PENDING"
-                        ? "SOLICITUD RESERVA"
-                        : chat.reservation.status}
-                    </span>
+
+                  {chat.status === "NEW" && (
+                    <div className="absolute top-4 right-4 w-2.5 h-2.5 bg-red-500 rounded-full shadow-sm animate-pulse"></div>
                   )}
-                </div>
-              </button>
-            ))
+
+                  <div className="w-12 h-12 rounded-full bg-slate-200 overflow-hidden shrink-0 border border-slate-200 flex items-center justify-center">
+                    {getImageUrl(chat) ? (
+                      <img
+                        src={getImageUrl(chat)!}
+                        // --- IMAGEN EN BLANCO Y NEGRO SI ESTÁ VENDIDO ---
+                        className={`w-full h-full object-cover ${isSold ? "grayscale opacity-70" : ""}`}
+                        alt="coche"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-400">
+                        <Car size={20} />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0 pr-4">
+                    <div className="flex justify-between items-baseline mb-1">
+                      <h4
+                        className={`text-sm font-bold truncate ${selectedChat?.id === chat.id ? "text-blue-700" : "text-slate-800"}`}
+                      >
+                        {chat.contactName}
+                      </h4>
+                      <span className="text-[10px] text-gray-400 font-mono">
+                        {formatDate(chat.updatedAt)}
+                      </span>
+                    </div>
+                    <p
+                      className={`text-xs truncate flex items-center gap-1 ${chat.status === "NEW" ? "font-bold text-slate-700" : "text-gray-500"}`}
+                    >
+                      <Car size={12} className="text-gray-400" />{" "}
+                      {chat.vehicle?.brand?.name} {chat.vehicle?.model?.name}
+                    </p>
+                    {chat.reservation && (
+                      <span
+                        className={`text-[9px] px-1.5 py-0.5 rounded ml-auto w-fit mt-1 block ${chat.reservation.status === "PENDING" ? "bg-orange-100 text-orange-600 font-bold" : "bg-gray-100 text-gray-500"}`}
+                      >
+                        {chat.reservation.status === "PENDING"
+                          ? "SOLICITUD RESERVA"
+                          : chat.reservation.status}
+                      </span>
+                    )}
+                  </div>
+                </button>
+              );
+            })
           )}
         </div>
       </div>
@@ -697,30 +779,46 @@ const AdminChat = () => {
               <div ref={messagesEndRef} />
             </div>
 
+            {/* --- AREA DE INPUT O BLOQUEO DE ESCRITURA --- */}
             <div className="p-4 bg-white border-t border-gray-200">
-              <form
-                onSubmit={(e) => handleSendMessage(e)}
-                className="flex gap-4"
-              >
-                <input
-                  type="text"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Escribe tu respuesta..."
-                  className="flex-1 p-3 bg-gray-100 border-transparent rounded-xl focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-sm"
-                />
-                <button
-                  type="submit"
-                  disabled={sending || !newMessage.trim()}
-                  className="bg-blue-600 text-white p-3 rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg shadow-blue-200"
+              {isChatLocked ? (
+                <div className="flex items-center justify-center gap-3 p-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-500 text-sm font-medium animate-in fade-in">
+                  <Lock size={18} className="text-red-400" />
+                  <div>
+                    <p className="text-slate-700 font-bold">
+                      Vehículo marcado como VENDIDO
+                    </p>
+                    <p className="text-xs">
+                      Para escribir mensajes, cambia el estado a "Reservado" o
+                      "Disponible".
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <form
+                  onSubmit={(e) => handleSendMessage(e)}
+                  className="flex gap-4"
                 >
-                  {sending ? (
-                    <Loader2 className="animate-spin" />
-                  ) : (
-                    <Send size={20} />
-                  )}
-                </button>
-              </form>
+                  <input
+                    type="text"
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder="Escribe tu respuesta..."
+                    className="flex-1 p-3 bg-gray-100 border-transparent rounded-xl focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-sm"
+                  />
+                  <button
+                    type="submit"
+                    disabled={sending || !newMessage.trim()}
+                    className="bg-blue-600 text-white p-3 rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg shadow-blue-200"
+                  >
+                    {sending ? (
+                      <Loader2 className="animate-spin" />
+                    ) : (
+                      <Send size={20} />
+                    )}
+                  </button>
+                </form>
+              )}
             </div>
           </>
         ) : (

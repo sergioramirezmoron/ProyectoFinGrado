@@ -157,7 +157,7 @@ class Vehicle
     private ?string $description = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['vehicle:read', 'vehicle:write'])]
+    #[Groups(['vehicle:read', 'vehicle:write', 'conversation:read'])]
     #[Assert\Choice(choices: ['AVAILABLE', 'SOLD', 'RESERVED', 'DELETED'], message: "Estado no válido")]
     private ?string $status = null;
 

@@ -114,6 +114,7 @@ const Catalog = ({ mode }: CatalogProps) => {
         // --- FILTROS BÁSICOS ---
         params.append("type", mode);
         params.append("status", "AVAILABLE");
+
         params.append("page", page.toString());
 
         if (filters.brand) params.append("brand", filters.brand);

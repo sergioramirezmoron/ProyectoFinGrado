@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import { User, MessageCircle, LogOut } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 
@@ -32,9 +32,11 @@ const PublicLayout = () => {
 
           {/* Iconos Derecha */}
           <div className="flex items-center space-x-6">
-            <button className="hover:text-blue-400">
-              <MessageCircle size={20} />
-            </button>
+            {isAuthenticated && (
+              <Link to="/mis-chats" className="hover:text-blue-400">
+                <MessageCircle size={20} />
+              </Link>
+            )}
             <button className="hover:text-blue-400">
               <User size={20} />
             </button>

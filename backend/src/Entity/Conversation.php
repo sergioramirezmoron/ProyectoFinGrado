@@ -26,12 +26,12 @@ use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
         ),
         // ADMIN: Ver lista
         new GetCollection(
-            security: "is_granted('ROLE_ADMIN')",
+            security: "is_granted('IS_AUTHENTICATED_FULLY')",
             normalizationContext: ['groups' => ['conversation:read']]
         ),
         // ADMIN: Ver detalle
         new Get(
-            security: "is_granted('ROLE_ADMIN')",
+            security: "is_granted('IS_AUTHENTICATED_FULLY')",
             normalizationContext: ['groups' => ['conversation:read', 'conversation:detail']]
         ),
         // ADMIN: Editar (Para marcar como LEIDO) <--- 2. AÑADIR ESTO
@@ -43,7 +43,10 @@ use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
     order: ['updatedAt' => 'DESC']
 )]
 
-#[ApiFilter(SearchFilter::class, properties: ['status' => 'exact'])]
+#[ApiFilter(SearchFilter::class, properties: [
+    'status' => 'exact', 
+    'contactEmail' => 'exact'
+])]
 class Conversation
 {
     #[ORM\Id]

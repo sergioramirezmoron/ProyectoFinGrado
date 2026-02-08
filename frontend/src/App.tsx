@@ -9,6 +9,7 @@ import VehicleForm from "./pages/admin/VehicleForm";
 import Catalog from "./pages/public/Catalog";
 import VehicleDetail from "./pages/public/VehicleDetail";
 import AdminChat from "./pages/admin/AdminChat";
+import UserChat from "./pages/public/UserChat";
 
 // Placeholder Components
 const Home = () => (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/alquiler" element={<Catalog mode="RENT" />} />
 
         <Route path="/vehiculo/:id" element={<VehicleDetail />} />
+        <Route path="mis-chats" element={<UserChat />} />
         <Route path="/login" element={<Login />} />
       </Route>
 

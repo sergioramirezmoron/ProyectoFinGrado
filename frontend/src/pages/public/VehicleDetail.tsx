@@ -160,7 +160,6 @@ const VehicleDetail = () => {
       setStartDate(null);
       setEndDate(null);
 
-      // Actualización optimista: Bloqueamos visualmente lo que acabamos de reservar
       const newInterval = eachDayOfInterval({ start: startDate, end: endDate });
       const newStrings = newInterval.map((d) => format(d, "yyyy-MM-dd"));
       setBlockedDatesStrings((prev) => [...prev, ...newStrings]);
