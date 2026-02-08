@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   Search,
   Send,
@@ -13,54 +13,12 @@ import {
   XCircle,
   AlertTriangle,
   X,
+  BadgeEuro, // Icono para Ventas
+  CalendarCheck, // Icono para Reservas
 } from "lucide-react";
 import api from "../../api/axios";
 import { AxiosError } from "axios";
-
-// --- TIPOS ---
-interface Message {
-  id: number;
-  content: string;
-  createdAt: string;
-  isAdmin: boolean;
-}
-
-interface VehicleImage {
-  imageUrl: string;
-  main: boolean;
-}
-
-interface Vehicle {
-  id?: number;
-  "@id": string;
-  status: string;
-  brand?: { name: string };
-  model?: { name: string };
-  vehicleImages?: VehicleImage[];
-}
-
-interface Reservation {
-  id: number;
-  startDate: string;
-  endDate: string;
-  totalPrice: number;
-  status: string;
-}
-
-interface Conversation {
-  id: number;
-  "@id": string;
-  contactName: string;
-  contactEmail: string;
-  contactPhone: string;
-  vehicle?: Vehicle;
-  reservation?: Reservation;
-  updatedAt: string;
-  status: string;
-  messages: Message[];
-}
-
-// --- COMPONENTES UI INTERNOS ---
+import type { Conversation, Message } from "../../types/reservation";
 
 const Toast = ({
   message,
@@ -106,7 +64,7 @@ const ConfirmModal = ({
   message: string;
   onConfirm: () => void;
   onCancel: () => void;
-  confirmColor?: "blue" | "red";
+  confirmColor?: "green" | "blue" | "red";
 }) => {
   if (!isOpen) return null;
   return (
@@ -145,6 +103,8 @@ const AdminChat = () => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [activeTab, setActiveTab] = useState<"sales" | "bookings">("bookings");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [toast, setToast] = useState<{
     msg: string;
@@ -155,6 +115,35 @@ const AdminChat = () => {
   } | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // --- FILTRADO DE CONVERSACIONES ---
+  const filteredConversations = useMemo(() => {
+    let filtered = conversations;
+
+    // 1. Filtrar por Pestaña
+    if (activeTab === "bookings") {
+      filtered = filtered.filter(
+        (chat) => chat.reservation !== null && chat.reservation !== undefined,
+      );
+    } else {
+      filtered = filtered.filter(
+        (chat) => chat.reservation === null || chat.reservation === undefined,
+      );
+    }
+
+    // 2. Filtrar por Búsqueda
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (chat) =>
+          chat.contactName.toLowerCase().includes(query) ||
+          chat.vehicle?.model?.name.toLowerCase().includes(query) ||
+          chat.vehicle?.brand?.name.toLowerCase().includes(query),
+      );
+    }
+
+    return filtered;
+  }, [conversations, activeTab, searchQuery]);
 
   useEffect(() => {
     if (toast) {
@@ -173,7 +162,7 @@ const AdminChat = () => {
     if (selectedChat) {
       fetchMessages(selectedChat.id);
       if (selectedChat.status === "NEW") markAsRead(selectedChat);
-      const interval = setInterval(() => fetchMessages(selectedChat.id), 3000);
+      const interval = setInterval(() => fetchMessages(selectedChat.id), 10000);
       return () => clearInterval(interval);
     }
   }, [selectedChat]);
@@ -266,7 +255,6 @@ const AdminChat = () => {
   const handleVehicleStatusChange = async (newStatus: string) => {
     if (!selectedChat?.vehicle) return;
 
-    // Extracción robusta del ID
     let vehicleId = selectedChat.vehicle.id;
     if (!vehicleId && selectedChat.vehicle["@id"]) {
       const parts = selectedChat.vehicle["@id"].split("/");
@@ -375,11 +363,8 @@ const AdminChat = () => {
     }
   };
 
-  // --- OBTENER URL DE IMAGEN ---
   const getImageUrl = (chat: Conversation) => {
-    // Verificamos si existe el array y si tiene elementos
     if (chat.vehicle?.vehicleImages && chat.vehicle.vehicleImages.length > 0) {
-      // Buscamos la imagen principal o usamos la primera
       const mainImage =
         chat.vehicle.vehicleImages.find((img) => img.main) ||
         chat.vehicle.vehicleImages[0];
@@ -445,10 +430,35 @@ const AdminChat = () => {
       {/* SIDEBAR IZQUIERDO */}
       <div className="w-1/3 border-r border-gray-200 flex flex-col bg-gray-50 min-w-[300px]">
         <div className="p-4 border-b border-gray-200 bg-white">
-          <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2 mb-4">
             <MessageSquare className="text-blue-600" /> Mensajes
           </h2>
-          <div className="mt-4 relative">
+
+          {/* --- PESTAÑAS (TABS) --- */}
+          <div className="flex gap-2 mb-4 bg-gray-100 p-1 rounded-xl">
+            <button
+              onClick={() => setActiveTab("bookings")}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold transition-all ${
+                activeTab === "bookings"
+                  ? "bg-white text-blue-700 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <CalendarCheck size={14} /> Reservas
+            </button>
+            <button
+              onClick={() => setActiveTab("sales")}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold transition-all ${
+                activeTab === "sales"
+                  ? "bg-white text-blue-700 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <BadgeEuro size={14} /> Ventas
+            </button>
+          </div>
+
+          <div className="relative">
             <Search
               className="absolute left-3 top-2.5 text-gray-400"
               size={18}
@@ -456,17 +466,24 @@ const AdminChat = () => {
             <input
               type="text"
               placeholder="Buscar..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-gray-100 border-transparent rounded-xl focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-sm"
             />
           </div>
         </div>
+
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="p-8 text-center text-gray-400 flex flex-col items-center gap-2">
               <Loader2 className="animate-spin" /> Cargando...
             </div>
+          ) : filteredConversations.length === 0 ? (
+            <div className="p-8 text-center text-gray-400 text-sm">
+              No hay mensajes en esta sección.
+            </div>
           ) : (
-            conversations.map((chat) => (
+            filteredConversations.map((chat) => (
               <button
                 key={chat.id}
                 onClick={() => setSelectedChat(chat)}
@@ -486,7 +503,9 @@ const AdminChat = () => {
                       }}
                     />
                   ) : (
-                    <Car size={20} className="text-slate-400" />
+                    <div className="w-full h-full flex items-center justify-center text-slate-400">
+                      <Car size={20} />
+                    </div>
                   )}
                 </div>
                 <div className="flex-1 min-w-0 pr-4">
