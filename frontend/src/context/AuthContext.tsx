@@ -1,6 +1,4 @@
-import { createContext } from "react";
-
-import { useState } from "react";
+import { createContext, useState } from "react";
 import type { ReactNode } from "react";
 import { jwtDecode } from "jwt-decode";
 import type { User, JWTPayload, AuthContextType } from "../types/auth";
@@ -14,9 +12,16 @@ const decodeTokenIfValid = (token: string): User | null => {
     if (decoded.exp * 1000 < Date.now()) {
       return null;
     }
+    
+    // AQUÍ MAPEAMOS LOS DATOS NUEVOS
     return {
       email: decoded.username,
       roles: decoded.roles,
+      // Mapeamos los opcionales
+      id: decoded.id,
+      "@id": decoded.id ? `/api/users/${decoded.id}` : undefined, // Construimos el IRI
+      name: decoded.name,
+      phone: decoded.phone
     };
   } catch {
     return null;
@@ -33,13 +38,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return null;
   });
 
-  // 2. ESTADO DEL USUARIO
   const [user, setUser] = useState<User | null>(() => {
     const storedToken = localStorage.getItem("token");
     return storedToken ? decodeTokenIfValid(storedToken) : null;
   });
 
-  // 3. FUNCIONES
   const login = (newToken: string) => {
     localStorage.setItem("token", newToken);
     setToken(newToken);
@@ -52,20 +55,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
   };
 
-  let isAuthenticated = false;
-
-  if (user) {
-    isAuthenticated = true;
-  }
-
   const isAdmin =
     user?.roles.includes("ROLE_ADMIN") ||
     user?.roles.includes("ROLE_SALES") ||
     false;
 
-  const value = { user, token, isAuthenticated, isAdmin, login, logout };
+  const value = { user, token, isAuthenticated: !!user, isAdmin, login, logout };
 
-  return <AuthContext value={value}>{children}</AuthContext>;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export default AuthContext;

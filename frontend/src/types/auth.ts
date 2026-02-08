@@ -1,20 +1,27 @@
 // Lo que viene DENTRO del token JWT (Payload)
 export interface JWTPayload {
-    iat: number; // Fecha creación
-    exp: number; // Fecha expiración
-    roles: string[];
-    username: string; // Normalmente el email
+  username: string;
+  roles: string[];
+  exp: number;
+  iat: number;
+  // Campos opcionales que podrían venir en el token
+  id?: number;
+  name?: string;
+  phone?: string;
 }
 
-// Nuestro usuario en la aplicación
+// Define cómo es tu objeto Usuario en la app
 export interface User {
-    email: string;
-    roles: string[];
+  id?: number;          // <--- AÑADIDO
+  "@id"?: string;       // <--- AÑADIDO (Para API Platform)
+  email: string;
+  roles: string[];
+  name?: string;        // <--- AÑADIDO
+  phone?: string;       // <--- AÑADIDO
 }
 
-// La respuesta del Login del Backend
 export interface LoginResponse {
-    token: string;
+  token: string;
 }
 
 export interface AuthContextType {

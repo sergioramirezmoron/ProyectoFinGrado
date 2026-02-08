@@ -12,9 +12,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Validator\NoOverlappingReservation;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 
 #[ORM\Entity]
-#[ORM\HasLifecycleCallbacks] 
+#[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     operations: [
         new GetCollection(),
@@ -27,7 +29,8 @@ use App\Validator\NoOverlappingReservation;
     denormalizationContext: ['groups' => ['reservation:write']],
     order: ['startDate' => 'DESC']
 )]
-#[NoOverlappingReservation] 
+#[NoOverlappingReservation]
+#[ApiFilter(SearchFilter::class, properties: ['vehicle' => 'exact', 'vehicle.id' => 'exact', 'status' => 'exact'])]
 class Reservation
 {
     #[ORM\Id]
@@ -50,7 +53,7 @@ class Reservation
 
     #[ORM\Column(length: 20)]
     #[Groups(['reservation:read', 'reservation:write'])]
-    private ?string $status = 'CONFIRMED'; 
+    private ?string $status = 'PENDING';
 
     #[ORM\Column]
     #[Groups(['reservation:read'])]
@@ -74,30 +77,75 @@ class Reservation
             $diff = $this->startDate->diff($this->endDate);
             $days = $diff->days;
             if ($days === 0) $days = 1;
-            
+
             $pricePerDay = (float) ($this->vehicle->getDailyPrice() ?? 0);
             $this->totalPrice = $days * $pricePerDay;
         }
     }
 
     // Getters y Setters...
-    public function getId(): ?int { return $this->id; }
-    
-    public function getStartDate(): ?\DateTimeInterface { return $this->startDate; }
-    public function setStartDate(\DateTimeInterface $startDate): static { $this->startDate = $startDate; return $this; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getEndDate(): ?\DateTimeInterface { return $this->endDate; }
-    public function setEndDate(\DateTimeInterface $endDate): static { $this->endDate = $endDate; return $this; }
+    public function getStartDate(): ?\DateTimeInterface
+    {
+        return $this->startDate;
+    }
+    public function setStartDate(\DateTimeInterface $startDate): static
+    {
+        $this->startDate = $startDate;
+        return $this;
+    }
 
-    public function getStatus(): ?string { return $this->status; }
-    public function setStatus(string $status): static { $this->status = $status; return $this; }
+    public function getEndDate(): ?\DateTimeInterface
+    {
+        return $this->endDate;
+    }
+    public function setEndDate(\DateTimeInterface $endDate): static
+    {
+        $this->endDate = $endDate;
+        return $this;
+    }
 
-    public function getTotalPrice(): ?float { return $this->totalPrice; }
-    public function setTotalPrice(float $totalPrice): static { $this->totalPrice = $totalPrice; return $this; }
+    public function getStatus(): ?string
+    {
+        return $this->status;
+    }
+    public function setStatus(string $status): static
+    {
+        $this->status = $status;
+        return $this;
+    }
 
-    public function getVehicle(): ?Vehicle { return $this->vehicle; }
-    public function setVehicle(?Vehicle $vehicle): static { $this->vehicle = $vehicle; return $this; }
+    public function getTotalPrice(): ?float
+    {
+        return $this->totalPrice;
+    }
+    public function setTotalPrice(float $totalPrice): static
+    {
+        $this->totalPrice = $totalPrice;
+        return $this;
+    }
 
-    public function getUser(): ?User { return $this->user; }
-    public function setUser(?User $user): static { $this->user = $user; return $this; }
+    public function getVehicle(): ?Vehicle
+    {
+        return $this->vehicle;
+    }
+    public function setVehicle(?Vehicle $vehicle): static
+    {
+        $this->vehicle = $vehicle;
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
+        return $this;
+    }
 }

@@ -8,6 +8,7 @@ import VehicleList from "./pages/admin/VehicleList";
 import VehicleForm from "./pages/admin/VehicleForm";
 import Catalog from "./pages/public/Catalog";
 import VehicleDetail from "./pages/public/VehicleDetail";
+import AdminChat from "./pages/admin/AdminChat";
 
 // Placeholder Components
 const Home = () => (
@@ -39,6 +40,7 @@ function App() {
         <Route path="coches" element={<VehicleList />} />
         <Route path="coches/nuevo" element={<VehicleForm />} />
         <Route path="coches/editar/:id" element={<VehicleForm />} />
+        <Route path="/admin/mensajes" element={<AdminChat />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" />} />

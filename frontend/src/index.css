@@ -1,1 +1,101 @@
 @import "tailwindcss";
+
+/* --- ESTILOS PERSONALIZADOS PARA REACT DATEPICKER --- */
+
+/* 1. El contenedor principal (La tarjeta del calendario) */
+.react-datepicker {
+  font-family: inherit !important; /* Usar la fuente de tu web */
+  background-color: white !important; /* IMPORTANTE: Fondo blanco */
+  border: 1px solid #e2e8f0 !important; /* Borde gris suave (slate-200) */
+  border-radius: 0.75rem !important; /* Bordes redondeados (rounded-xl) */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important; /* Sombra elegante */
+  overflow: hidden; /* Para que los hijos no se salgan de los bordes redondeados */
+  font-size: 0.875rem !important;
+}
+
+/* 2. La cabecera (Donde pone el mes y los días de la semana) */
+.react-datepicker__header {
+  background-color: #f8fafc !important; /* Fondo gris muy claro (slate-50) */
+  border-bottom: 1px solid #e2e8f0 !important;
+  padding-top: 1rem !important;
+}
+
+/* 3. El título del mes */
+.react-datepicker__current-month {
+  color: #1e293b !important; /* Texto oscuro (slate-800) */
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  margin-bottom: 0.5rem !important;
+  text-transform: capitalize; /* "febrero" -> "Febrero" */
+}
+
+/* 4. Los nombres de los días (lu, ma, mi...) */
+.react-datepicker__day-name {
+  color: #64748b !important; /* Texto gris (slate-500) */
+  width: 2rem !important;
+  margin: 0.2rem !important;
+  text-transform: uppercase;
+  font-size: 0.7rem !important;
+  font-weight: 700 !important;
+}
+
+/* 5. Los días normales */
+.react-datepicker__day {
+  width: 2rem !important;
+  line-height: 2rem !important;
+  margin: 0.2rem !important;
+  border-radius: 0.5rem !important; /* Días redondeados */
+  color: #334155 !important; /* Texto gris oscuro */
+  font-weight: 500;
+}
+
+/* 6. Hover sobre los días */
+.react-datepicker__day:hover:not(.react-datepicker__day--disabled) {
+  background-color: #e0e7ff !important; /* Azul muy claro (indigo-50) */
+  color: #4f46e5 !important; /* Indigo-600 */
+}
+
+/* 7. Días SELECCIONADOS (Rango inicio/fin) */
+.react-datepicker__day--selected, 
+.react-datepicker__day--range-start,
+.react-datepicker__day--range-end,
+.react-datepicker__day--keyboard-selected {
+  background-color: #4f46e5 !important; /* Indigo-600 */
+  color: white !important;
+  font-weight: bold !important;
+}
+
+/* 8. Días DENTRO del rango seleccionado */
+.react-datepicker__day--in-range {
+  background-color: #c7d2fe !important; /* Indigo-200 */
+  color: #312e81 !important; /* Indigo-900 */
+}
+
+/* 9. Días DESHABILITADOS (Los ocupados o pasados) */
+.react-datepicker__day--disabled {
+  color: #cbd5e1 !important; /* Gris muy claro (slate-300) */
+  background-color: transparent !important;
+  text-decoration: none !important; /* Quitamos el tachado feo por defecto */
+  cursor: not-allowed !important;
+  opacity: 0.5;
+}
+
+/* 10. Días OCUPADOS (Tu lógica personalizada en rojo) */
+/* Esta clase la añadimos nosotros desde React */
+.react-datepicker__day--excluded {
+  color: #ef4444 !important; /* Rojo (red-500) */
+  font-weight: bold !important;
+  text-decoration: line-through !important;
+  opacity: 1 !important;
+}
+
+/* 11. Ocultar el triángulo feo de arriba */
+.react-datepicker__triangle {
+  display: none !important;
+}
+
+/* 12. Flechas de navegación (Anterior/Siguiente mes) */
+.react-datepicker__navigation-icon::before {
+  border-color: #64748b !important; /* Color de las flechas */
+  border-width: 2px 2px 0 0 !important;
+}

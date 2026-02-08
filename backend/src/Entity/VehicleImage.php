@@ -36,7 +36,7 @@ class VehicleImage
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['vehicleImage:read', 'vehicleImage:write', 'vehicle:read'])]
+    #[Groups(['vehicleImage:read', 'vehicleImage:write', 'vehicle:read', 'conversation:read'])]
     private ?string $filename = null;
 
     #[ORM\Column]
