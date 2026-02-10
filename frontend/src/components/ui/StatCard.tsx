@@ -1,6 +1,4 @@
 import type { LucideIcon } from "lucide-react";
-
-// Exportamos la interfaz para poder usarla si la necesitamos fuera
 export interface StatCardProps {
   title: string;
   value: string;

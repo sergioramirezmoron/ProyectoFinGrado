@@ -1,14 +1,9 @@
-// ==========================================
-// 1. TIPOS GENÉRICOS (Para Dropdowns y API)
-// ==========================================
 
 export interface SelectOption {
   id: number;
-  "@id": string; // El IRI de API Platform (ej: "/api/brands/1")
+  "@id": string;
   name: string;
 }
-
-// El Modelo es especial porque necesita la marca para filtrarse
 export interface VehicleModel extends SelectOption {
   brand: string | { "@id": string };
 }
@@ -28,10 +23,6 @@ export interface Violation {
   message: string;
 }
 
-// ==========================================
-// 2. INTERFACES DEL FORMULARIO (Escritura)
-// ==========================================
-
 export interface FormOptions {
   brands: SelectOption[];
   fuels: SelectOption[];
@@ -48,31 +39,21 @@ export interface VehicleFormData {
   description: string;
   status: string;
   type: "SALE" | "RENT";
-
-  // Relaciones
   fuelType: string;
   transmission: string;
   enviromentalBadge: string;
   province: string;
   bodyType: string;
   color: string;
-
-  // Números
   year: number;
   kilometres: number;
   power: number;
   displacement: number;
   doors: number;
   owners: number;
-  
   price?: string;
   dailyPrice?: string;
 }
-
-// ==========================================
-// 3. ENTIDAD COMPLETA (Lectura / Listado)
-// ==========================================
-// Esto lo usarás cuando hagas la página de "Ver Coche" o "Lista de Coches"
 
 export interface VehicleImage {
   id: number;

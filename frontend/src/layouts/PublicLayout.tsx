@@ -6,7 +6,6 @@ const PublicLayout = () => {
   const { logout, isAuthenticated } = useAuth();
   return (
     <div className="min-h-screen bg-slate-950 text-white font-sans selection:bg-blue-500 selection:text-white">
-      {/* Navbar Estilo Audi/Tesla (Fixed y con blur) */}
       <nav className="fixed top-0 w-full z-50 bg-slate-950/80 backdrop-blur-md border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           {/* Logo */}
@@ -49,7 +48,6 @@ const PublicLayout = () => {
         </div>
       </nav>
 
-      {/* Contenido Dinámico (Aquí se renderizan las páginas) */}
       <main className="pt-20">
         <Outlet />
       </main>

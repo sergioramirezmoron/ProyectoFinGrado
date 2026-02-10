@@ -15,7 +15,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-// Importamos Entidades Relacionadas
 use App\Entity\Fuel;
 use App\Entity\Transmission;
 use App\Entity\BodyType;
@@ -23,7 +22,6 @@ use App\Entity\EnviromentalBadge;
 use App\Entity\Color;
 use App\Entity\Province;
 use App\Entity\VehicleImage;
-// Importamos Filtros
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Doctrine\Orm\Filter\RangeFilter;
@@ -31,47 +29,31 @@ use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: VehicleRepository::class)]
-// 1. FILTROS DE BÚSQUEDA
 #[ApiFilter(SearchFilter::class, properties: [
-    // Cambiamos 'brand.name' por 'brand' para poder filtrar por ID desde el select
     'brand' => 'exact', 
     'model' => 'exact', 
-    
-    // Lo mismo para el resto de relaciones
     'province' => 'exact',
     'fuelType' => 'exact',
     'transmission' => 'exact',
     'enviromentalBadge' => 'exact',
     'bodyType' => 'exact',
     'color' => 'exact',
-
-    // Estos se quedan igual
     'status' => 'exact',
     'type' => 'exact'
 ])]
-// 2. FILTROS DE RANGO (Precio, Año, Km)
 #[ApiFilter(RangeFilter::class, properties: ['price', 'dailyPrice', 'kilometres', 'year', 'power'])]
-// 3. ORDENACIÓN DINÁMICA
 #[ApiFilter(OrderFilter::class, properties: ['price', 'dailyPrice', 'year', 'kilometres', 'createdAt'], arguments: ['orderParameterName' => 'order'])]
-
-// --- CONFIGURACIÓN PRINCIPAL DE LA API ---
 #[ApiResource(
     operations: [
         new GetCollection(security: "is_granted('PUBLIC_ACCESS')"),
         new Get(security: "is_granted('PUBLIC_ACCESS')"),
-        new Post(security: "is_granted('ROLE_SALES')"),
-        new Post(security: "is_granted('ROLE_ADMIN')"),
-        new Put(security: "is_granted('ROLE_SALES')"),
-        new Put(security: "is_granted('ROLE_ADMIN')"),
-        new Patch(security: "is_granted('ROLE_SALES')"),
-        new Patch(security: "is_granted('ROLE_ADMIN')"),
+        new Post(security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_SALES')"),
+        new Put(security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_SALES')"),
+        new Patch(security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_SALES')"),
         new Delete(security: "is_granted('ROLE_ADMIN')")
     ],
-    // Grupos de Serialización
     normalizationContext: ['groups' => ['vehicle:read']],
     denormalizationContext: ['groups' => ['vehicle:write']],
-    
-    // Paginación y Orden
     paginationItemsPerPage: 20,
     order: ['createdAt' => 'DESC']
 )]
@@ -201,10 +183,6 @@ class Vehicle
         $this->status = 'AVAILABLE';
         $this->visible = true;
     }
-
-    // =========================================================================
-    // GETTERS Y SETTERS (COMPLETOS)
-    // =========================================================================
 
     public function getId(): ?int
     {

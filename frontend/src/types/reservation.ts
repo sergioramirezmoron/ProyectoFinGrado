@@ -1,3 +1,5 @@
+import type { Vehicle } from "./vehicle";
+
 export interface ApiError {
   detail?: string;
   "hydra:description"?: string;
@@ -15,14 +17,7 @@ export interface VehicleImage {
   main: boolean;
 }
 
-export interface Vehicle {
-  id?: number;
-  "@id": string;
-  status: string;
-  brand?: { name: string };
-  model?: { name: string };
-  vehicleImages?: VehicleImage[];
-}
+
 
 export interface Reservation {
   id: number;

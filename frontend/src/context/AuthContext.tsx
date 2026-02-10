@@ -17,9 +17,8 @@ const decodeTokenIfValid = (token: string): User | null => {
     return {
       email: decoded.username,
       roles: decoded.roles,
-      // Mapeamos los opcionales
       id: decoded.id,
-      "@id": decoded.id ? `/api/users/${decoded.id}` : undefined, // Construimos el IRI
+      "@id": decoded.id ? `/api/users/${decoded.id}` : undefined,
       name: decoded.name,
       phone: decoded.phone
     };

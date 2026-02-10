@@ -11,134 +11,18 @@ import {
   CalendarClock,
   CheckCircle2,
   XCircle,
-  AlertTriangle,
-  X,
   BadgeEuro,
   CalendarCheck,
-  Lock, 
+  Lock,
 } from "lucide-react";
 import api from "../../api/axios";
 import { AxiosError } from "axios";
-interface Message {
-  id: number;
-  content: string;
-  createdAt: string;
-  isAdmin: boolean;
-}
-
-interface VehicleImage {
-  imageUrl: string;
-  main: boolean;
-}
-
-interface Vehicle {
-  id?: number;
-  "@id": string;
-  status: string;
-  brand?: { name: string };
-  model?: { name: string };
-  vehicleImages?: VehicleImage[];
-}
-
-interface Reservation {
-  id: number;
-  startDate: string;
-  endDate: string;
-  totalPrice: number;
-  status: string;
-}
-
-interface Conversation {
-  id: number;
-  "@id": string;
-  contactName: string;
-  contactEmail: string;
-  contactPhone: string;
-  vehicle?: Vehicle;
-  reservation?: Reservation;
-  updatedAt: string;
-  status: string;
-  messages: Message[];
-}
-
-// --- COMPONENTES UI INTERNOS ---
-
-const Toast = ({
-  message,
-  type,
-  onClose,
-}: {
-  message: string;
-  type: "success" | "error";
-  onClose: () => void;
-}) => (
-  <div
-    className={`fixed top-5 right-5 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl border animate-in slide-in-from-top-5 duration-300 ${
-      type === "success"
-        ? "bg-green-50 border-green-200 text-green-800"
-        : "bg-red-50 border-red-200 text-red-800"
-    }`}
-  >
-    {type === "success" ? (
-      <CheckCircle2 size={20} />
-    ) : (
-      <AlertTriangle size={20} />
-    )}
-    <p className="text-sm font-medium pr-4">{message}</p>
-    <button
-      onClick={onClose}
-      className="hover:bg-black/5 p-1 rounded-full transition-colors"
-    >
-      <X size={16} />
-    </button>
-  </div>
-);
-
-const ConfirmModal = ({
-  isOpen,
-  title,
-  message,
-  onConfirm,
-  onCancel,
-  confirmColor = "blue",
-}: {
-  isOpen: boolean;
-  title: string;
-  message: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-  confirmColor?: "green" | "blue" | "red";
-}) => {
-  if (!isOpen) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4 transform transition-all scale-100">
-        <h3 className="text-lg font-bold text-slate-800 mb-2">{title}</h3>
-        <p className="text-sm text-slate-600 mb-6">{message}</p>
-        <div className="flex justify-end gap-3">
-          <button
-            onClick={onCancel}
-            className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={onConfirm}
-            className={`px-4 py-2 text-sm font-semibold text-white rounded-lg shadow-md transition-all ${
-              confirmColor === "red"
-                ? "bg-red-600 hover:bg-red-700 shadow-red-200"
-                : "bg-green-600 hover:bg-green-700 shadow-green-200"
-            }`}
-          >
-            {title === "Aceptar Reserva" ? "Confirmar" : "Confirmar"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// --- COMPONENTE PRINCIPAL ---
+import type { Message } from "../../types/message";
+import type { Vehicle } from "../../types/vehicle";
+import type { Conversation } from "../../types/reservation";
+import Toast from "../../helpers/Toast";
+import ConfirmModal from "../../helpers/ConfirmModal";
+import { Link } from "react-router-dom";
 
 const AdminChat = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -150,7 +34,6 @@ const AdminChat = () => {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [activeTab, setActiveTab] = useState<"sales" | "bookings">("bookings");
   const [searchQuery, setSearchQuery] = useState("");
-  // const { refreshUnreadCount } = useChatNotification(); // Descomentar si usas notificaciones globales
 
   const [toast, setToast] = useState<{
     msg: string;
@@ -223,11 +106,10 @@ const AdminChat = () => {
     try {
       if (!isPolling) setLoading(true);
       const response = await api.get("/conversations");
-      const data =
-        response.data["hydra:member"] || response.data.member || [];
+      const data = response.data.member || [];
       setConversations(data);
     } catch (error) {
-      console.error("Error cargando chats", error);
+      throw new Error("Error cargando conversaciones", { cause: error });
     } finally {
       if (!isPolling) setLoading(false);
     }
@@ -243,7 +125,6 @@ const AdminChat = () => {
         prev.length !== newMessages.length ? newMessages : prev,
       );
 
-      // Sincronizar estado de reserva si cambia en backend
       if (
         selectedChat &&
         JSON.stringify(selectedChat.reservation) !==
@@ -254,7 +135,7 @@ const AdminChat = () => {
         );
       }
     } catch (error) {
-      console.error("Error cargando mensajes", error);
+      throw new Error("Error cargando mensajes", { cause: error });
     }
   };
 
@@ -268,9 +149,8 @@ const AdminChat = () => {
         { status: "READ" },
         { headers: { "Content-Type": "application/merge-patch+json" } },
       );
-      // refreshUnreadCount(); // Descomentar si usas el hook
     } catch (error) {
-      console.error(error);
+      throw new Error("Error marcando como leído", { cause: error });
     }
   };
 
@@ -299,7 +179,6 @@ const AdminChat = () => {
     }
   };
 
-  // Helper robusto para obtener ID único de vehículo
   const getVehicleUniqueId = (v: Vehicle | undefined) => {
     if (!v) return null;
     if (v.id) return v.id;
@@ -331,14 +210,12 @@ const AdminChat = () => {
         { headers: { "Content-Type": "application/merge-patch+json" } },
       );
 
-      // 1. Actualizar chat seleccionado
       setSelectedChat((prev) =>
         prev
           ? { ...prev, vehicle: { ...prev.vehicle!, status: newStatus } }
           : null,
       );
 
-      // 2. Actualizar TODOS los chats que hablen de este mismo vehículo
       setConversations((prev) =>
         prev.map((c) => {
           const cVehicleId = getVehicleUniqueId(c.vehicle);
@@ -353,10 +230,7 @@ const AdminChat = () => {
     } catch (error) {
       let errorMsg = "Error al actualizar estado.";
       if (error instanceof AxiosError && error.response) {
-        errorMsg =
-          error.response.data["hydra:description"] ||
-          error.response.data.detail ||
-          error.message;
+        errorMsg = error.response.data.detail || error.message;
       }
       setToast({ msg: `Error: ${errorMsg}`, type: "error" });
     } finally {
@@ -387,7 +261,6 @@ const AdminChat = () => {
           : null,
       );
 
-      // Sincronizar estado en la lista
       setConversations((prev) =>
         prev.map((c) =>
           c.id === selectedChat.id && c.reservation
@@ -398,11 +271,10 @@ const AdminChat = () => {
 
       const reply =
         status === "CONFIRMED"
-          ? "✅ He aceptado tu solicitud. El vehículo queda reservado para ti."
-          : "❌ Lo siento, no podemos aceptar la reserva en estas fechas.";
+          ? "✅ Hemos aceptado tu solicitud. El vehículo está reservado para ti."
+          : "❌ Lo siento, no hemos podido aceptar la reserva.";
       await handleSendMessage(undefined, reply);
 
-      // Si se confirma, marcar vehículo como RESERVADO automáticamente
       if (
         status === "CONFIRMED" &&
         selectedChat.vehicle?.status === "AVAILABLE"
@@ -444,6 +316,7 @@ const AdminChat = () => {
           minute: "2-digit",
         })
       : "";
+
   const formatPrice = (a: number) =>
     new Intl.NumberFormat("es-ES", {
       style: "currency",
@@ -463,9 +336,6 @@ const AdminChat = () => {
     }
   };
 
-  // --- BLOQUEO DE CHAT SI VENDIDO ---
-  // Si está VENDIDO (SOLD), bloqueamos el chat.
-  // Si está RESERVADO (RESERVED), permitimos chat (para dudas del cliente).
   const isChatLocked = selectedChat?.vehicle?.status === "SOLD";
 
   return (
@@ -496,7 +366,7 @@ const AdminChat = () => {
       />
 
       {/* SIDEBAR IZQUIERDO */}
-      <div className="w-1/3 border-r border-gray-200 flex flex-col bg-gray-50 min-w-[300px]">
+      <div className="w-1/3 border-r border-gray-200 flex flex-col bg-gray-50 min-w-75">
         <div className="p-4 border-b border-gray-200 bg-white">
           <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2 mb-4">
             <MessageSquare className="text-blue-600" /> Mensajes
@@ -551,8 +421,8 @@ const AdminChat = () => {
             </div>
           ) : (
             filteredConversations.map((chat) => {
-              // Helper para saber si está vendido dentro del map
               const isSold = chat.vehicle?.status === "SOLD";
+              const isReserved = chat.vehicle?.status === "RESERVED";
 
               return (
                 <button
@@ -564,10 +434,16 @@ const AdminChat = () => {
                       : "border-l-4 border-l-transparent"
                   } ${isSold ? "bg-gray-50/50" : ""}`}
                 >
-                  {/* --- INDICADOR DE VENDIDO (ETIQUETA ROJA CON CANDADO) --- */}
+                  {/* --- INDICADOR DE VENDIDO Y RESERVADO --- */}
                   {isSold && (
                     <div className="absolute top-2 right-2 bg-red-100 text-red-700 text-[9px] font-extrabold px-2 py-0.5 rounded flex items-center gap-1 border border-red-200 z-10">
                       <Lock size={8} /> VENDIDO
+                    </div>
+                  )}
+
+                  {isReserved && (
+                    <div className="absolute top-2 right-2 bg-orange-300 text-orange-700 text-[9px] font-extrabold px-2 py-0.5 rounded flex items-center gap-1 border border-orange-200 z-10">
+                      <Lock size={8} /> RESERVADO
                     </div>
                   )}
 
@@ -579,7 +455,6 @@ const AdminChat = () => {
                     {getImageUrl(chat) ? (
                       <img
                         src={getImageUrl(chat)!}
-                        // --- IMAGEN EN BLANCO Y NEGRO SI ESTÁ VENDIDO ---
                         className={`w-full h-full object-cover ${isSold ? "grayscale opacity-70" : ""}`}
                         alt="coche"
                         onError={(e) => {
@@ -593,7 +468,7 @@ const AdminChat = () => {
                     )}
                   </div>
                   <div className="flex-1 min-w-0 pr-4">
-                    <div className="flex justify-between items-baseline mb-1">
+                    <div className="flex justify-between items-baseline mb-1 pt-2">
                       <h4
                         className={`text-sm font-bold truncate ${selectedChat?.id === chat.id ? "text-blue-700" : "text-slate-800"}`}
                       >
@@ -653,11 +528,16 @@ const AdminChat = () => {
               </div>
 
               <div className="flex flex-col items-end gap-1">
-                <div className="flex items-center gap-1 text-xs font-semibold text-slate-700">
-                  <Car size={14} className="text-blue-600" />{" "}
-                  {selectedChat.vehicle?.brand?.name}{" "}
-                  {selectedChat.vehicle?.model?.name}
-                </div>
+                <Link
+                  to={`/vehiculo/${selectedChat.vehicle?.["@id"].split("/").pop()}`}
+                  className="flex items-center gap-1 text-xs font-semibold text-slate-700 border border-slate-200 px-3 py-1 rounded-md"
+                >
+                  <div className="flex items-center gap-1 text-xs font-semibold text-slate-700">
+                    <Car size={14} className="text-blue-600" />
+                    {selectedChat.vehicle?.brand?.name}{" "}
+                    {selectedChat.vehicle?.model?.name}
+                  </div>
+                </Link>
                 {selectedChat.reservation ? (
                   <div
                     className={`px-3 py-1 rounded-md text-xs font-bold border flex items-center gap-1.5 shadow-sm
