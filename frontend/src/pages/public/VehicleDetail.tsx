@@ -209,7 +209,7 @@ const VehicleDetail = () => {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-gray-600 hover:text-slate-900 font-medium transition-colors"
+            className="flex items-center gap-2 text-gray-600 hover:text-slate-900 font-medium transition-colors hover:cursor-pointer"
           >
             <ChevronLeft size={20} /> Volver al catálogo
           </button>
@@ -396,7 +396,7 @@ const VehicleDetail = () => {
                                   placeholderText="Recogida"
                                   locale="es"
                                   wrapperClassName="w-full"
-                                  className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-medium cursor-pointer transition-all hover:border-indigo-300"
+                                  className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-medium cursor-pointer transition-all hover:border-indigo-300 text-black"
                                   dateFormat="dd/MM/yyyy"
                                   dayClassName={(date) =>
                                     isDateBlocked(date)
@@ -419,7 +419,7 @@ const VehicleDetail = () => {
                                   placeholderText="Devolución"
                                   locale="es"
                                   wrapperClassName="w-full"
-                                  className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-medium cursor-pointer transition-all hover:border-indigo-300"
+                                  className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-medium cursor-pointer transition-all hover:border-indigo-300 text-black"
                                   dateFormat="dd/MM/yyyy"
                                   dayClassName={(date) =>
                                     isDateBlocked(date)
@@ -456,7 +456,7 @@ const VehicleDetail = () => {
                         <button
                           onClick={handleReserve}
                           disabled={!totalPrice || reserving}
-                          className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+                          className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 hover:cursor-pointer"
                         >
                           {reserving ? (
                             <Loader2 className="animate-spin" />
