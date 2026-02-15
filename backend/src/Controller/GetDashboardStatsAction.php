@@ -12,6 +12,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 
 #[AsController]
+#[Route('/api/stats', name: 'api_stats', methods: ['GET'])]
 class GetDashboardStatsAction extends AbstractController
 {
     public function __invoke(
@@ -20,23 +21,39 @@ class GetDashboardStatsAction extends AbstractController
         MessageRepository $messageRepo,
         BrandRepository $brandRepo
     ): JsonResponse {
-        $usersCount = $userRepo->count([]);
-        $vehiclesCount = $vehicleRepo->count([]);
-        $messagesCount = $messageRepo->count([]);
-        $brandsCount = $brandRepo->count([]);
-        $soldVehicles = $vehicleRepo->count(['status' => 'SOLD']);
-        $reservedVehicles = $vehicleRepo->count(['status' => 'RESERVED']);
 
-        $availableVehicles = $vehicleRepo->count(['status' => 'AVAILABLE']);
+        $latestMessages = $messageRepo->findBy(
+            ['isAdmin' => false],
+            ['createdAt' => 'DESC'],
+            5
+        );
 
+        $activities = [];
+
+        foreach ($latestMessages as $msg) {
+
+            $content = $msg->getContent();
+            if (strlen($content) > 40) {
+                $content = substr($content, 0, 40) . '...';
+            }
+
+            $activities[] = [
+                'type' => 'MESSAGE',
+                'text' => 'Mensaje en chat #' . $msg->getConversation()->getId() . ': "' . $content . '"',
+                'date' => $msg->getCreatedAt()->format('c')
+            ];
+        }
+
+        // 2. DEVOLVER RESPUESTA COMPLETA
         return new JsonResponse([
-            'totalUsers' => $usersCount,
-            'totalVehicles' => $vehiclesCount,
-            'vehiclesAvailable' => $availableVehicles,
-            'vehiclesSold' => $soldVehicles,
-            'vehiclesReserved' => $reservedVehicles,
-            'totalMessages' => $messagesCount,
-            'totalBrands' => $brandsCount,
+            'totalUsers' => $userRepo->count([]),
+            'totalVehicles' => $vehicleRepo->count([]),
+            'vehiclesAvailable' => $vehicleRepo->count(['status' => 'AVAILABLE']),
+            'vehiclesSold' => $vehicleRepo->count(['status' => 'SOLD']),
+            'vehiclesReserved' => $vehicleRepo->count(['status' => 'RESERVED']),
+            'totalMessages' => $messageRepo->count([]),
+            'totalBrands' => $brandRepo->count([]),
+            'recentActivity' => $activities,
             'serverTime' => new \DateTime()
         ]);
     }

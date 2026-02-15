@@ -23,24 +23,27 @@ class Message
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['conversation:detail', 'message:read'])]
+    #[Groups(['conversation:detail', 'message:read', 'conversation:read'])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['conversation:detail', 'conversation:write', 'message:write'])]
-    // conversation:write permite crear el primer mensaje a la vez que la conversacion
+    // ✅ AÑADIDO 'conversation:read' para que se vea el texto en la lista
+    #[Groups(['conversation:detail', 'conversation:write', 'message:write', 'conversation:read'])]
     private ?string $content = null;
 
     #[ORM\Column]
-    #[Groups(['conversation:detail'])]
+    // ✅ AÑADIDO 'conversation:read' para ordenar por fecha
+    #[Groups(['conversation:detail', 'conversation:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    #[Groups(['conversation:detail', 'message:write'])]
-    private ?bool $isAdmin = false; // TRUE si responde el dueño de la web, FALSE si es el cliente
+    // ✅ AÑADIDO 'conversation:read' para el PUNTO ROJO (saber quién escribió)
+    #[Groups(['conversation:detail', 'message:write', 'conversation:read'])]
+    private ?bool $isAdmin = false; 
 
     #[ORM\ManyToOne(inversedBy: 'messages')]
     #[ORM\JoinColumn(nullable: false)]
+    // ❌ AQUÍ NO PONEMOS 'conversation:read' (Evita el error 500 de bucle)
     #[Groups(['message:write'])]
     private ?Conversation $conversation = null;
 

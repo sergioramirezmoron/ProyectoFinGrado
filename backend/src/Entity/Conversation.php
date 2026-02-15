@@ -44,7 +44,7 @@ use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 )]
 
 #[ApiFilter(SearchFilter::class, properties: [
-    'status' => 'exact', 
+    'status' => 'exact',
     'contactEmail' => 'exact'
 ])]
 class Conversation
@@ -73,7 +73,7 @@ class Conversation
     private ?Vehicle $vehicle = null;
 
     #[ORM\OneToMany(mappedBy: 'conversation', targetEntity: Message::class, cascade: ['persist', 'remove'])]
-    #[Groups(['conversation:detail', 'conversation:write'])]
+    #[Groups(['conversation:detail', 'conversation:read'])]
     private Collection $messages;
 
     #[ORM\Column]

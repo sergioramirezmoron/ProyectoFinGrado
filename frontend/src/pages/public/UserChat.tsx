@@ -10,31 +10,8 @@ import {
 } from "lucide-react";
 import api from "../../api/axios";
 import { useAuth } from "../../hooks/useAuth";
-
-interface Message {
-  id: number;
-  content: string;
-  createdAt: string;
-  isAdmin: boolean;
-}
-
-interface Vehicle {
-  id?: number;
-  "@id": string;
-  status: string;
-  brand?: { name: string };
-  model?: { name: string };
-  vehicleImages?: { imageUrl: string; main: boolean }[];
-}
-
-interface Conversation {
-  id: number;
-  "@id": string;
-  contactName: string;
-  vehicle?: Vehicle;
-  updatedAt: string;
-  messages: Message[];
-}
+import type { Conversation } from "../../types/message";
+import type { Message } from "../../types/reservation";
 
 const UserChat = () => {
   const { user } = useAuth();
@@ -61,6 +38,12 @@ const UserChat = () => {
   useEffect(() => {
     if (selectedChat) {
       fetchMessages(selectedChat.id);
+      
+      // Si entramos y hay mensajes no leídos del admin, marcamos como leído
+      if (hasUnreadMessages(selectedChat)) {
+        markAsRead(selectedChat);
+      }
+
       const interval = setInterval(() => fetchMessages(selectedChat.id), 3000);
       return () => clearInterval(interval);
     }
@@ -88,6 +71,30 @@ const UserChat = () => {
       setMessages(response.data.messages || []);
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  // Lógica para detectar mensajes NO LEÍDOS del ADMIN
+  const hasUnreadMessages = (chat: Conversation) => {
+    if (!chat.messages || chat.messages.length === 0) return false;
+    
+    const lastMessage = chat.messages[chat.messages.length - 1];
+    // Si el último mensaje es de un ADMIN (isAdmin=true) y el estado NO es READ...
+    return lastMessage.isAdmin === true && chat.status !== 'READ';
+  };
+
+  const markAsRead = async (chat: Conversation) => {
+    // Actualización optimista para quitar el punto rojo al instante
+    setConversations(prev => prev.map(c => 
+      c.id === chat.id ? { ...c, status: 'READ' } : c
+    ));
+
+    try {
+        await api.patch(`/conversations/${chat.id}`, { status: 'READ' }, {
+            headers: { "Content-Type": "application/merge-patch+json" }
+        });
+    } catch (e) {
+        console.error("No se pudo marcar como leído en servidor", e);
     }
   };
 
@@ -132,7 +139,6 @@ const UserChat = () => {
         })
       : "";
 
-  // Helper para saber si está disponible
   const isAvailable = (chat: Conversation | null) => {
     return chat?.vehicle?.status === "AVAILABLE";
   };
@@ -151,6 +157,7 @@ const UserChat = () => {
       </h1>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 flex overflow-hidden h-[600px]">
+        
         {/* LISTA LATERAL */}
         <div className="w-1/3 border-r border-gray-200 flex flex-col bg-gray-50 min-w-[280px]">
           <div className="p-4 border-b border-gray-200">
@@ -176,62 +183,80 @@ const UserChat = () => {
                 No tienes conversaciones.
               </div>
             ) : (
-              conversations.map((chat) => (
-                <button
-                  key={chat.id}
-                  onClick={() => setSelectedChat(chat)}
-                  className={`w-full text-left p-4 border-b border-gray-100 hover:bg-white transition-all flex gap-3 ${selectedChat?.id === chat.id ? "bg-white border-l-4 border-l-blue-600 shadow-sm" : "border-l-4 border-l-transparent"}`}
-                >
-                  <div className="w-12 h-12 rounded-lg bg-slate-200 overflow-hidden shrink-0 flex items-center justify-center relative">
-                    {getImageUrl(chat) ? (
-                      <img
-                        src={getImageUrl(chat)!}
-                        className={`w-full h-full object-cover ${chat.vehicle?.status !== "AVAILABLE" ? "grayscale opacity-70" : ""}`}
-                        alt="car"
-                      />
-                    ) : (
-                      <Car size={20} className="text-slate-400" />
-                    )}
-                    {/* Badge pequeño en la foto si está vendido */}
-                    {chat.vehicle?.status === "SOLD" && (
-                      <div className="absolute inset-0 bg-red-500/50 flex items-center justify-center text-white font-bold text-[8px]">
-                        VENDIDO
+              conversations.map((chat) => {
+                const isUnread = hasUnreadMessages(chat); // Calculamos si hay mensajes nuevos
+
+                return (
+                  <button
+                    key={chat.id}
+                    onClick={() => setSelectedChat(chat)}
+                    className={`w-full text-left p-4 border-b border-gray-100 hover:bg-white transition-all flex gap-3 relative 
+                      ${selectedChat?.id === chat.id ? "bg-white border-l-4 border-l-blue-600 shadow-sm" : "border-l-4 border-l-transparent"}
+                    `}
+                  >
+                    {/* --- PUNTO ROJO DE NOTIFICACIÓN --- */}
+                    {/* AQUI ESTABA EL FALLO: Antes no se usaba 'isUnread' para renderizar esto */}
+                    {isUnread && (
+                      <div className="absolute top-4 right-4 z-20">
+                        <span className="relative flex h-3 w-3">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                        </span>
                       </div>
                     )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex justify-between items-start">
-                      <h4 className="font-bold text-slate-800 text-sm truncate">
-                        {chat.vehicle?.brand?.name} {chat.vehicle?.model?.name}
-                      </h4>
+
+                    <div className="w-12 h-12 rounded-lg bg-slate-200 overflow-hidden shrink-0 flex items-center justify-center relative">
+                      {getImageUrl(chat) ? (
+                        <img
+                          src={getImageUrl(chat)!}
+                          className={`w-full h-full object-cover ${chat.vehicle?.status !== "AVAILABLE" ? "grayscale opacity-70" : ""}`}
+                          alt="car"
+                        />
+                      ) : (
+                        <Car size={20} className="text-slate-400" />
+                      )}
+                      
+                      {chat.vehicle?.status === "SOLD" && (
+                        <div className="absolute inset-0 bg-red-500/50 flex items-center justify-center text-white font-bold text-[8px]">
+                          VENDIDO
+                        </div>
+                      )}
                     </div>
+                    
+                    <div className="min-w-0 flex-1 pr-6">
+                      <div className="flex justify-between items-start">
+                        <h4 className={`font-bold text-sm truncate ${isUnread ? "text-slate-900 font-extrabold" : "text-slate-700"}`}>
+                          {chat.vehicle?.brand?.name} {chat.vehicle?.model?.name}
+                        </h4>
+                      </div>
 
-                    {/* Badge de estado en la lista */}
-                    {chat.vehicle?.status === "SOLD" && (
-                      <span className="inline-block px-1.5 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded mt-1">
-                        VENDIDO
-                      </span>
-                    )}
-                    {chat.vehicle?.status === "RESERVED" && (
-                      <span className="inline-block px-1.5 py-0.5 bg-yellow-100 text-yellow-700 text-[10px] font-bold rounded mt-1">
-                        RESERVADO
-                      </span>
-                    )}
+                      {chat.vehicle?.status === "SOLD" && (
+                        <span className="inline-block px-1.5 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded mt-1">
+                          VENDIDO
+                        </span>
+                      )}
+                      {chat.vehicle?.status === "RESERVED" && (
+                        <span className="inline-block px-1.5 py-0.5 bg-yellow-100 text-yellow-700 text-[10px] font-bold rounded mt-1">
+                          RESERVADO
+                        </span>
+                      )}
 
-                    <p className="text-xs text-gray-500 mt-1 truncate">
-                      Último mensaje: {formatDate(chat.updatedAt)}
-                    </p>
-                  </div>
-                </button>
-              ))
+                      <p className={`text-xs mt-1 truncate ${isUnread ? "font-bold text-blue-600" : "text-gray-500"}`}>
+                        {isUnread ? "Nuevo mensaje del soporte" : `Último mensaje: ${formatDate(chat.updatedAt)}`}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })
             )}
           </div>
         </div>
 
-        {/* ZONA DE CHAT */}
+        {/* ZONA DE CHAT (DERECHA) */}
         <div className="flex-1 flex flex-col bg-[#eef1f6]">
           {selectedChat ? (
             <>
+              {/* CABECERA CHAT */}
               <div className="p-4 bg-white border-b border-gray-200 flex items-center gap-3 shadow-sm z-10 justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
@@ -246,19 +271,23 @@ const UserChat = () => {
                   </div>
                 </div>
 
-                {/* Estado en la cabecera */}
                 {!isAvailable(selectedChat) && (
                   <div
                     className={`px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5 
                         ${selectedChat.vehicle?.status === "SOLD" ? "bg-red-50 text-red-600 border-red-200" : "bg-yellow-50 text-yellow-700 border-yellow-200"}`}
                   >
-                    {selectedChat.vehicle?.status === "SOLD"
-                      ? "VEHÍCULO VENDIDO"
-                      : "VEHÍCULO RESERVADO"}
+                    {selectedChat.vehicle?.status === "SOLD" ? (
+                      <>
+                        <Lock size={12} /> VEHÍCULO VENDIDO
+                      </>
+                    ) : (
+                      "VEHÍCULO RESERVADO"
+                    )}
                   </div>
                 )}
               </div>
 
+              {/* MENSAJES */}
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 {messages.map((msg) => (
                   <div
@@ -285,7 +314,7 @@ const UserChat = () => {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* AREA DE INPUT O MENSAJE DE BLOQUEO */}
+              {/* INPUT */}
               <div className="p-4 bg-white border-t border-gray-200">
                 {isAvailable(selectedChat) ? (
                   <form onSubmit={handleSendMessage} className="flex gap-4">
@@ -311,8 +340,7 @@ const UserChat = () => {
                 ) : (
                   <div className="flex items-center justify-center gap-2 p-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-500 text-sm font-medium">
                     <Lock size={16} />
-                    Este chat está cerrado porque el vehículo ya no está
-                    disponible.
+                    Este chat está cerrado porque el vehículo ya no está disponible.
                   </div>
                 )}
               </div>

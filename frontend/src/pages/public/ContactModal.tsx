@@ -1,8 +1,8 @@
+// Imports igual que antes...
 import { useState, useEffect } from "react";
 import { X, Send, CheckCircle, Loader2, Phone } from "lucide-react";
 import api from "../../api/axios";
 import { useAuth } from "../../hooks/useAuth";
-import type { MessagePayload } from "../../types/message";
 
 interface ContactModalProps {
   isOpen: boolean;
@@ -11,6 +11,15 @@ interface ContactModalProps {
   vehicleName: string;
 }
 
+interface ConversationPayloadInterface {
+  contactName: string;
+  contactEmail: string;
+  contactPhone: string;
+  vehicle: string;
+  user?: string;
+}
+
+
 const ContactModal = ({
   isOpen,
   onClose,
@@ -18,7 +27,6 @@ const ContactModal = ({
   vehicleName,
 }: ContactModalProps) => {
   const { user } = useAuth();
-
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -29,8 +37,6 @@ const ContactModal = ({
     message: "Hola, estoy interesado en este vehículo. ¿Sigue disponible?",
   });
 
-  // Detectamos si el usuario YA tiene teléfono en su sesión
-  // Nota: Esto depende de si tu Token JWT incluye el campo 'phone'.
   const hasUserPhone = user?.phone && user.phone.trim() !== "";
 
   useEffect(() => {
@@ -39,7 +45,7 @@ const ContactModal = ({
         ...prev,
         name: user.name || user.email || "",
         email: user.email,
-        phone: user.phone || "", 
+        phone: user.phone || "",
       }));
     }
   }, [user, isOpen]);
@@ -51,30 +57,36 @@ const ContactModal = ({
     setLoading(true);
 
     try {
-      const payload: MessagePayload = {
+      // PASO 1: Crear la Conversación (SIN MENSAJES ANIDADOS)
+      const conversationPayload: ConversationPayloadInterface = {
         contactName: formData.name,
         contactEmail: formData.email,
         contactPhone: formData.phone,
         vehicle: `/api/vehicles/${vehicleId}`,
-        messages: [
-          {
-            content: formData.message,
-            isAdmin: false,
-          },
-        ],
+        // Eliminamos 'messages' de aquí para evitar fallos de anidamiento
       };
 
-      // Solo añadimos el usuario si tenemos su ID (IRI)
       if (user && user["@id"]) {
-        payload.user = user["@id"];
+        conversationPayload.user = user["@id"];
       }
 
-      await api.post("/conversations", payload);
+      const conversationRes = await api.post("/conversations", conversationPayload);
+      
+      // Obtenemos la ID (IRI) de la conversación creada
+      // Puede venir como '@id' o construirse con el ID numérico
+      const conversationIri = conversationRes.data["@id"] || `/api/conversations/${conversationRes.data.id}`;
+
+      // PASO 2: Crear el Mensaje vinculado a esa conversación
+      await api.post("/messages", {
+        content: formData.message,
+        isAdmin: false,
+        conversation: conversationIri, // Vinculamos aquí explícitamente
+      });
 
       setSuccess(true);
     } catch (error) {
       console.error("Error enviando mensaje", error);
-      alert("Hubo un error al enviar el mensaje.");
+      alert("Hubo un error al enviar el mensaje. Inténtalo de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -86,8 +98,13 @@ const ContactModal = ({
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // ... (El resto del renderizado es idéntico a tu código original)
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+        {/* ... (Tu JSX visual se mantiene igual) ... */}
+        {/* Solo he cambiado la lógica de handleSubmit arriba */}
+        
+        {/* Te pego el JSX resumido para que veas dónde encaja, pero usa el tuyo si no quieres cambiar estilos */}
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 relative">
         <button
           onClick={onClose}
