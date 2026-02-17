@@ -8,9 +8,8 @@ import VehicleList from "./pages/admin/VehicleList";
 import VehicleForm from "./pages/admin/VehicleForm";
 import Catalog from "./pages/public/Catalog";
 import VehicleDetail from "./pages/public/VehicleDetail";
-import AdminChat from "./pages/admin/AdminChat";
-import UserChat from "./pages/public/UserChat";
 import Home from "./pages/public/Home";
+import Chat from "./pages/public/Chat";
 
 function App() {
   return (
@@ -22,7 +21,7 @@ function App() {
         <Route path="/alquiler" element={<Catalog mode="RENT" />} />
 
         <Route path="/vehiculo/:id" element={<VehicleDetail />} />
-        <Route path="mis-chats" element={<UserChat />} />
+        <Route path="mis-chats" element={<Chat />} />
         <Route path="/login" element={<Login />} />
       </Route>
 
@@ -38,7 +37,7 @@ function App() {
         <Route path="coches" element={<VehicleList />} />
         <Route path="coches/nuevo" element={<VehicleForm />} />
         <Route path="coches/editar/:id" element={<VehicleForm />} />
-        <Route path="/admin/mensajes" element={<AdminChat />} />
+        <Route path="/admin/mensajes" element={<Chat />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" />} />

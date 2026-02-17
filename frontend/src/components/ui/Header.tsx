@@ -170,7 +170,7 @@ const Header = () => {
 
               <button
                 onClick={logout}
-                className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-all ml-2"
+                className="hover:cursor-pointer p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-all ml-2"
                 title="Cerrar Sesión"
               >
                 <LogOut size={20} />

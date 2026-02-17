@@ -74,7 +74,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-500 mt-10">
       {/* CABECERA */}
       <div className="flex justify-between items-end mb-2">
         <div>
@@ -95,14 +95,14 @@ const Dashboard = () => {
         </div>
         <button
           onClick={fetchStats}
-          className="text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline flex items-center gap-1 transition-colors"
+          className="text-sm text-white hover:text-blue-800 font-medium flex items-center gap-1 transition-colors border-2 border-blue-900 p-2 rounded bg-sky-500 hover:cursor-pointer"
         >
           <Loader2 size={14} className={loading ? "animate-spin" : "hidden"} />{" "}
           Actualizar
         </button>
       </div>
 
-      {/* GRID SUPERIOR (TARJETAS) */}
+      {/* GRID SUPERIOR */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCardsData.map((stat, index) => (
           <StatCard

@@ -17,6 +17,11 @@ export interface Message {
   isAdmin: boolean;
 }
 
+export interface ApiResource {
+  id?: number;
+  "@id"?: string;
+}
+
 export interface Conversation {
   id: number;
   "@id": string;

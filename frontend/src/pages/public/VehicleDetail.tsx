@@ -16,6 +16,8 @@ import {
   CalendarDays,
   AlertCircle,
   Loader2,
+  Palette,
+  DoorClosed,
 } from "lucide-react";
 import { AxiosError } from "axios";
 import api from "../../api/axios";
@@ -299,7 +301,7 @@ const VehicleDetail = () => {
                   value={vehicle.bodyType?.name || "-"}
                 />
                 <SpecItem
-                  icon={<Car />}
+                  icon={<DoorClosed />}
                   label="Puertas"
                   value={vehicle?.doors || "-"}
                 />
@@ -307,6 +309,12 @@ const VehicleDetail = () => {
                   icon={<MapPin />}
                   label="Ubicación"
                   value={vehicle.province?.name || "Nacional"}
+                />
+                <SpecItem
+                  icon={<Palette />}
+                  label="Color"
+                  value={vehicle.color?.name || "No disponible"}
+                  color={vehicle.color?.hexColor}
                 />
               </div>
             </div>

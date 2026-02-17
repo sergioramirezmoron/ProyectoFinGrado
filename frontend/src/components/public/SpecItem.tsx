@@ -2,9 +2,15 @@ interface SpecItemProps {
   icon: React.ReactNode;
   label: string;
   value: string | number;
+  color?: string;
 }
 
-const SpecItem = ({ icon, label, value }: SpecItemProps) => {
+const SpecItem = ({
+  icon,
+  label,
+  value,
+  color,
+}: SpecItemProps & { color?: string }) => {
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center gap-2 text-gray-400 mb-1">
@@ -15,6 +21,12 @@ const SpecItem = ({ icon, label, value }: SpecItemProps) => {
           {label}
         </span>
       </div>
+      {color && (
+        <span
+          className="w-3 h-3 rounded-full border border-gray-300 shadow-sm shrink-0"
+          style={{ backgroundColor: color }}
+        />
+      )}
       <p className="text-slate-900 font-bold text-lg">{value}</p>
     </div>
   );

@@ -3,6 +3,7 @@ export interface SelectOption {
   id: number;
   "@id": string;
   name: string;
+  hexColor?: string;
 }
 export interface VehicleModel extends SelectOption {
   brand: string | { "@id": string };

@@ -81,8 +81,8 @@ const Home = () => {
             alt="Luxury Car Background"
             className="w-full h-full object-cover scale-105 animate-[pulse_10s_ease-in-out_infinite]"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/80 to-transparent"></div>
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-950"></div>
+          <div className="absolute inset-0 bg-linear-to-r from-slate-950 via-slate-900/80 to-transparent"></div>
+          <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-slate-950"></div>
         </div>
         <div className="relative z-10 w-full max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mt-10">
           <div className="space-y-10 animate-in slide-in-from-bottom-10 fade-in duration-1000">
@@ -97,7 +97,7 @@ const Home = () => {
             </div>
             <h1 className="text-5xl md:text-7xl font-extrabold leading-tight tracking-tight">
               Conduce lo <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-blue-500 to-blue-600 drop-shadow-2xl">
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-300 via-blue-500 to-blue-600 drop-shadow-2xl">
                 Extraordinario
               </span>
             </h1>
@@ -168,7 +168,7 @@ const Home = () => {
                   to={`/vehiculo/${vehicle.id}`}
                   /* Usamos index como key porque los IDs estarán duplicados */
                   key={`${vehicle.id}-${index}`}
-                  className="shrink-0 w-[85vw] md:w-[600px] h-[400px] relative rounded-3xl overflow-hidden group cursor-pointer border border-white/5 block hover:border-blue-500/50 transition-colors"
+                  className="shrink-0 w-[85vw] md:w-150 h-100 relative rounded-3xl overflow-hidden group cursor-pointer border border-white/5 block hover:border-blue-500/50 transition-colors"
                 >
                   <div className="absolute inset-0 bg-slate-900/50 animate-pulse"></div>
                   <img
@@ -180,7 +180,7 @@ const Home = () => {
                         "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=2672";
                     }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90 group-hover:opacity-80 transition-opacity"></div>
+                  <div className="absolute inset-0 bg-linear-to-t from-black via-black/40 to-transparent opacity-90 group-hover:opacity-80 transition-opacity"></div>
 
                   <div className="absolute bottom-0 left-0 p-8 w-full">
                     <div className="flex items-center justify-between mb-2">
@@ -226,11 +226,11 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
           {/* ... Contenido igual ... */}
           <div className="order-2 lg:order-1 relative">
-            <div className="absolute -inset-4 bg-gradient-to-br from-blue-600 to-purple-600 rounded-3xl opacity-20 blur-2xl"></div>
+            <div className="absolute -inset-4 bg-linear-to-br from-blue-600 to-purple-600 rounded-3xl opacity-20 blur-2xl"></div>
             <img
               src="https://images.unsplash.com/photo-1563720223185-11003d516935?q=80&w=2400&auto=format&fit=crop"
               alt="Interior Luxury"
-              className="relative rounded-3xl shadow-2xl border border-white/10 w-full object-cover h-[600px]"
+              className="relative rounded-3xl shadow-2xl border border-white/10 w-full object-cover h-150"
             />
           </div>
           <div className="order-1 lg:order-2 space-y-8">
@@ -282,7 +282,7 @@ const Home = () => {
             ].map((feature, idx) => (
               <div
                 key={idx}
-                className="group p-10 rounded-[2rem] bg-slate-900/50 border border-white/5 hover:border-blue-500/30 hover:bg-slate-900 transition-all duration-500 relative overflow-hidden hover:shadow-2xl"
+                className="group p-10 rounded-4xl bg-slate-900/50 border border-white/5 hover:border-blue-500/30 hover:bg-slate-900 transition-all duration-500 relative overflow-hidden hover:shadow-2xl"
               >
                  <div className="w-14 h-14 bg-slate-800 rounded-2xl flex items-center justify-center mb-8 border border-white/5">
                   <feature.icon size={28} className="text-blue-500" />

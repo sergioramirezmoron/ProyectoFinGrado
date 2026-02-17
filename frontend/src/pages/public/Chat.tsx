@@ -23,13 +23,8 @@ import Toast from "../../helpers/Toast";
 import ConfirmModal from "../../helpers/ConfirmModal";
 
 // Tipos
-import type { Message } from "../../types/message";
+import type { ApiResource, Message } from "../../types/message";
 import type { Conversation } from "../../types/reservation";
-
-interface ApiResource {
-  id?: number;
-  "@id"?: string;
-}
 
 const Chat = () => {
   const { user } = useAuth();
@@ -81,7 +76,6 @@ const Chat = () => {
     }
   }, [selectedChat]);
 
-  // Use container scrolling instead of scrollIntoView to avoid scrolling the main page/body
   useEffect(() => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTo({
@@ -96,7 +90,6 @@ const Chat = () => {
   ): string | number | null => {
     if (!obj) return null;
 
-    // Si ya tiene ID numérico, lo devolvemos
     if (obj.id) return obj.id;
 
     if (obj["@id"]) {
@@ -391,7 +384,7 @@ const Chat = () => {
   return (
     <div
       className={`bg-white rounded-none shadow-sm border-x border-gray-200 flex overflow-hidden relative ${
-        isAdmin 
+        isAdmin
           ? "h-[calc(100vh-100px)] rounded-2xl border-y" // Admin layout has padding, so we keep rounded corners and border
           : "h-[calc(100vh-80px)]" // Public layout: Full height minus header (80px), no rounded corners, no top/bottom border to blend perfectly
       }`}
@@ -428,7 +421,7 @@ const Chat = () => {
         <div className="flex border-b border-gray-100 bg-white">
           <button
             onClick={() => setActiveTab("RENT")}
-            className={`flex-1 py-3 text-xs font-bold flex justify-center gap-2 ${activeTab === "RENT" ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50" : "text-gray-500"}`}
+            className={`flex-1 py-3 text-xs font-bold flex justify-center gap-2 hover:cursor-pointer ${activeTab === "RENT" ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50" : "text-gray-500"}`}
           >
             <CalendarCheck size={14} /> Reservas
             {unreadRents > 0 && (
@@ -439,7 +432,7 @@ const Chat = () => {
           </button>
           <button
             onClick={() => setActiveTab("SALE")}
-            className={`flex-1 py-3 text-xs font-bold flex justify-center gap-2 ${activeTab === "SALE" ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50" : "text-gray-500"}`}
+            className={`flex-1 py-3 text-xs font-bold flex justify-center gap-2 hover:cursor-pointer ${activeTab === "SALE" ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50" : "text-gray-500"}`}
           >
             <BadgeEuro size={14} /> Ventas
             {unreadSales > 0 && (
@@ -482,7 +475,7 @@ const Chat = () => {
                 <button
                   key={chat.id}
                   onClick={() => setSelectedChat(chat)}
-                  className={`w-full text-left p-4 border-b border-gray-100 hover:bg-white transition-all flex gap-3 relative ${selectedChat?.id === chat.id ? "bg-white border-l-4 border-l-blue-600 shadow-sm" : "border-l-4 border-l-transparent"}`}
+                  className={`w-full text-left p-4 border-b border-gray-100 hover:bg-white transition-all flex gap-3 relative hover:cursor-pointer hover:shadow-sm ${selectedChat?.id === chat.id ? "bg-white border-l-4 border-l-blue-600 shadow-sm" : "border-l-4 border-l-transparent"}`}
                 >
                   {isUnread && (
                     <div className="absolute top-4 right-4 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse z-10"></div>
@@ -544,7 +537,7 @@ const Chat = () => {
             <div className="p-4 bg-white border-b border-gray-200 flex justify-between items-center shadow-sm h-20 z-10">
               <div className="flex items-center gap-3">
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg text-white shadow-sm ${isAdmin ? "bg-gradient-to-br from-blue-500 to-indigo-600" : "bg-slate-700"}`}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg text-white shadow-sm ${isAdmin ? "bg-linear-to-br from-blue-500 to-indigo-600" : "bg-slate-700"}`}
                 >
                   {isAdmin ? (
                     selectedChat.contactName.charAt(0).toUpperCase()
@@ -572,7 +565,7 @@ const Chat = () => {
               <div className="flex flex-col items-end gap-1">
                 <Link
                   to={`/vehiculo/${selectedChat.vehicle?.["@id"].split("/").pop()}`}
-                  className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:underline"
+                  className="flex items-center gap-1 text-xs font-semibold text-blue-600 border-2 p-2 rounded-full hover:bg-sky-300"
                 >
                   Ver ficha <Car size={12} />
                 </Link>
@@ -586,7 +579,7 @@ const Chat = () => {
                             handleAdminAction_StatusChange(e.target.value)
                           }
                           disabled={updatingStatus}
-                          className={`cursor-pointer pl-2 pr-6 py-1 rounded text-xs font-bold border outline-none ${getStatusColor(selectedChat.vehicle.status)}`}
+                          className={`cursor-pointer pl-2 pr-6 py-1 rounded text-xs font-bold border outline-none ${getStatusColor(selectedChat.vehicle.status)} flex items-center justify-center gap-2 shadow-sm hover:shadow-md ${updatingStatus ? "bg-gray-200" : ""}`}
                         >
                           <option value="AVAILABLE">DISPONIBLE</option>
                           <option value="RESERVED">RESERVADO</option>
@@ -655,7 +648,7 @@ const Chat = () => {
                 </div>
               )}
 
-            <div 
+            <div
               ref={messagesContainerRef}
               className="flex-1 overflow-y-auto p-6 space-y-4 scroll-smooth"
             >
