@@ -10,11 +10,7 @@ import Catalog from "./pages/public/Catalog";
 import VehicleDetail from "./pages/public/VehicleDetail";
 import AdminChat from "./pages/admin/AdminChat";
 import UserChat from "./pages/public/UserChat";
-
-// Placeholder Components
-const Home = () => (
-  <h1 className="text-3xl font-bold text-white">Portada Tesla Style 🏎️</h1>
-);
+import Home from "./pages/public/Home";
 
 function App() {
   return (
