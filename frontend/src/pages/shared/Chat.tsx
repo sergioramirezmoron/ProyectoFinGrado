@@ -24,7 +24,6 @@ import ConfirmModal from "../../helpers/ConfirmModal";
 // Tipos
 import type { Message } from "../../types/message";
 import type { Conversation } from "../../types/reservation";
-import { se } from "date-fns/locale";
 
 interface ApiResource {
   id?: number;
@@ -33,7 +32,10 @@ interface ApiResource {
 
 const Chat = () => {
   const { user } = useAuth();
-  const isAdmin = user?.roles?.includes("ROLE_ADMIN") || false;
+  const isAdmin =
+    user?.roles?.includes("ROLE_ADMIN") ||
+    user?.roles?.includes("ROLE_SALES") ||
+    false;
 
   // ESTADOS COMUNES
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -55,7 +57,7 @@ const Chat = () => {
     type: "success" | "error";
   } | null>(null);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   // --- 1. CARGA DE DATOS ---
   useEffect(() => {
@@ -77,8 +79,14 @@ const Chat = () => {
     }
   }, [selectedChat]);
 
+  // Use container scrolling instead of scrollIntoView to avoid scrolling the main page/body
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
   }, [messages]);
 
   const getUniqueId = (
@@ -378,7 +386,11 @@ const Chat = () => {
 
   return (
     <div
-      className={`bg-white rounded-2xl shadow-sm border border-gray-200 flex overflow-hidden relative ${isAdmin ? "h-[calc(100vh-100px)]" : "h-[600px] mt-20 container mx-auto"}`}
+      className={`bg-white rounded-none shadow-sm border-x border-gray-200 flex overflow-hidden relative ${
+        isAdmin 
+          ? "h-[calc(100vh-100px)] rounded-2xl border-y" // Admin layout has padding, so we keep rounded corners and border
+          : "h-[calc(100vh-80px)]" // Public layout: Full height minus header (80px), no rounded corners, no top/bottom border to blend perfectly
+      }`}
     >
       {toast && (
         <Toast
@@ -639,7 +651,10 @@ const Chat = () => {
                 </div>
               )}
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            <div 
+              ref={messagesContainerRef}
+              className="flex-1 overflow-y-auto p-6 space-y-4 scroll-smooth"
+            >
               {messages.map((msg) => {
                 const isMe = isAdmin ? msg.isAdmin : !msg.isAdmin;
                 return (
@@ -663,7 +678,6 @@ const Chat = () => {
                   </div>
                 );
               })}
-              <div ref={messagesEndRef} />
             </div>
 
             <div className="p-4 bg-white border-t border-gray-200">
