@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity]
+#[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     operations: [
         // Enviar mensaje (Puede ser el Admin respondiendo o el Cliente escribiendo más)
@@ -39,7 +40,7 @@ class Message
     #[ORM\Column]
     // ✅ AÑADIDO 'conversation:read' para el PUNTO ROJO (saber quién escribió)
     #[Groups(['conversation:detail', 'message:write', 'conversation:read'])]
-    private ?bool $isAdmin = false; 
+    private ?bool $isAdmin = false;
 
     #[ORM\ManyToOne(inversedBy: 'messages')]
     #[ORM\JoinColumn(nullable: false)]
@@ -50,6 +51,18 @@ class Message
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
+    }
+
+    #[ORM\PrePersist]
+    public function updateConversationStatus(): void
+    {
+        if ($this->conversation) {
+            $this->conversation->setUpdatedAt(new \DateTimeImmutable());
+            // Si el mensaje es de Admin, estado es "Nuevo para Cliente"
+            // Si es de Cliente, estado es "Nuevo para Admin"
+            $newStatus = $this->isAdmin ? 'NEW_FROM_ADMIN' : 'NEW_FROM_CLIENT';
+            $this->conversation->setStatus($newStatus);
+        }
     }
 
     public function getId(): ?int
@@ -89,10 +102,6 @@ class Message
     public function setConversation(?Conversation $conversation): static
     {
         $this->conversation = $conversation;
-
-        if ($conversation) {
-            $conversation->setUpdatedAt(new \DateTimeImmutable());
-        }
         return $this;
     }
 }

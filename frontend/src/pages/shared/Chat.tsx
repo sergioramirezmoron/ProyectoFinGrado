@@ -18,6 +18,7 @@ import {
 import { Link } from "react-router-dom";
 import api from "../../api/axios";
 import { useAuth } from "../../hooks/useAuth";
+import { useChatNotification } from "../../hooks/useChatNotification";
 import Toast from "../../helpers/Toast";
 import ConfirmModal from "../../helpers/ConfirmModal";
 
@@ -32,6 +33,7 @@ interface ApiResource {
 
 const Chat = () => {
   const { user } = useAuth();
+  const { refreshUnreadCount } = useChatNotification();
   const isAdmin =
     user?.roles?.includes("ROLE_ADMIN") ||
     user?.roles?.includes("ROLE_SALES") ||
@@ -162,6 +164,8 @@ const Chat = () => {
         { status: "READ" },
         { headers: { "Content-Type": "application/merge-patch+json" } },
       );
+      // Actualizar el contador global (Header)
+      refreshUnreadCount();
     } catch (e) {
       console.error(e);
     }

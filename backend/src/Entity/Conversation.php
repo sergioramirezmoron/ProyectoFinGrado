@@ -34,9 +34,9 @@ use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
             security: "is_granted('IS_AUTHENTICATED_FULLY')",
             normalizationContext: ['groups' => ['conversation:read', 'conversation:detail']]
         ),
-        // ADMIN: Editar (Para marcar como LEIDO) <--- 2. AÑADIR ESTO
+        // ADMIN: Editar (Para marcar como LEIDO) - Y ahora también el USUARIO propietario (por ID o por EMAIL)
         new Patch(
-            security: "is_granted('ROLE_ADMIN')",
+            security: "is_granted('ROLE_ADMIN') or object.getUser() == user or object.getContactEmail() == user.getEmail()",
             denormalizationContext: ['groups' => ['conversation:write']]
         )
     ],
