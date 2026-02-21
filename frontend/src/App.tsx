@@ -6,11 +6,12 @@ import { ProtectedRoute } from "./helpers/ProtectedRoute";
 import Dashboard from "./pages/admin/Dashboard";
 import VehicleList from "./pages/admin/VehicleList";
 import VehicleForm from "./pages/admin/VehicleForm";
-import Catalog from "./pages/public/Catalog";
 import VehicleDetail from "./pages/public/VehicleDetail";
 import Home from "./pages/public/Home";
 import Chat from "./pages/public/Chat";
 import Register from "./components/auth/Register";
+import Rent from "./pages/public/Rent";
+import Sold from "./pages/public/Sold";
 
 function App() {
   return (
@@ -18,8 +19,8 @@ function App() {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Home />} />
 
-        <Route path="/venta" element={<Catalog mode="SALE" />} />
-        <Route path="/alquiler" element={<Catalog mode="RENT" />} />
+        <Route path="/venta" element={<Sold />} />
+        <Route path="/alquiler" element={<Rent />} />
 
         <Route path="/vehiculo/:id" element={<VehicleDetail />} />
         <Route path="mis-chats" element={<Chat />} />
