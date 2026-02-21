@@ -10,6 +10,7 @@ import Catalog from "./pages/public/Catalog";
 import VehicleDetail from "./pages/public/VehicleDetail";
 import Home from "./pages/public/Home";
 import Chat from "./pages/public/Chat";
+import Register from "./components/auth/Register";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/vehiculo/:id" element={<VehicleDetail />} />
         <Route path="mis-chats" element={<Chat />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
       </Route>
 
       <Route
