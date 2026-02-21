@@ -5,12 +5,7 @@ interface SpecItemProps {
   color?: string;
 }
 
-const SpecItem = ({
-  icon,
-  label,
-  value,
-  color,
-}: SpecItemProps & { color?: string }) => {
+const SpecItem = ({ icon, label, value, color }: SpecItemProps) => {
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center gap-2 text-gray-400 mb-1">
@@ -21,14 +16,21 @@ const SpecItem = ({
           {label}
         </span>
       </div>
-      {color && (
-        <span
-          className="w-3 h-3 rounded-full border border-gray-300 shadow-sm shrink-0"
-          style={{ backgroundColor: color }}
-        />
-      )}
-      <p className="text-slate-900 font-bold text-lg">{value}</p>
+
+      <div className="flex items-center gap-2.5">
+        {color && (
+          <span
+            className="w-4 h-4 rounded-full shrink-0 shadow-sm ring-1 ring-slate-200 border border-white"
+            style={{ backgroundColor: color }}
+            title={String(value)}
+          />
+        )}
+        <p className="text-slate-900 font-bold text-lg leading-none pt-0.5">
+          {value}
+        </p>
+      </div>
     </div>
   );
 };
+
 export default SpecItem;

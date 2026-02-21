@@ -13,4 +13,5 @@ export interface FilterState {
   province: string;
   color: string;
   bodyType: string;
+  status: string;
 }

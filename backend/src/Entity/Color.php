@@ -39,7 +39,7 @@ class Color
     private ?string $name = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['color:read', 'color:write'])]
+    #[Groups(['color:read', 'color:write', 'vehicle:read'])]
     private ?string $hexCode = null;
 
     public function getId(): ?int

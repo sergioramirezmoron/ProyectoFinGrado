@@ -314,7 +314,7 @@ const VehicleDetail = () => {
                   icon={<Palette />}
                   label="Color"
                   value={vehicle.color?.name || "No disponible"}
-                  color={vehicle.color?.hexColor}
+                  color={vehicle.color?.hexCode}
                 />
               </div>
             </div>
