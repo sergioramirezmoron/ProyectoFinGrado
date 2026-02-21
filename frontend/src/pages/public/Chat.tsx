@@ -417,7 +417,7 @@ const Chat = () => {
       )}
 
       {/* SIDEBAR */}
-      <div className="w-1/3 border-r border-gray-200 flex flex-col bg-gray-50 min-w-[280px]">
+      <div className="w-1/3 border-r border-gray-200 flex flex-col bg-gray-50 min-w-70">
         <div className="flex border-b border-gray-100 bg-white">
           <button
             onClick={() => setActiveTab("RENT")}
@@ -434,7 +434,7 @@ const Chat = () => {
             onClick={() => setActiveTab("SALE")}
             className={`flex-1 py-3 text-xs font-bold flex justify-center gap-2 hover:cursor-pointer ${activeTab === "SALE" ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50" : "text-gray-500"}`}
           >
-            <BadgeEuro size={14} /> Ventas
+            <BadgeEuro size={14} /> {isAdmin ? "Ventas" : "Compra"}
             {unreadSales > 0 && (
               <span className="ml-1 bg-red-500 text-white text-[10px] px-1.5 rounded-full">
                 {unreadSales}
