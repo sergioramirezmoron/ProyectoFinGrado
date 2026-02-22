@@ -17,6 +17,7 @@ export interface HydraResponse<T> {
     "hydra:last"?: string;
     "hydra:next"?: string;
   };
+  totalItems?: number;
 }
 
 export interface Violation {

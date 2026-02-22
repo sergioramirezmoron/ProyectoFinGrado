@@ -57,6 +57,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
     paginationItemsPerPage: 20,
     order: ['createdAt' => 'DESC']
 )]
+#[ApiFilter(SearchFilter::class, properties: ['brand.name' => 'partial', 'model.name' => 'partial'])]
 class Vehicle
 {
     #[ORM\Id]
