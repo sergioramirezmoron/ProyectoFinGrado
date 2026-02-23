@@ -15,6 +15,8 @@ import Sold from "./pages/public/Sold";
 import UserManagement from "./pages/admin/UserManagement";
 import ColorManagement from "./pages/admin/ColorManagement";
 import ProvinceManagement from "./pages/admin/ProvinceManagement";
+import ModelManagement from "./pages/admin/ModelManagement";
+import BrandManagement from "./pages/admin/BrandManagement";
 
 function App() {
   return (
@@ -47,6 +49,8 @@ function App() {
         <Route path="/admin/usuarios" element={<UserManagement />} />
         <Route path="/admin/colores" element={<ColorManagement />} />
         <Route path="/admin/ciudades" element={<ProvinceManagement />} />
+        <Route path="/admin/marcas" element={<BrandManagement />} />
+        <Route path="/admin/modelos" element={<ModelManagement />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" />} />
