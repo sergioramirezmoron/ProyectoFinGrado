@@ -14,6 +14,7 @@ import Rent from "./pages/public/Rent";
 import Sold from "./pages/public/Sold";
 import UserManagement from "./pages/admin/UserManagement";
 import ColorManagement from "./pages/admin/ColorManagement";
+import ProvinceManagement from "./pages/admin/ProvinceManagement";
 
 function App() {
   return (
@@ -45,7 +46,7 @@ function App() {
         <Route path="/admin/mensajes" element={<Chat />} />
         <Route path="/admin/usuarios" element={<UserManagement />} />
         <Route path="/admin/colores" element={<ColorManagement />} />
-        <Route path="/admin/ciudades" element={<UserManagement />} />
+        <Route path="/admin/ciudades" element={<ProvinceManagement />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" />} />

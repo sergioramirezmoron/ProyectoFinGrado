@@ -38,7 +38,10 @@ const ColorManagement = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   // Modal de confirmación de borrado
-  const [deleteModal, setDeleteModal] = useState<{ open: boolean; color: Color | null }>({
+  const [deleteModal, setDeleteModal] = useState<{
+    open: boolean;
+    color: Color | null;
+  }>({
     open: false,
     color: null,
   });
@@ -46,7 +49,7 @@ const ColorManagement = () => {
   const fetchColors = async () => {
     try {
       const response = await api.get("/colors");
-      const data = response.data["hydra:member"] || response.data.member || [];
+      const data = response.data.member || [];
       setColors(data);
     } catch (error) {
       console.error("Error cargando colores", error);
@@ -92,9 +95,13 @@ const ColorManagement = () => {
     try {
       await api.delete(`/colors/${color.id}`);
       setColors((prev) => prev.filter((c) => c.id !== color.id));
-      setMessage({ text: `Color "${color.name}" eliminado correctamente`, type: "success" });
+      setMessage({
+        text: `Color "${color.name}" eliminado correctamente`,
+        type: "success",
+      });
     } catch (error: unknown) {
-      const status = (error as { response?: { status?: number } })?.response?.status;
+      const status = (error as { response?: { status?: number } })?.response
+        ?.status;
       if (status === 500 || status === 422) {
         setMessage({
           text: `No se puede eliminar "${color.name}" porque está asignado a uno o más vehículos.`,
@@ -124,12 +131,12 @@ const ColorManagement = () => {
       await api.patch(
         `/colors/${id}`,
         { name: editName, hexCode: editCode },
-        { headers: { "Content-Type": "application/merge-patch+json" } }
+        { headers: { "Content-Type": "application/merge-patch+json" } },
       );
       setColors((prev) =>
         prev.map((c) =>
-          c.id === id ? { ...c, name: editName, hexCode: editCode } : c
-        )
+          c.id === id ? { ...c, name: editName, hexCode: editCode } : c,
+        ),
       );
       cancelEdit();
       setMessage({ text: "Color actualizado correctamente", type: "success" });
@@ -163,7 +170,10 @@ const ColorManagement = () => {
 
       {/* FORMULARIO DE CREACIÓN */}
       <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl">
-        <form onSubmit={handleAddColor} className="flex flex-wrap items-end gap-4">
+        <form
+          onSubmit={handleAddColor}
+          className="flex flex-wrap items-end gap-4"
+        >
           <div className="flex-1 min-w-[200px] space-y-1.5">
             <label className="text-xs font-bold uppercase text-slate-400 ml-1">
               Nombre del Color
@@ -203,7 +213,9 @@ const ColorManagement = () => {
             {isSubmitting ? (
               <Loader2 className="animate-spin" size={20} />
             ) : (
-              <><Plus size={20} /> Añadir</>
+              <>
+                <Plus size={20} /> Añadir
+              </>
             )}
           </button>
         </form>
@@ -264,7 +276,9 @@ const ColorManagement = () => {
                     {isSaving ? (
                       <Loader2 className="animate-spin" size={14} />
                     ) : (
-                      <><Check size={14} /> Guardar</>
+                      <>
+                        <Check size={14} /> Guardar
+                      </>
                     )}
                   </button>
                   <button
@@ -308,7 +322,7 @@ const ColorManagement = () => {
                   </button>
                 </div>
               </div>
-            )
+            ),
           )
         )}
       </div>
