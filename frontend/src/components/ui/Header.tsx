@@ -254,8 +254,8 @@ const Header = () => {
 
       {/* Mobile Menu Dropdown */}
       <div
-        className={`lg:hidden absolute w-full bg-slate-900/95 backdrop-blur-xl border-b border-white/10 overflow-hidden transition-all duration-300 ease-in-out ${
-          isMobileMenuOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0"
+        className={`lg:hidden absolute w-full bg-slate-900/95 backdrop-blur-xl border-b border-white/10 transition-all duration-300 ease-in-out ${
+          isMobileMenuOpen ? "max-h-[calc(100vh-5rem)] opacity-100 overflow-y-auto" : "max-h-0 opacity-0 overflow-hidden"
         }`}
       >
         <div className="p-6 flex flex-col space-y-4">
