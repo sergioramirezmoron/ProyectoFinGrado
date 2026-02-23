@@ -10,6 +10,7 @@ import {
   X,
   LogIn,
   UserPlus,
+  Palette,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { useChatNotification } from "../../hooks/useChatNotification";
@@ -21,7 +22,6 @@ const Header = () => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Role Logic
   const isSales = user?.roles?.includes("ROLE_SALES");
   const isAdmin = user?.roles?.includes("ROLE_ADMIN");
   const isStaff = isSales || isAdmin;
@@ -86,9 +86,7 @@ const Header = () => {
                   end
                   className={({ isActive }) =>
                     `p-2 rounded-lg hover:bg-blue-600/20 hover:text-blue-400 transition-colors ${
-                      isActive
-                        ? "text-blue-500 bg-blue-600/10"
-                        : "text-slate-400"
+                      isActive ? "text-blue-500 bg-blue-600/10" : "text-slate-400"
                     }`
                   }
                   title="Dashboard"
@@ -110,31 +108,42 @@ const Header = () => {
                 <Car size={18} />
               </NavLink>
 
-              {/* Users: Admin Only */}
+              {/* Users + Colores: Admin Only */}
               {isAdmin && (
-                <NavLink
-                  to="/admin/usuarios"
-                  className={({ isActive }) =>
-                    `p-2 rounded-lg hover:bg-purple-600/20 hover:text-purple-400 transition-colors ${
-                      isActive
-                        ? "text-purple-500 bg-purple-600/10"
-                        : "text-slate-400"
-                    }`
-                  }
-                  title="Gestión de Usuarios"
-                >
-                  <Users size={18} />
-                </NavLink>
+                <>
+                  <NavLink
+                    to="/admin/usuarios"
+                    className={({ isActive }) =>
+                      `p-2 rounded-lg hover:bg-purple-600/20 hover:text-purple-400 transition-colors ${
+                        isActive ? "text-purple-500 bg-purple-600/10" : "text-slate-400"
+                      }`
+                    }
+                    title="Gestión de Usuarios"
+                  >
+                    <Users size={18} />
+                  </NavLink>
+
+                  <NavLink
+                    to="/admin/colores"
+                    className={({ isActive }) =>
+                      `p-2 rounded-lg hover:bg-purple-600/20 hover:text-purple-400 transition-colors ${
+                        isActive ? "text-purple-500 bg-purple-600/10" : "text-slate-400"
+                      }`
+                    }
+                    title="Gestión de Colores"
+                  >
+                    <Palette size={18} />
+                  </NavLink>
+                </>
               )}
             </div>
           )}
         </div>
 
-        {/* Right Icons (User & Auth) */}
+        {/* Right Icons */}
         <div className="flex items-center gap-4">
           {isAuthenticated ? (
             <>
-              {/* Unified Chat Icon */}
               <Link
                 to={isStaff || isAdmin ? "/admin/mensajes" : "/mis-chats"}
                 className={`p-2 rounded-full hover:bg-white/10 transition-colors relative ${
@@ -153,7 +162,6 @@ const Header = () => {
                 )}
               </Link>
 
-              {/* User Dropdown / Profile */}
               <div className="hidden md:flex items-center gap-2 pl-4 border-l border-white/10">
                 <div className="text-right hidden xl:block">
                   <p className="text-sm font-medium text-white leading-none">
@@ -177,7 +185,6 @@ const Header = () => {
               </button>
             </>
           ) : (
-            /* Guest Actions */
             <div className="hidden md:flex items-center gap-3">
               <Link
                 to="/login"
@@ -213,42 +220,16 @@ const Header = () => {
         }`}
       >
         <div className="p-6 flex flex-col space-y-4">
-          <Link
-            to="/"
-            onClick={closeMobileMenu}
-            className="text-lg font-medium hover:text-blue-400 py-2 border-b border-white/5"
-          >
-            INICIO
-          </Link>
-          <Link
-            to="/venta"
-            onClick={closeMobileMenu}
-            className="text-lg font-medium hover:text-blue-400 py-2 border-b border-white/5"
-          >
-            COMPRAR
-          </Link>
-          <Link
-            to="/alquiler"
-            onClick={closeMobileMenu}
-            className="text-lg font-medium hover:text-blue-400 py-2 border-b border-white/5"
-          >
-            ALQUILAR
-          </Link>
+          <Link to="/" onClick={closeMobileMenu} className="text-lg font-medium hover:text-blue-400 py-2 border-b border-white/5">INICIO</Link>
+          <Link to="/venta" onClick={closeMobileMenu} className="text-lg font-medium hover:text-blue-400 py-2 border-b border-white/5">COMPRAR</Link>
+          <Link to="/alquiler" onClick={closeMobileMenu} className="text-lg font-medium hover:text-blue-400 py-2 border-b border-white/5">ALQUILAR</Link>
 
           {!isAuthenticated && (
             <div className="grid grid-cols-2 gap-4 mt-4">
-              <Link
-                to="/login"
-                onClick={closeMobileMenu}
-                className="flex items-center justify-center gap-2 bg-slate-800 py-3 rounded-xl font-medium hover:bg-slate-700 transition-colors"
-              >
+              <Link to="/login" onClick={closeMobileMenu} className="flex items-center justify-center gap-2 bg-slate-800 py-3 rounded-xl font-medium hover:bg-slate-700 transition-colors">
                 <LogIn size={18} /> Iniciar Sesión
               </Link>
-              <Link
-                to="/login"
-                onClick={closeMobileMenu}
-                className="flex items-center justify-center gap-2 bg-blue-600 py-3 rounded-xl font-bold hover:bg-blue-500 transition-colors"
-              >
+              <Link to="/login" onClick={closeMobileMenu} className="flex items-center justify-center gap-2 bg-blue-600 py-3 rounded-xl font-bold hover:bg-blue-500 transition-colors">
                 <UserPlus size={18} /> Registrarse
               </Link>
             </div>
@@ -261,29 +242,14 @@ const Header = () => {
               </span>
               <div className="grid grid-cols-1 gap-2">
                 {isAdmin && (
-                  <Link
-                    to="/admin"
-                    onClick={closeMobileMenu}
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors"
-                  >
-                    <LayoutDashboard size={20} className="text-blue-400" />{" "}
-                    Dashboard
+                  <Link to="/admin" onClick={closeMobileMenu} className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors">
+                    <LayoutDashboard size={20} className="text-blue-400" /> Dashboard
                   </Link>
                 )}
-
-                <Link
-                  to="/admin/coches"
-                  onClick={closeMobileMenu}
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors"
-                >
+                <Link to="/admin/coches" onClick={closeMobileMenu} className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors">
                   <Car size={20} className="text-blue-400" /> Flota
                 </Link>
-
-                <Link
-                  to="/admin/mensajes"
-                  onClick={closeMobileMenu}
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors"
-                >
+                <Link to="/admin/mensajes" onClick={closeMobileMenu} className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors">
                   <MessageSquare size={20} className="text-blue-400" /> Mensajes
                   {unreadCount > 0 && (
                     <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full ml-auto">
@@ -291,15 +257,15 @@ const Header = () => {
                     </span>
                   )}
                 </Link>
-
                 {isAdmin && (
-                  <Link
-                    to="/admin/usuarios"
-                    onClick={closeMobileMenu}
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors"
-                  >
-                    <Users size={20} className="text-purple-400" /> Usuarios
-                  </Link>
+                  <>
+                    <Link to="/admin/usuarios" onClick={closeMobileMenu} className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors">
+                      <Users size={20} className="text-purple-400" /> Usuarios
+                    </Link>
+                    <Link to="/admin/colores" onClick={closeMobileMenu} className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors">
+                      <Palette size={20} className="text-purple-400" /> Colores
+                    </Link>
+                  </>
                 )}
               </div>
             </div>

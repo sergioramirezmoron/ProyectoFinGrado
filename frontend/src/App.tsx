@@ -13,6 +13,7 @@ import Register from "./components/auth/Register";
 import Rent from "./pages/public/Rent";
 import Sold from "./pages/public/Sold";
 import UserManagement from "./pages/admin/UserManagement";
+import ColorManagement from "./pages/admin/ColorManagement";
 
 function App() {
   return (
@@ -43,6 +44,8 @@ function App() {
         <Route path="coches/editar/:id" element={<VehicleForm />} />
         <Route path="/admin/mensajes" element={<Chat />} />
         <Route path="/admin/usuarios" element={<UserManagement />} />
+        <Route path="/admin/colores" element={<ColorManagement />} />
+        <Route path="/admin/ciudades" element={<UserManagement />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" />} />
