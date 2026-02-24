@@ -3,34 +3,38 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\Link;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ORM\UniqueConstraint(name: 'UNIQ_FAVORITE_USER_VEHICLE', fields: ['user', 'vehicle'])]
 #[UniqueEntity(
-    fields: ['user', 'vehicle'], 
+    fields: ['user', 'vehicle'],
     message: 'Ya has añadido este vehículo a tus favoritos.',
     errorPath: 'vehicle'
 )]
 #[ApiResource(
     operations: [
-        new GetCollection(), // Ver todos los favoritos (útil para listar "Mis Favoritos")
-        new Post(),          // Dar Like
-        new Get(),           // Ver un favorito concreto
-        new Delete()         // Quitar Like (Borrar favorito)
+        new GetCollection(),
+        new Post(),
+        new Get(),
+        new Delete(),
     ],
     normalizationContext: ['groups' => ['favorite:read']],
     denormalizationContext: ['groups' => ['favorite:write']],
     order: ['createdAt' => 'DESC']
 )]
+#[ApiFilter(SearchFilter::class, properties: [
+    'user'    => 'exact',  // filtra por ?user=/api/users/206
+    'vehicle' => 'exact',  // filtra por ?vehicle=/api/vehicles/419
+])]
 class Favorite
 {
     #[ORM\Id]
