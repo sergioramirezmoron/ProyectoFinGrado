@@ -20,8 +20,8 @@ vendor/
 # Base de datos
 automocion.sql
 
-# Backups de base de datos
-backups/
+backups/*
+!backups/.gitkeep
 
 # Scripts de inicialización con datos sensibles
 docker/init-db.sh
