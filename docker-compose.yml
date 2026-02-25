@@ -1,0 +1,77 @@
+services:
+
+  # ─── Base de datos MySQL ───────────────────────────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: pfg_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: pfg
+      MYSQL_USER: pfg_user
+      MYSQL_PASSWORD: pfg_password
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./automocion.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Backend Symfony ───────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pfg_backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: "mysql://pfg_user:pfg_password@db:3306/pfg?serverVersion=8.0&charset=utf8mb4"
+      APP_ENV: prod
+      APP_SECRET: ${APP_SECRET:-cambia_esto_por_un_secreto_seguro}
+      JWT_PASSPHRASE: mi_secreto_tfg
+    # Sin bind mount — el código viene del Dockerfile (build)
+    # Esto evita que los archivos locales sobreescriban la configuración del contenedor
+    ports:
+      - "8000:80"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ─── Frontend React + Vite ─────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8000
+        VITE_BACKEND_URL: http://localhost:8000
+    container_name: pfg_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+
+  # ─── phpMyAdmin ────────────────────────────────────────────────────────────
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: pfg_phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root
+    ports:
+      - "8080:80"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:

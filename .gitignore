@@ -15,3 +15,5 @@ vendor/
 # Variables de Entorno (Secretos)
 .env.local
 .env.*.local
+.env
+automocion.sql
