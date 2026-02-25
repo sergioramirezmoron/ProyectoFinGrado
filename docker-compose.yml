@@ -12,7 +12,9 @@ services:
       MYSQL_PASSWORD: pfg_password
     volumes:
       - db_data:/var/lib/mysql
-      - ./automocion.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./backups:/backups
+      - ./automocion.sql:/docker-entrypoint-initdb.d/01_init.sql
+      - ./docker/init-db.sh:/docker-entrypoint-initdb.d/02_restore.sh
     ports:
       - "3306:3306"
     healthcheck:
@@ -33,8 +35,6 @@ services:
       APP_ENV: prod
       APP_SECRET: ${APP_SECRET:-cambia_esto_por_un_secreto_seguro}
       JWT_PASSPHRASE: mi_secreto_tfg
-    # Sin bind mount — el código viene del Dockerfile (build)
-    # Esto evita que los archivos locales sobreescriban la configuración del contenedor
     ports:
       - "8000:80"
     depends_on:
@@ -56,6 +56,25 @@ services:
     depends_on:
       - backend
 
+  # ─── Backup automático ─────────────────────────────────────────────────────
+  backup:
+    image: mysql:8.0
+    container_name: pfg_backup
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backups:/backups
+    environment:
+      MYSQL_PWD: root
+    command: >
+      bash -c "while true; do
+        sleep 86400;
+        mysqldump -h db -u root pfg > /backups/backup_$$(date +%Y%m%d_%H%M%S).sql;
+        find /backups -name 'backup_*.sql' -mtime +7 -delete;
+        echo 'Backup realizado y limpieza de backups de más de 7 días';
+      done"
 
   # ─── phpMyAdmin ────────────────────────────────────────────────────────────
   phpmyadmin:

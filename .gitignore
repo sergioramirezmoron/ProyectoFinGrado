@@ -16,4 +16,12 @@ vendor/
 .env.local
 .env.*.local
 .env
+
+# Base de datos
 automocion.sql
+
+# Backups de base de datos
+backups/
+
+# Scripts de inicialización con datos sensibles
+docker/init-db.sh
