@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import api from "../../api/axios";
+
 interface Province {
   "@id": string;
   id: number;
@@ -63,17 +64,17 @@ const Register = () => {
 
     try {
       await api.post("/users", {
-        email: email,
+        email,
         plainPassword: password,
-        name: name,
-        surname: surname,
-        phone: phone,
+        name,
+        surname,
+        phone,
         province: selectedProvince,
       });
 
       const loginResponse = await api.post("/login_check", {
-        email: email,
-        password: password,
+        email,
+        password,
       });
 
       login(loginResponse.data.token);
@@ -86,64 +87,53 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 selection:bg-blue-500 selection:text-white">
-      <Link
-        to="/"
-        className="text-2xl font-bold tracking-tighter text-white mb-8 hover:scale-105 transition-transform"
-      >
+    <div className="auth-page">
+      <Link to="/" className="auth-logo">
         LUXURY<span className="text-blue-500">CARS</span>
       </Link>
 
-      <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl w-full max-w-lg animate-in fade-in zoom-in duration-300">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">
-            Crear Cuenta
-          </h1>
-          <p className="text-slate-400 text-sm">
+      <div className="auth-card-wide">
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="auth-title">Crear Cuenta</h1>
+          <p className="auth-subtitle">
             Únete al club exclusivo y gestiona tus reservas.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Mensaje de Error */}
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
           {error && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm flex items-start gap-2 animate-in slide-in-from-top-2">
+            <div className="auth-error items-start">
               <AlertCircle size={16} className="mt-0.5 shrink-0" />
               <p>{error}</p>
             </div>
           )}
 
-          {/* Fila: Nombre y Apellidos */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold tracking-wider text-slate-400 uppercase ml-1">
-                Nombre
-              </label>
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
+          <div className="auth-grid-2">
+            <div className="auth-field">
+              <label className="auth-label">Nombre</label>
+              <div className="auth-input-wrapper">
+                <div className="auth-input-icon-left">
                   <User size={18} />
                 </div>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all placeholder:text-slate-600 text-sm"
+                  className="auth-input-icon"
                   placeholder="Ej: John"
                   required
                 />
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold tracking-wider text-slate-400 uppercase ml-1">
-                Apellidos
-              </label>
-              <div className="relative">
+            <div className="auth-field">
+              <label className="auth-label">Apellidos</label>
+              <div className="auth-input-wrapper">
                 <input
                   type="text"
                   value={surname}
                   onChange={(e) => setSurname(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all placeholder:text-slate-600 text-sm"
+                  className="auth-input"
                   placeholder="Ej: Doe"
                   required
                 />
@@ -152,60 +142,51 @@ const Register = () => {
           </div>
 
           {/* Email */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold tracking-wider text-slate-400 uppercase ml-1">
-              Email
-            </label>
-            <div className="relative">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
+          <div className="auth-field">
+            <label className="auth-label">Email</label>
+            <div className="auth-input-wrapper">
+              <div className="auth-input-icon-left">
                 <Mail size={18} />
               </div>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all placeholder:text-slate-600 text-sm"
+                className="auth-input-icon"
                 placeholder="correo@ejemplo.com"
                 required
               />
             </div>
           </div>
 
-          {/* Fila: Teléfono y Provincia */}
-          <div className="grid grid-cols-2 gap-4">
-            {/* Teléfono */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold tracking-wider text-slate-400 uppercase ml-1">
-                Teléfono
-              </label>
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
+          <div className="auth-grid-2">
+            <div className="auth-field">
+              <label className="auth-label">Teléfono</label>
+              <div className="auth-input-wrapper">
+                <div className="auth-input-icon-left">
                   <Phone size={18} />
                 </div>
                 <input
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all placeholder:text-slate-600 text-sm"
+                  className="auth-input-icon"
                   placeholder="600 000 000"
                   required
                 />
               </div>
             </div>
 
-            {/* Provincia */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold tracking-wider text-slate-400 uppercase ml-1">
-                Provincia
-              </label>
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 z-10 pointer-events-none">
+            <div className="auth-field">
+              <label className="auth-label">Provincia</label>
+              <div className="auth-input-wrapper">
+                <div className="auth-input-icon-left z-10 pointer-events-none">
                   <MapPin size={18} />
                 </div>
                 <select
                   value={selectedProvince}
                   onChange={(e) => setSelectedProvince(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm appearance-none cursor-pointer"
+                  className="auth-input-icon appearance-none cursor-pointer"
                   required
                 >
                   <option value="" disabled>
@@ -221,20 +202,17 @@ const Register = () => {
             </div>
           </div>
 
-          {/* Contraseña */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold tracking-wider text-slate-400 uppercase ml-1">
-              Contraseña
-            </label>
-            <div className="relative">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
+          <div className="auth-field">
+            <label className="auth-label">Contraseña</label>
+            <div className="auth-input-wrapper">
+              <div className="auth-input-icon-left">
                 <Lock size={18} />
               </div>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all placeholder:text-slate-600 text-sm"
+                className="auth-input-icon"
                 placeholder="Mínimo 6 caracteres"
                 required
                 minLength={6}
@@ -242,29 +220,26 @@ const Register = () => {
             </div>
           </div>
 
-          {/* Botón Submit */}
           <button
             type="submit"
             disabled={loading || !selectedProvince}
-            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20 mt-4"
+            className="auth-btn-primary mt-2"
           >
             {loading ? (
               <Loader2 className="animate-spin" size={20} />
             ) : (
               <>
-                <LogIn size={18} /> Completar Registro
+                <LogIn size={18} />
+                Completar Registro
               </>
             )}
           </button>
         </form>
 
-        <div className="mt-8 text-center border-t border-white/5 pt-6">
+        <div className="auth-divider">
           <p className="text-slate-400 text-sm">
             ¿Ya tienes una cuenta?{" "}
-            <Link
-              to="/login"
-              className="text-blue-400 font-bold hover:text-blue-300 hover:underline transition-all"
-            >
+            <Link to="/login" className="auth-link">
               Inicia Sesión
             </Link>
           </p>

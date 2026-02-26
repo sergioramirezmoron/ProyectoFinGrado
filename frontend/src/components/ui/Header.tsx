@@ -32,162 +32,75 @@ const Header = () => {
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
+  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+    `px-3 py-2 rounded-full hover:bg-white/5 hover:text-blue-400 transition-all text-xs xl:text-sm ${
+      isActive ? "text-blue-500 bg-white/5" : "text-slate-300"
+    }`;
+
+  const adminLinkClass = (color: "blue" | "purple") => ({
+    isActive,
+  }: {
+    isActive: boolean;
+  }) =>
+    `p-2 rounded-lg transition-colors ${
+      color === "blue"
+        ? `hover:bg-blue-600/20 hover:text-blue-400 ${isActive ? "text-blue-500 bg-blue-600/10" : "text-slate-400"}`
+        : `hover:bg-purple-600/20 hover:text-purple-400 ${isActive ? "text-purple-500 bg-purple-600/10" : "text-slate-400"}`
+    }`;
+
   return (
     <>
       <nav className="fixed top-0 w-full z-50 bg-slate-950/95 backdrop-blur-xl border-b border-white/10 text-white transition-all duration-300 shadow-lg shadow-black/20">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-4">
+
           {/* Logo */}
           <Link
             to="/"
-            className="text-2xl font-bold tracking-tighter flex items-center gap-2 group"
+            className="text-lg sm:text-2xl font-bold tracking-tighter flex items-center gap-1 group shrink-0"
             onClick={closeMobileMenu}
           >
-            <span className="group-hover:text-blue-400 transition-colors duration-300">
-              LUXURY
-            </span>
-            <span className="text-blue-500 group-hover:text-white transition-colors duration-300">
-              CARS
-            </span>
+            <span className="group-hover:text-blue-400 transition-colors duration-300">LUXURY</span>
+            <span className="text-blue-500 group-hover:text-white transition-colors duration-300">CARS</span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-1 text-sm font-medium tracking-wide">
-            <NavLink
-              to="/"
-              className={({ isActive }) =>
-                `px-4 py-2 rounded-full hover:bg-white/5 hover:text-blue-400 transition-all ${isActive ? "text-blue-500 bg-white/5" : "text-slate-300"}`
-              }
-            >
-              INICIO
-            </NavLink>
-            <NavLink
-              to="/venta"
-              className={({ isActive }) =>
-                `px-4 py-2 rounded-full hover:bg-white/5 hover:text-blue-400 transition-all ${isActive ? "text-blue-500 bg-white/5" : "text-slate-300"}`
-              }
-            >
-              COMPRAR
-            </NavLink>
-            <NavLink
-              to="/alquiler"
-              className={({ isActive }) =>
-                `px-4 py-2 rounded-full hover:bg-white/5 hover:text-blue-400 transition-all ${isActive ? "text-blue-500 bg-white/5" : "text-slate-300"}`
-              }
-            >
-              ALQUILAR
-            </NavLink>
+          <div className="hidden lg:flex items-center space-x-1 text-sm font-medium tracking-wide flex-1 justify-center">
+            <NavLink to="/" end className={navLinkClass}>INICIO</NavLink>
+            <NavLink to="/venta" className={navLinkClass}>COMPRAR</NavLink>
+            <NavLink to="/alquiler" className={navLinkClass}>ALQUILAR</NavLink>
 
-            {/* Admin / Staff Links */}
             {isAuthenticated && isStaff && (
-              <div className="flex items-center space-x-1 border-l border-white/10 pl-4 ml-4">
-                <span className="text-[10px] font-bold text-slate-500 uppercase mr-2 tracking-wider">
+              <div className="flex items-center space-x-1 border-l border-white/10 pl-3 ml-3">
+                <span className="text-[10px] font-bold text-slate-500 uppercase mr-1 tracking-wider">
                   {isAdmin ? "Admin" : "Staff"}
                 </span>
 
-                {/* Dashboard: Admin Only */}
                 {isAdmin && (
-                  <NavLink
-                    to="/admin"
-                    end
-                    className={({ isActive }) =>
-                      `p-2 rounded-lg hover:bg-blue-600/20 hover:text-blue-400 transition-colors ${
-                        isActive
-                          ? "text-blue-500 bg-blue-600/10"
-                          : "text-slate-400"
-                      }`
-                    }
-                    title="Dashboard"
-                  >
-                    <LayoutDashboard size={18} />
+                  <NavLink to="/admin" end className={adminLinkClass("blue")} title="Dashboard">
+                    <LayoutDashboard size={17} />
                   </NavLink>
                 )}
 
-                {/* Fleet: Sales + Admin */}
-                <NavLink
-                  to="/admin/coches"
-                  className={({ isActive }) =>
-                    `p-2 rounded-lg hover:bg-blue-600/20 hover:text-blue-400 transition-colors ${
-                      isActive
-                        ? "text-blue-500 bg-blue-600/10"
-                        : "text-slate-400"
-                    }`
-                  }
-                  title="Gestión de Flota"
-                >
-                  <Car size={18} />
+                <NavLink to="/admin/coches" className={adminLinkClass("blue")} title="Flota">
+                  <Car size={17} />
                 </NavLink>
 
-                {/* Users + Colores: Admin Only */}
                 {isAdmin && (
                   <>
-                    <NavLink
-                      to="/admin/usuarios"
-                      className={({ isActive }) =>
-                        `p-2 rounded-lg hover:bg-purple-600/20 hover:text-purple-400 transition-colors ${
-                          isActive
-                            ? "text-purple-500 bg-purple-600/10"
-                            : "text-slate-400"
-                        }`
-                      }
-                      title="Gestión de Usuarios"
-                    >
-                      <Users size={18} />
+                    <NavLink to="/admin/usuarios" className={adminLinkClass("purple")} title="Usuarios">
+                      <Users size={17} />
                     </NavLink>
-
-                    <NavLink
-                      to="/admin/colores"
-                      className={({ isActive }) =>
-                        `p-2 rounded-lg hover:bg-purple-600/20 hover:text-purple-400 transition-colors ${
-                          isActive
-                            ? "text-purple-500 bg-purple-600/10"
-                            : "text-slate-400"
-                        }`
-                      }
-                      title="Gestión de Colores"
-                    >
-                      <Palette size={18} />
+                    <NavLink to="/admin/colores" className={adminLinkClass("purple")} title="Colores">
+                      <Palette size={17} />
                     </NavLink>
-
-                    <NavLink
-                      to="/admin/ciudades"
-                      className={({ isActive }) =>
-                        `p-2 rounded-lg hover:bg-purple-600/20 hover:text-purple-400 transition-colors ${
-                          isActive
-                            ? "text-purple-500 bg-purple-600/10"
-                            : "text-slate-400"
-                        }`
-                      }
-                      title="Gestión de Ciudades"
-                    >
-                      <MapPin size={18} />
+                    <NavLink to="/admin/ciudades" className={adminLinkClass("purple")} title="Ciudades">
+                      <MapPin size={17} />
                     </NavLink>
-
-                    <NavLink
-                      to="/admin/marcas"
-                      className={({ isActive }) =>
-                        `p-2 rounded-lg hover:bg-purple-600/20 hover:text-purple-400 transition-colors ${
-                          isActive
-                            ? "text-purple-500 bg-purple-600/10"
-                            : "text-slate-400"
-                        }`
-                      }
-                      title="Gestión de Marcas"
-                    >
-                      <Tag size={18} />
+                    <NavLink to="/admin/marcas" className={adminLinkClass("purple")} title="Marcas">
+                      <Tag size={17} />
                     </NavLink>
-
-                    <NavLink
-                      to="/admin/modelos"
-                      className={({ isActive }) =>
-                        `p-2 rounded-lg hover:bg-purple-600/20 hover:text-purple-400 transition-colors ${
-                          isActive
-                            ? "text-purple-500 bg-purple-600/10"
-                            : "text-slate-400"
-                        }`
-                      }
-                      title="Gestión de Modelos"
-                    >
-                      <Layers size={18} />
+                    <NavLink to="/admin/modelos" className={adminLinkClass("purple")} title="Modelos">
+                      <Layers size={17} />
                     </NavLink>
                   </>
                 )}
@@ -196,14 +109,14 @@ const Header = () => {
           </div>
 
           {/* Right Icons */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {isAuthenticated ? (
               <>
+                {/* Chat icon */}
                 <Link
                   to={isStaff || isAdmin ? "/admin/mensajes" : "/mis-chats"}
                   className={`p-2 rounded-full hover:bg-white/10 transition-colors relative ${
-                    location.pathname.includes("chat") ||
-                    location.pathname.includes("mensajes")
+                    location.pathname.includes("chat") || location.pathname.includes("mensajes")
                       ? "text-blue-500"
                       : "text-slate-300"
                   }`}
@@ -217,9 +130,10 @@ const Header = () => {
                   )}
                 </Link>
 
+                {/* Avatar / perfil — siempre visible */}
                 <button
                   onClick={() => setIsPanelOpen(true)}
-                  className="hidden md:flex items-center gap-2 pl-4 border-l border-white/10 hover:opacity-80 transition-opacity cursor-pointer"
+                  className="flex items-center gap-2 sm:pl-3 sm:border-l sm:border-white/10 hover:opacity-80 transition-opacity cursor-pointer"
                   title="Mi perfil"
                 >
                   <div className="text-right hidden xl:block">
@@ -227,11 +141,7 @@ const Header = () => {
                       {user?.name || "Usuario"}
                     </p>
                     <p className="text-xs text-slate-400 mt-1">
-                      {isAdmin
-                        ? "Administrador"
-                        : isSales
-                          ? "Ventas"
-                          : "Cliente"}
+                      {isAdmin ? "Administrador" : isSales ? "Ventas" : "Cliente"}
                     </p>
                   </div>
                   <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm ring-2 ring-blue-500/30">
@@ -240,20 +150,20 @@ const Header = () => {
                 </button>
               </>
             ) : (
-              <div className="hidden md:flex items-center gap-3">
+              <div className="hidden md:flex items-center gap-2 lg:gap-3">
                 <Link
                   to="/login"
-                  className="flex items-center gap-2 text-sm font-medium text-slate-300 hover:text-white transition-colors px-3 py-2"
+                  className="flex items-center gap-2 text-sm font-medium text-slate-300 hover:text-white transition-colors px-2 lg:px-3 py-2"
                 >
                   <LogIn size={18} />
-                  Iniciar Sesión
+                  <span className="hidden lg:inline">Iniciar Sesión</span>
                 </Link>
                 <Link
                   to="/register"
-                  className="flex items-center gap-2 text-sm font-bold bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-full transition-all shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40"
+                  className="flex items-center gap-2 text-sm font-bold bg-blue-600 hover:bg-blue-500 text-white px-3 lg:px-5 py-2 lg:py-2.5 rounded-full transition-all shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40"
                 >
                   <UserPlus size={18} />
-                  Registrarse
+                  <span className="hidden lg:inline">Registrarse</span>
                 </Link>
               </div>
             )}
@@ -263,91 +173,73 @@ const Header = () => {
               className="lg:hidden p-2 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
-              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
           </div>
         </div>
 
         {/* Mobile Menu Dropdown */}
         <div
-          className={`lg:hidden absolute w-full bg-slate-900/95 backdrop-blur-xl border-b border-white/10 transition-all duration-300 ease-in-out ${
+          className={`lg:hidden absolute w-full bg-slate-900/98 backdrop-blur-xl border-b border-white/10 transition-all duration-300 ease-in-out ${
             isMobileMenuOpen
-              ? "max-h-[calc(100vh-5rem)] opacity-100 overflow-y-auto"
+              ? "max-h-[calc(100vh-4rem)] opacity-100 overflow-y-auto"
               : "max-h-0 opacity-0 overflow-hidden"
           }`}
         >
-          <div className="p-6 flex flex-col space-y-4">
-            <Link
-              to="/"
-              onClick={closeMobileMenu}
-              className="text-lg font-medium hover:text-blue-400 py-2 border-b border-white/5"
-            >
-              INICIO
-            </Link>
-            <Link
-              to="/venta"
-              onClick={closeMobileMenu}
-              className="text-lg font-medium hover:text-blue-400 py-2 border-b border-white/5"
-            >
-              COMPRAR
-            </Link>
-            <Link
-              to="/alquiler"
-              onClick={closeMobileMenu}
-              className="text-lg font-medium hover:text-blue-400 py-2 border-b border-white/5"
-            >
-              ALQUILAR
-            </Link>
+          <div className="p-5 flex flex-col space-y-1">
+            {/* Nav links */}
+            {[
+              { to: "/", label: "INICIO" },
+              { to: "/venta", label: "COMPRAR" },
+              { to: "/alquiler", label: "ALQUILAR" },
+            ].map(({ to, label }) => (
+              <Link
+                key={to}
+                to={to}
+                onClick={closeMobileMenu}
+                className="text-base font-medium text-slate-200 hover:text-blue-400 py-3 px-2 border-b border-white/5 transition-colors"
+              >
+                {label}
+              </Link>
+            ))}
 
+            {/* Auth buttons si no está logueado */}
             {!isAuthenticated && (
-              <div className="grid grid-cols-2 gap-4 mt-4">
+              <div className="grid grid-cols-2 gap-3 pt-4">
                 <Link
                   to="/login"
                   onClick={closeMobileMenu}
-                  className="flex items-center justify-center gap-2 bg-slate-800 py-3 rounded-xl font-medium hover:bg-slate-700 transition-colors"
+                  className="flex items-center justify-center gap-2 bg-slate-800 py-3 rounded-xl font-medium hover:bg-slate-700 transition-colors text-sm"
                 >
-                  <LogIn size={18} /> Iniciar Sesión
+                  <LogIn size={17} /> Iniciar Sesión
                 </Link>
                 <Link
-                  to="/login"
+                  to="/register"
                   onClick={closeMobileMenu}
-                  className="flex items-center justify-center gap-2 bg-blue-600 py-3 rounded-xl font-bold hover:bg-blue-500 transition-colors"
+                  className="flex items-center justify-center gap-2 bg-blue-600 py-3 rounded-xl font-bold hover:bg-blue-500 transition-colors text-sm"
                 >
-                  <UserPlus size={18} /> Registrarse
+                  <UserPlus size={17} /> Registrarse
                 </Link>
               </div>
             )}
 
+            {/* Panel Staff/Admin en móvil */}
             {isAuthenticated && isStaff && (
               <div className="pt-4 mt-2">
-                <span className="text-xs font-bold text-blue-500 uppercase tracking-wider mb-3 block">
+                <span className="text-xs font-bold text-blue-500 uppercase tracking-wider mb-3 block px-2">
                   {isAdmin ? "Panel Admin" : "Panel Staff"}
                 </span>
-                <div className="grid grid-cols-1 gap-2">
+                <div className="grid grid-cols-1 gap-1">
                   {isAdmin && (
-                    <Link
-                      to="/admin"
-                      onClick={closeMobileMenu}
-                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors"
-                    >
-                      <LayoutDashboard size={20} className="text-blue-400" />{" "}
-                      Dashboard
+                    <Link to="/admin" onClick={closeMobileMenu} className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors text-sm">
+                      <LayoutDashboard size={18} className="text-blue-400" /> Dashboard
                     </Link>
                   )}
-                  <Link
-                    to="/admin/coches"
-                    onClick={closeMobileMenu}
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors"
-                  >
-                    <Car size={20} className="text-blue-400" /> Flota
+                  <Link to="/admin/coches" onClick={closeMobileMenu} className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors text-sm">
+                    <Car size={18} className="text-blue-400" /> Flota
                   </Link>
-                  <Link
-                    to="/admin/mensajes"
-                    onClick={closeMobileMenu}
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors"
-                  >
-                    <MessageSquare size={20} className="text-blue-400" />{" "}
-                    Mensajes
+                  <Link to="/admin/mensajes" onClick={closeMobileMenu} className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors text-sm">
+                    <MessageSquare size={18} className="text-blue-400" /> Mensajes
                     {unreadCount > 0 && (
                       <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full ml-auto">
                         {unreadCount}
@@ -356,57 +248,51 @@ const Header = () => {
                   </Link>
                   {isAdmin && (
                     <>
-                      <Link
-                        to="/admin/usuarios"
-                        onClick={closeMobileMenu}
-                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors"
-                      >
-                        <Users size={20} className="text-purple-400" /> Usuarios
+                      <Link to="/admin/usuarios" onClick={closeMobileMenu} className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors text-sm">
+                        <Users size={18} className="text-purple-400" /> Usuarios
                       </Link>
-                      <Link
-                        to="/admin/colores"
-                        onClick={closeMobileMenu}
-                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors"
-                      >
-                        <Palette size={20} className="text-purple-400" />{" "}
-                        Colores
+                      <Link to="/admin/colores" onClick={closeMobileMenu} className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors text-sm">
+                        <Palette size={18} className="text-purple-400" /> Colores
                       </Link>
-                      <Link
-                        to="/admin/ciudades"
-                        onClick={closeMobileMenu}
-                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors"
-                      >
-                        <MapPin size={20} className="text-purple-400" />{" "}
-                        Ciudades
+                      <Link to="/admin/ciudades" onClick={closeMobileMenu} className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors text-sm">
+                        <MapPin size={18} className="text-purple-400" /> Ciudades
                       </Link>
-                      <Link
-                        to="/admin/marcas"
-                        onClick={closeMobileMenu}
-                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors"
-                      >
-                        <Tag size={20} className="text-purple-400" /> Marcas
+                      <Link to="/admin/marcas" onClick={closeMobileMenu} className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors text-sm">
+                        <Tag size={18} className="text-purple-400" /> Marcas
                       </Link>
-                      <Link
-                        to="/admin/modelos"
-                        onClick={closeMobileMenu}
-                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors"
-                      >
-                        <Layers size={20} className="text-purple-400" /> Modelos
+                      <Link to="/admin/modelos" onClick={closeMobileMenu} className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors text-sm">
+                        <Layers size={18} className="text-purple-400" /> Modelos
                       </Link>
                     </>
                   )}
                 </div>
               </div>
             )}
+
+            {/* Perfil en móvil si está logueado */}
+            {isAuthenticated && (
+              <div className="pt-4 mt-2 border-t border-white/5">
+                <button
+                  onClick={() => { closeMobileMenu(); setIsPanelOpen(true); }}
+                  className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-white/5 transition-colors"
+                >
+                  <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm ring-2 ring-blue-500/30">
+                    {user?.name?.charAt(0).toUpperCase() || "U"}
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-white">{user?.name || "Usuario"}</p>
+                    <p className="text-xs text-slate-400">
+                      {isAdmin ? "Administrador" : isSales ? "Ventas" : "Cliente"}
+                    </p>
+                  </div>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </nav>
 
-      {/* Panel de perfil */}
-      <UserProfilePanel
-        isOpen={isPanelOpen}
-        onClose={() => setIsPanelOpen(false)}
-      />
+      <UserProfilePanel isOpen={isPanelOpen} onClose={() => setIsPanelOpen(false)} />
     </>
   );
 };

@@ -88,3 +88,95 @@
   border-color: #64748b !important;
   border-width: 2px 2px 0 0 !important;
 }
+
+/* ─── Auth Shared Styles ─────────────────────────────────────────────────── */
+
+.auth-page {
+  @apply min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4;
+}
+
+.auth-card {
+  @apply bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl w-full;
+  @apply p-6 sm:p-8;
+  @apply max-w-sm sm:max-w-md;
+}
+
+.auth-card-wide {
+  @apply bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl w-full;
+  @apply p-6 sm:p-8;
+  @apply max-w-sm sm:max-w-lg;
+}
+
+.auth-title {
+  @apply text-2xl sm:text-3xl font-bold text-white mb-2 tracking-tight;
+}
+
+.auth-subtitle {
+  @apply text-slate-400 text-sm;
+}
+
+.auth-label {
+  @apply text-xs font-bold tracking-wider text-slate-400 uppercase ml-1;
+}
+
+.auth-label-normal {
+  @apply text-sm font-medium text-slate-300 ml-1;
+}
+
+.auth-input {
+  @apply w-full bg-slate-950 border border-slate-800 text-white rounded-xl;
+  @apply py-3 px-4 text-sm;
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500;
+  @apply transition-all placeholder:text-slate-600;
+}
+
+.auth-input-icon {
+  @apply w-full bg-slate-950 border border-slate-800 text-white rounded-xl;
+  @apply py-3 pl-10 pr-4 text-sm;
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500;
+  @apply transition-all placeholder:text-slate-600;
+}
+
+.auth-input-wrapper {
+  @apply relative;
+}
+
+.auth-input-icon-left {
+  @apply absolute left-3 top-1/2 -translate-y-1/2 text-slate-500;
+}
+
+.auth-field {
+  @apply space-y-1 sm:space-y-2;
+}
+
+.auth-grid-2 {
+  @apply grid grid-cols-1 sm:grid-cols-2 gap-4;
+}
+
+.auth-btn-primary {
+  @apply w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold;
+  @apply py-3 rounded-xl transition-all duration-200;
+  @apply transform hover:scale-[1.02] active:scale-[0.98];
+  @apply disabled:opacity-70 disabled:cursor-not-allowed;
+  @apply flex items-center justify-center gap-2;
+  @apply shadow-lg shadow-blue-900/20 hover:cursor-pointer;
+  @apply text-sm sm:text-base;
+}
+
+.auth-error {
+  @apply bg-red-500/10 border border-red-500/20 text-red-400;
+  @apply px-4 py-3 rounded-lg text-sm flex items-center gap-2;
+}
+
+.auth-logo {
+  @apply text-xl sm:text-2xl font-bold tracking-tighter text-white mb-6 sm:mb-8;
+  @apply hover:scale-105 transition-transform;
+}
+
+.auth-divider {
+  @apply mt-6 sm:mt-8 text-center border-t border-white/5 pt-5 sm:pt-6;
+}
+
+.auth-link {
+  @apply text-blue-400 font-bold hover:text-blue-300 hover:underline transition-all;
+}
