@@ -43,8 +43,7 @@ export const FavoriteProvider = ({ children }: { children: ReactNode }) => {
         });
         if (cancelled) return;
 
-        const members =
-          response.data["hydra:member"] ?? response.data.member ?? [];
+        const members = response.data.member ?? [];
 
         setFavorites(
           members.map((f: { id: number; vehicle: { "@id": string } }) => ({

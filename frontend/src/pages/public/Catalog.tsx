@@ -8,23 +8,20 @@ import type { CatalogProps, FilterState } from "../../types/filters";
 
 type IriObject = Pick<SelectOption, "@id">;
 
-// Extrae el IRI de un objeto relacionado de la API (e.g. brand, fuelType...)
-// Acepta cualquiera de las dos formas que puede devolver la API:
-//   { "@id": "/api/brands/51", "name": "Audi" }
-//   o directamente el string IRI "/api/brands/51"
 const getIri = (obj: IriObject | string | null | undefined): string => {
   if (!obj) return "";
   if (typeof obj === "string") return obj;
   return obj["@id"] ?? "";
 };
 
-// Compara el IRI de un campo relacional del vehículo con el valor del filtro
-const matches = (obj: IriObject | string | null | undefined, filterVal: string): boolean => {
-  if (!filterVal) return true; // Sin filtro → pasa todo
+const matches = (
+  obj: IriObject | string | null | undefined,
+  filterVal: string,
+): boolean => {
+  if (!filterVal) return true;
   return getIri(obj) === filterVal;
 };
 
-// Normaliza price que puede llegar como string "45000" o number 45000
 const toNumber = (val: string | number | undefined | null): number => {
   if (val === undefined || val === null || val === "") return 0;
   return Number(val);
@@ -61,7 +58,6 @@ const Catalog = ({ mode }: CatalogProps) => {
     status: "",
   });
 
-  // 1. Cargar opciones de filtros
   useEffect(() => {
     const fetchOptions = async () => {
       try {
@@ -74,11 +70,9 @@ const Catalog = ({ mode }: CatalogProps) => {
           api.get("/body_types"),
         ]);
 
-        // La API puede devolver "hydra:member" o "member" según la versión
-        const extract = (res: { data: HydraResponse<SelectOption> }): SelectOption[] =>
-          res.data["hydra:member"] ??
-          res.data.member ??
-          [];
+        const extract = (res: {
+          data: HydraResponse<SelectOption>;
+        }): SelectOption[] => res.data.member ?? [];
 
         setOptions({
           brands: extract(b),
@@ -95,7 +89,6 @@ const Catalog = ({ mode }: CatalogProps) => {
     fetchOptions();
   }, []);
 
-  // 2. Cargar todos los vehículos paginando hasta agotar el total
   useEffect(() => {
     const fetchVehicles = async () => {
       setLoading(true);
@@ -107,23 +100,19 @@ const Catalog = ({ mode }: CatalogProps) => {
 
         while (collected.length < totalItems) {
           const response = await api.get(
-            `/vehicles?page=${currentPage}&itemsPerPage=${PAGE_SIZE}`
+            `/vehicles?page=${currentPage}&itemsPerPage=${PAGE_SIZE}`,
           );
           const data = response.data;
 
           const batch: Vehicle[] =
-            data["hydra:member"] ??
-            data.member ??
-            (Array.isArray(data) ? data : []);
+            data.member ?? (Array.isArray(data) ? data : []);
 
-          // Leemos totalItems en la primera respuesta
           if (currentPage === 1) {
-            totalItems = data["hydra:totalItems"] ?? data.totalItems ?? batch.length;
+            totalItems = data.totalItems ?? batch.length;
           }
 
           collected = [...collected, ...batch];
 
-          // Si el batch está vacío o ya tenemos todo, paramos
           if (batch.length === 0 || collected.length >= totalItems) break;
 
           currentPage++;
@@ -139,17 +128,13 @@ const Catalog = ({ mode }: CatalogProps) => {
     fetchVehicles();
   }, []);
 
-  // 3. Filtrado — mode es la fuente de verdad para SALE vs RENT
   const filteredVehicles = useMemo(() => {
     return allVehicles.filter((v) => {
-      // Separación estricta por tipo de página
       if (v.type !== mode) return false;
 
-      // Lógica de estado según modo
       if (mode === "RENT") {
         if (v.status !== "AVAILABLE") return false;
       } else {
-        // SALE: si hay filtro de estado lo aplicamos, si no ocultamos SOLD y DELETED
         if (filters.status) {
           if (v.status !== filters.status) return false;
         } else {
@@ -157,7 +142,6 @@ const Catalog = ({ mode }: CatalogProps) => {
         }
       }
 
-      // Filtros relacionales (comparación por IRI)
       if (!matches(v.brand, filters.brand)) return false;
       if (!matches(v.fuelType, filters.fuelType)) return false;
       if (!matches(v.transmission, filters.transmission)) return false;
@@ -165,13 +149,10 @@ const Catalog = ({ mode }: CatalogProps) => {
       if (!matches(v.color, filters.color)) return false;
       if (!matches(v.bodyType, filters.bodyType)) return false;
 
-      // Filtro de precio — price puede llegar como string o number desde la API
       const price =
         mode === "RENT" ? toNumber(v.dailyPrice) : toNumber(v.price);
       if (filters.minPrice && price < toNumber(filters.minPrice)) return false;
       if (filters.maxPrice && price > toNumber(filters.maxPrice)) return false;
-
-      // Filtro de año
       if (filters.minYear && v.year < Number(filters.minYear)) return false;
       if (filters.maxYear && v.year > Number(filters.maxYear)) return false;
 
@@ -179,7 +160,6 @@ const Catalog = ({ mode }: CatalogProps) => {
     });
   }, [allVehicles, filters, mode]);
 
-  // 4. Ordenación
   const sortedVehicles = useMemo(() => {
     const data = [...filteredVehicles];
     const [field, dir] = sort.split("_");
@@ -194,7 +174,6 @@ const Catalog = ({ mode }: CatalogProps) => {
         vA = a.year;
         vB = b.year;
       } else {
-        // createdAt por defecto
         vA = new Date(a.createdAt).getTime();
         vB = new Date(b.createdAt).getTime();
       }
@@ -205,21 +184,19 @@ const Catalog = ({ mode }: CatalogProps) => {
     return data;
   }, [filteredVehicles, sort, mode]);
 
-  // 5. Paginación sobre el resultado ya filtrado y ordenado
   const totalItems = sortedVehicles.length;
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
   const displayedVehicles = sortedVehicles.slice(
     (page - 1) * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE
+    page * ITEMS_PER_PAGE,
   );
 
-  // Reset de página cuando cambian filtros o mode
   useEffect(() => {
     setPage(1);
   }, [filters, mode]);
 
   const handleFilterChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
@@ -251,7 +228,6 @@ const Catalog = ({ mode }: CatalogProps) => {
       />
 
       <main className="lg:w-3/4">
-        {/* Barra superior: contador + ordenación */}
         <div className="flex justify-between items-center mb-6 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
           <p className="text-sm font-semibold text-slate-600">
             {totalItems} vehículos{" "}
@@ -271,7 +247,6 @@ const Catalog = ({ mode }: CatalogProps) => {
           </select>
         </div>
 
-        {/* Estados: cargando / sin resultados / grid */}
         {loading && allVehicles.length === 0 ? (
           <div className="flex justify-center py-20">
             <Loader2 className="animate-spin text-blue-600" size={48} />
@@ -309,7 +284,9 @@ const Catalog = ({ mode }: CatalogProps) => {
                   <span className="bg-blue-600 text-white w-8 h-8 flex items-center justify-center rounded-full font-bold shadow-md">
                     {page}
                   </span>
-                  <span className="text-slate-400 text-sm">de {totalPages}</span>
+                  <span className="text-slate-400 text-sm">
+                    de {totalPages}
+                  </span>
                 </div>
 
                 <button

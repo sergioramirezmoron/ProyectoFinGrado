@@ -41,7 +41,7 @@ const BrandManagement = () => {
   const fetchBrands = async () => {
     try {
       const response = await api.get("/brands");
-      const data = response.data["hydra:member"] || response.data.member || [];
+      const data = response.data.member || [];
       setBrands(data);
     } catch (error) {
       console.error("Error cargando marcas", error);

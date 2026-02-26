@@ -1,10 +1,17 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { LogIn, Mail, Lock, AlertCircle, Loader2, User, Phone, MapPin } from "lucide-react";
+import {
+  LogIn,
+  Mail,
+  Lock,
+  AlertCircle,
+  Loader2,
+  User,
+  Phone,
+  MapPin,
+} from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import api from "../../api/axios";
-
-// Interfaz para las provincias que vienen del backend
 interface Province {
   "@id": string;
   id: number;
@@ -15,22 +22,16 @@ const Register = () => {
   const navigate = useNavigate();
   const { login, isAdmin, isAuthenticated } = useAuth();
 
-  // Estados del formulario
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [selectedProvince, setSelectedProvince] = useState(""); // Guardará el IRI (ej: /api/provinces/1)
-
-  // Estado para cargar las provincias
+  const [selectedProvince, setSelectedProvince] = useState("");
   const [provinces, setProvinces] = useState<Province[]>([]);
-  
-  // Estados de control
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Redirigir si ya está logueado
   useEffect(() => {
     if (isAdmin) {
       navigate("/admin");
@@ -39,14 +40,12 @@ const Register = () => {
     }
   }, [isAdmin, isAuthenticated, navigate]);
 
-  // Cargar Provincias al montar el componente
   useEffect(() => {
     const fetchProvinces = async () => {
       try {
         const response = await api.get("/provinces");
         const data = response.data.member || [];
         setProvinces(data);
-        // Seleccionar la primera por defecto si hay datos
         if (data.length > 0) {
           setSelectedProvince(data[0]["@id"]);
         }
@@ -74,14 +73,13 @@ const Register = () => {
 
       const loginResponse = await api.post("/login_check", {
         email: email,
-        password: password, 
+        password: password,
       });
 
       login(loginResponse.data.token);
       navigate("/");
-
     } catch (err) {
-      setError(`Error al registrar ${err}`)
+      setError(`Error al registrar ${err}`);
     } finally {
       setLoading(false);
     }
@@ -89,8 +87,10 @@ const Register = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 selection:bg-blue-500 selection:text-white">
-      
-      <Link to="/" className="text-2xl font-bold tracking-tighter text-white mb-8 hover:scale-105 transition-transform">
+      <Link
+        to="/"
+        className="text-2xl font-bold tracking-tighter text-white mb-8 hover:scale-105 transition-transform"
+      >
         LUXURY<span className="text-blue-500">CARS</span>
       </Link>
 
@@ -208,7 +208,9 @@ const Register = () => {
                   className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm appearance-none cursor-pointer"
                   required
                 >
-                  <option value="" disabled>Selecciona...</option>
+                  <option value="" disabled>
+                    Selecciona...
+                  </option>
                   {provinces.map((prov) => (
                     <option key={prov["@id"]} value={prov["@id"]}>
                       {prov.name}
@@ -257,12 +259,15 @@ const Register = () => {
         </form>
 
         <div className="mt-8 text-center border-t border-white/5 pt-6">
-            <p className="text-slate-400 text-sm">
-                ¿Ya tienes una cuenta?{' '}
-                <Link to="/login" className="text-blue-400 font-bold hover:text-blue-300 hover:underline transition-all">
-                    Inicia Sesión
-                </Link>
-            </p>
+          <p className="text-slate-400 text-sm">
+            ¿Ya tienes una cuenta?{" "}
+            <Link
+              to="/login"
+              className="text-blue-400 font-bold hover:text-blue-300 hover:underline transition-all"
+            >
+              Inicia Sesión
+            </Link>
+          </p>
         </div>
       </div>
     </div>

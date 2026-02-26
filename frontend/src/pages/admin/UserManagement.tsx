@@ -58,7 +58,6 @@ const UserManagement = () => {
     }
   };
 
-  // Filtrado por búsqueda
   const filteredUsers = useMemo(() => {
     const term = searchTerm.toLowerCase();
     return users.filter(
@@ -68,12 +67,10 @@ const UserManagement = () => {
     );
   }, [users, searchTerm]);
 
-  // Reset página al buscar
   useEffect(() => {
     setPage(1);
   }, [searchTerm]);
 
-  // Paginación
   const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE) || 1;
   const displayedUsers = filteredUsers.slice(
     (page - 1) * ITEMS_PER_PAGE,

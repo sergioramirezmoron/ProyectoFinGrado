@@ -33,22 +33,14 @@ const ModelManagement = () => {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [models, setModels] = useState<Model[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Nuevo modelo
   const [selectedBrandIri, setSelectedBrandIri] = useState("");
   const [newName, setNewName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
-
-  // Filtro de marca para el listado
   const [filterBrandIri, setFilterBrandIri] = useState("");
-
-  // Edición inline
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-
-  // Modal confirmación borrado
   const [deleteModal, setDeleteModal] = useState<{ open: boolean; model: Model | null }>({
     open: false,
     model: null,
@@ -61,8 +53,8 @@ const ModelManagement = () => {
           api.get("/brands"),
           api.get("/models?itemsPerPage=200"),
         ]);
-        setBrands(brandsRes.data["hydra:member"] || brandsRes.data.member || []);
-        setModels(modelsRes.data["hydra:member"] || modelsRes.data.member || []);
+        setBrands(brandsRes.data.member || []);
+        setModels(modelsRes.data.member || []);
       } catch (error) {
         console.error("Error cargando datos", error);
       } finally {

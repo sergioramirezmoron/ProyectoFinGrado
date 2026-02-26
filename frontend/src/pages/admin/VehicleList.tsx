@@ -14,7 +14,6 @@ import {
   ChevronRight,
 } from "lucide-react";
 import api from "../../api/axios";
-import { AxiosError } from "axios";
 import type { HydraResponse, Vehicle } from "../../types/vehicle";
 
 const VehicleList = () => {
@@ -22,29 +21,28 @@ const VehicleList = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  
-  // Paginación
+
   const [page, setPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const ITEMS_PER_PAGE = 20;
 
-  // 1. Cargar la flota
   const fetchVehicles = async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
       params.append("page", page.toString());
-      params.append("status[nest]", "DELETED"); 
-      
-      // Mantenemos esto por si en el futuro configuras el backend
+      params.append("status[nest]", "DELETED");
+
       if (searchTerm) {
         params.append("brand.name", searchTerm);
       }
 
-      const response = await api.get<HydraResponse<Vehicle>>(`/vehicles?${params.toString()}`);
-      
-      const allVehicles = response.data["hydra:member"] || response.data.member || [];
-      const total = response.data["hydra:totalItems"] || response.data.totalItems || allVehicles.length;
+      const response = await api.get<HydraResponse<Vehicle>>(
+        `/vehicles?${params.toString()}`,
+      );
+
+      const allVehicles = response.data.member || [];
+      const total = response.data.totalItems || allVehicles.length;
 
       setVehicles(allVehicles);
       setTotalItems(total);
@@ -55,12 +53,10 @@ const VehicleList = () => {
     }
   };
 
-  // Reseteamos página al buscar para no quedarnos en una página vacía
   useEffect(() => {
     setPage(1);
   }, [searchTerm]);
 
-  // Efecto con debounce
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchVehicles();
@@ -70,7 +66,6 @@ const VehicleList = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, searchTerm]);
 
-  // 2. Función de Borrar
   const handleDelete = async (id: number) => {
     if (!window.confirm("¿Seguro que quieres archivar este vehículo?")) return;
 
@@ -78,45 +73,51 @@ const VehicleList = () => {
       await api.patch(
         `/vehicles/${id}`,
         { status: "DELETED" },
-        { headers: { "Content-Type": "application/merge-patch+json" } }
+        { headers: { "Content-Type": "application/merge-patch+json" } },
       );
-      
+
       setVehicles((prev) => prev.filter((v) => v.id !== id));
       setTotalItems((prev) => Math.max(0, prev - 1));
     } catch (err) {
-      const error = err as AxiosError<{ "hydra:description": string }>;
-      const serverMessage = error.response?.data?.["hydra:description"] || "Error desconocido";
-      alert(`No se pudo borrar. El servidor dice:\n\n${serverMessage}`);
+      throw new Error(`Error al eliminar el vehículo: ${err}`);
     }
   };
 
-  // 3. RECUPERADO: Filtrado simple por buscador (Local)
   const filteredVehicles = vehicles.filter(
     (v) =>
       v.brand.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      v.model.name.toLowerCase().includes(searchTerm.toLowerCase())
+      v.model.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const getThumbnail = (vehicle: Vehicle) => {
-    const mainImage = vehicle.vehicleImages?.find((img) => img.main) || vehicle.vehicleImages?.[0];
+    const mainImage =
+      vehicle.vehicleImages?.find((img) => img.main) ||
+      vehicle.vehicleImages?.[0];
     if (mainImage) {
-      return `${import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000'}${mainImage.imageUrl}`;
+      return `${import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:8000"}${mainImage.imageUrl}`;
     }
     return "https://via.placeholder.com/150?text=Sin+Foto";
   };
 
-  // Handlers de página
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
-  const handlePrevPage = () => { if (page > 1) setPage(page - 1); };
-  const handleNextPage = () => { if (page < totalPages) setPage(page + 1); };
+  const handlePrevPage = () => {
+    if (page > 1) setPage(page - 1);
+  };
+  const handleNextPage = () => {
+    if (page < totalPages) setPage(page + 1);
+  };
 
   return (
     <div className="space-y-6 p-6">
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Flota de Vehículos</h1>
-          <p className="text-gray-500 text-sm">Gestiona el inventario de coches disponibles.</p>
+          <h1 className="text-2xl font-bold text-slate-800">
+            Flota de Vehículos
+          </h1>
+          <p className="text-gray-500 text-sm">
+            Gestiona el inventario de coches disponibles.
+          </p>
         </div>
         <button
           onClick={() => navigate("/admin/coches/nuevo")}
@@ -128,7 +129,10 @@ const VehicleList = () => {
 
       {/* BARRA DE BÚSQUEDA */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+        <Search
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+          size={20}
+        />
         <input
           type="text"
           placeholder="Buscar por marca..."
@@ -142,14 +146,20 @@ const VehicleList = () => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
         {loading ? (
           <div className="p-20 text-center flex flex-col items-center gap-3">
-             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-             <p className="text-gray-500">Cargando flota...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <p className="text-gray-500">Cargando flota...</p>
           </div>
         ) : filteredVehicles.length === 0 ? (
           <div className="p-12 text-center flex flex-col items-center">
-            <div className="bg-gray-100 p-4 rounded-full mb-3"><Car size={32} className="text-gray-400" /></div>
-            <h3 className="text-lg font-medium text-gray-900">No hay vehículos</h3>
-            <p className="text-gray-500">No se encontraron coches con ese criterio en esta página.</p>
+            <div className="bg-gray-100 p-4 rounded-full mb-3">
+              <Car size={32} className="text-gray-400" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900">
+              No hay vehículos
+            </h3>
+            <p className="text-gray-500">
+              No se encontraron coches con ese criterio en esta página.
+            </p>
           </div>
         ) : (
           <>
@@ -166,17 +176,27 @@ const VehicleList = () => {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {filteredVehicles.map((vehicle) => (
-                    <tr key={vehicle.id} className="hover:bg-gray-50 transition-colors">
+                    <tr
+                      key={vehicle.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
                       {/* COLUMNA 1: Vehículo */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
                           <div className="h-16 w-24 shrink-0 rounded-lg overflow-hidden border border-gray-200 bg-gray-100">
-                            <img src={getThumbnail(vehicle)} className="h-full w-full object-cover" alt="miniatura" />
+                            <img
+                              src={getThumbnail(vehicle)}
+                              className="h-full w-full object-cover"
+                              alt="miniatura"
+                            />
                           </div>
                           <div>
-                            <div className="font-bold text-gray-900 text-base">{vehicle.brand.name} {vehicle.model.name}</div>
+                            <div className="font-bold text-gray-900 text-base">
+                              {vehicle.brand.name} {vehicle.model.name}
+                            </div>
                             <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
-                              <MapPin size={12} /> {vehicle.province?.name || "Sin provincia"}
+                              <MapPin size={12} />{" "}
+                              {vehicle.province?.name || "Sin provincia"}
                             </div>
                           </div>
                         </div>
@@ -185,10 +205,14 @@ const VehicleList = () => {
                       {/* COLUMNA 2: Estado */}
                       <td className="px-6 py-4">
                         <div className="space-y-1">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${vehicle.type === "SALE" ? "bg-blue-100 text-blue-800" : "bg-purple-100 text-purple-800"}`}>
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${vehicle.type === "SALE" ? "bg-blue-100 text-blue-800" : "bg-purple-100 text-purple-800"}`}
+                          >
                             {vehicle.type === "SALE" ? "Venta" : "Alquiler"}
                           </span>
-                          <div className="text-xs text-gray-500 font-medium capitalize">{vehicle.status.toLowerCase()}</div>
+                          <div className="text-xs text-gray-500 font-medium capitalize">
+                            {vehicle.status.toLowerCase()}
+                          </div>
                         </div>
                       </td>
 
@@ -204,9 +228,16 @@ const VehicleList = () => {
                       {/* COLUMNA 4: Detalles */}
                       <td className="px-6 py-4 hidden md:table-cell">
                         <div className="flex flex-col gap-1 text-xs text-gray-500">
-                          <div className="flex items-center gap-1"><Calendar size={12} /> {vehicle.year}</div>
-                          <div className="flex items-center gap-1"><Gauge size={12} /> {vehicle.kilometres.toLocaleString()} km</div>
-                          <div className="flex items-center gap-1"><Fuel size={12} /> {vehicle.fuelType?.name || 'N/A'}</div>
+                          <div className="flex items-center gap-1">
+                            <Calendar size={12} /> {vehicle.year}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Gauge size={12} />{" "}
+                            {vehicle.kilometres.toLocaleString()} km
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Fuel size={12} /> {vehicle.fuelType?.name || "N/A"}
+                          </div>
                         </div>
                       </td>
 
@@ -256,12 +287,21 @@ const VehicleList = () => {
               <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
                 <div>
                   <p className="text-sm text-gray-700">
-                    Mostrando página <span className="font-medium">{page}</span> de <span className="font-medium">{totalPages > 0 ? totalPages : 1}</span>
-                    <span className="ml-1 text-gray-500">({totalItems} resultados)</span>
+                    Mostrando página <span className="font-medium">{page}</span>{" "}
+                    de{" "}
+                    <span className="font-medium">
+                      {totalPages > 0 ? totalPages : 1}
+                    </span>
+                    <span className="ml-1 text-gray-500">
+                      ({totalItems} resultados)
+                    </span>
                   </p>
                 </div>
                 <div>
-                  <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                  <nav
+                    className="isolate inline-flex -space-x-px rounded-md shadow-sm"
+                    aria-label="Pagination"
+                  >
                     <button
                       onClick={handlePrevPage}
                       disabled={page === 1}

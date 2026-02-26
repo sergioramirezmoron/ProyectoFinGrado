@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import ConfirmModal from "../../helpers/ConfirmModal";
 
-
 interface Province {
   id: number;
   name: string;
@@ -22,18 +21,12 @@ interface Province {
 const ProvinceManagement = () => {
   const [provinces, setProvinces] = useState<Province[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Nuevo
   const [newName, setNewName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
-
-  // Edición inline
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-
-  // Modal de confirmación de borrado
   const [deleteModal, setDeleteModal] = useState<{ open: boolean; province: Province | null }>({
     open: false,
     province: null,
@@ -42,7 +35,7 @@ const ProvinceManagement = () => {
   const fetchProvinces = async () => {
     try {
       const response = await api.get("/provinces");
-      const data = response.data["hydra:member"] || response.data.member || [];
+      const data = response.data.member || [];
       setProvinces(data);
     } catch (error) {
       console.error("Error cargando provincias", error);

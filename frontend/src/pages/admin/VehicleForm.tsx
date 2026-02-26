@@ -22,7 +22,6 @@ import type {
   Vehicle,
 } from "../../types/vehicle";
 
-// Interface for objects that might have an @id (like the API relations)
 interface EntityWithId {
   "@id"?: string;
 }
@@ -77,7 +76,6 @@ const VehicleForm = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
 
-  // 1. CARGA UNIFICADA
   useEffect(() => {
     const initData = async () => {
       setLoading(true);
@@ -85,7 +83,7 @@ const VehicleForm = () => {
       const load = async (url: string) => {
         try {
           const res = await api.get<HydraResponse<SelectOption>>(url);
-          return res.data.member || res.data["hydra:member"] || [];
+          return res.data.member || [];
         } catch (error) {
           console.error(`Error cargando ${url}`, error);
           return [];
@@ -621,7 +619,6 @@ const VehicleForm = () => {
 
         {/* COLUMNA LATERAL */}
         <div className="space-y-8">
-          {/* Tarjeta: Tipo y Precio */}
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-300">
             <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
               <div className="p-2 bg-green-100 rounded-lg text-green-600">

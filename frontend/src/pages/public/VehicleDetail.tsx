@@ -72,8 +72,6 @@ const VehicleDetail = () => {
 
         // 2. CARGAR RESERVAS
         if (response.data.type === "RENT") {
-          // Pedimos TODAS las reservas asociadas a este vehículo (sin filtrar estado en la URL)
-          // para poder decidir nosotros qué bloquear y qué no.
           const resReservations = await api.get<HydraResponse<Reservation>>(
             `/reservations?vehicle.id=${id}`,
           );
@@ -83,9 +81,6 @@ const VehicleDetail = () => {
           const newBlockedStrings: string[] = [];
 
           reservations.forEach((res) => {
-            // --- LÓGICA DE BLOQUEO ---
-            // Solo bloqueamos fechas si la reserva está ACTIVA o PENDIENTE.
-            // Si está REJECTED, CANCELLED o FINISHED, NO entra en el if, por lo tanto NO se bloquea.
             const BLOCKING_STATUSES = ["CONFIRMED"];
 
             if (!BLOCKING_STATUSES.includes(res.status)) {
@@ -120,7 +115,6 @@ const VehicleDetail = () => {
     fetchVehicleData();
   }, [id]);
 
-  // CALCULAR PRECIO
   useEffect(() => {
     if (startDate && endDate && vehicle?.dailyPrice) {
       const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
