@@ -12,12 +12,19 @@ import {
   Palette,
   Info,
 } from "lucide-react";
-import api from "../../api/axios";
+import {
+  loadFormOptions,
+  getVehicle,
+  createVehicle,
+  updateVehicle,
+  uploadVehicleImage,
+} from "../../services/vehicleService";
 import type {
   VehicleModel as Model,
   FormOptions,
   VehicleFormData,
   Vehicle,
+  SelectOption,
 } from "../../types/vehicle";
 
 interface EntityWithId {
@@ -27,15 +34,10 @@ interface EntityWithId {
 const VehicleForm = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-
-  let isEditMode = false;
-  if (id) {
-    isEditMode = true;
-  }
+  const isEditMode = !!id;
 
   const [loading, setLoading] = useState(false);
   const [dataReady, setDataReady] = useState(false);
-
   const [options, setOptions] = useState<FormOptions>({
     brands: [],
     fuels: [],
@@ -45,10 +47,8 @@ const VehicleForm = () => {
     bodyTypes: [],
     colors: [],
   });
-
   const [allModels, setAllModels] = useState<Model[]>([]);
   const [filteredModels, setFilteredModels] = useState<Model[]>([]);
-
   const [formData, setFormData] = useState<VehicleFormData>({
     brand: "",
     model: "",
@@ -70,65 +70,44 @@ const VehicleForm = () => {
     color: "",
     owners: 1,
   });
-
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
 
   useEffect(() => {
     const initData = async () => {
       setLoading(true);
-
-      const load = async (url: string) => {
-        try {
-          const res = await api.get(url);
-          return res.data.member || [];
-        } catch (error) {
-          console.error(`Error cargando ${url}`, error);
-          return [];
-        }
-      };
-
       try {
         const [
-          brandsData,
-          fuelsData,
-          transmissionsData,
-          badgesData,
-          provincesData,
-          bodyTypesData,
-          modelsData,
-          colorsData,
-        ] = await Promise.all([
-          load("/brands"),
-          load("/fuels"),
-          load("/transmissions"),
-          load("/enviromental_badges"),
-          load("/provinces"),
-          load("/body_types"),
-          load("/models"),
-          load("/colors"),
-        ]);
+          brandsRes,
+          fuelsRes,
+          transmissionsRes,
+          badgesRes,
+          provincesRes,
+          bodyTypesRes,
+          modelsRes,
+          colorsRes,
+        ] = await loadFormOptions();
 
-        // Guardar opciones
+        const get = (res: { data: { member: SelectOption[] } }) =>
+          res.data.member || [];
+
         setOptions({
-          brands: brandsData,
-          fuels: fuelsData,
-          transmissions: transmissionsData,
-          badges: badgesData,
-          provinces: provincesData,
-          bodyTypes: bodyTypesData,
-          colors: colorsData,
+          brands: get(brandsRes),
+          fuels: get(fuelsRes),
+          transmissions: get(transmissionsRes),
+          badges: get(badgesRes),
+          provinces: get(provincesRes),
+          bodyTypes: get(bodyTypesRes),
+          colors: get(colorsRes),
         });
-        setAllModels(modelsData as Model[]);
+        setAllModels(get(modelsRes) as Model[]);
 
-        // B. Si es EDITAR, cargar datos del coche después
         if (isEditMode && id) {
-          const response = await api.get<Vehicle>(`/vehicles/${id}`);
-          const vehicle = response.data;
+          const response = await getVehicle(id);
+          const vehicle = response.data as Vehicle;
 
-          const getIRI = (obj: EntityWithId | null | undefined): string => {
-            return obj?.["@id"] ?? "";
-          };
+          const getIRI = (obj: EntityWithId | null | undefined): string =>
+            obj?.["@id"] ?? "";
 
           setFormData({
             brand: getIRI(vehicle.brand),
@@ -136,31 +115,28 @@ const VehicleForm = () => {
             type: vehicle.type,
             status: vehicle.status,
             description: vehicle.description || "",
-
             fuelType: getIRI(vehicle.fuelType),
             transmission: getIRI(vehicle.transmission),
             bodyType: getIRI(vehicle.bodyType),
             enviromentalBadge: getIRI(vehicle.enviromentalBadge),
             province: getIRI(vehicle.province),
             color: getIRI(vehicle.color),
-
             year: vehicle.year,
             kilometres: vehicle.kilometres,
             power: vehicle.power,
             displacement: vehicle.displacement || 0,
             doors: vehicle.doors || 5,
             owners: vehicle.owners || 1,
-
-            // Convertimos a string para evitar problemas de decimales
             price: vehicle.price ? vehicle.price.toString() : "",
             dailyPrice: vehicle.dailyPrice ? vehicle.dailyPrice.toString() : "",
           });
 
-          if (vehicle.vehicleImages && vehicle.vehicleImages.length > 0) {
-            const existingPreviews = vehicle.vehicleImages.map(
-              (img) => `${import.meta.env.VITE_BACKEND_URL}${img.imageUrl}`
+          if (vehicle.vehicleImages?.length > 0) {
+            setPreviews(
+              vehicle.vehicleImages.map(
+                (img) => `${import.meta.env.VITE_BACKEND_URL}${img.imageUrl}`,
+              ),
             );
-            setPreviews(existingPreviews);
           }
         }
       } catch (error) {
@@ -174,41 +150,41 @@ const VehicleForm = () => {
     initData();
   }, [id, isEditMode]);
 
-  // 2. FILTRAR MODELOS
   useEffect(() => {
     if (!formData.brand || allModels.length === 0) {
       setFilteredModels([]);
       return;
     }
-
-    const filtered = allModels.filter((m) => {
-      const modelBrandIRI =
-        typeof m.brand === "string" ? m.brand : m.brand?.["@id"];
-      return modelBrandIRI === formData.brand;
-    });
-
-    setFilteredModels(filtered);
+    setFilteredModels(
+      allModels.filter((m) => {
+        const modelBrandIRI =
+          typeof m.brand === "string" ? m.brand : m.brand?.["@id"];
+        return modelBrandIRI === formData.brand;
+      }),
+    );
   }, [formData.brand, allModels]);
 
-  // 3. HANDLERS
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => {
-      if (name === "brand") return { ...prev, [name]: value, model: "" };
-      return { ...prev, [name]: value };
-    });
+    setFormData((prev) =>
+      name === "brand"
+        ? { ...prev, [name]: value, model: "" }
+        : { ...prev, [name]: value },
+    );
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const filesArray = Array.from(e.target.files);
       setSelectedFiles((prev) => [...prev, ...filesArray]);
-      const newPreviews = filesArray.map((file) => URL.createObjectURL(file));
-      setPreviews((prev) => [...prev, ...newPreviews]);
+      setPreviews((prev) => [
+        ...prev,
+        ...filesArray.map((f) => URL.createObjectURL(f)),
+      ]);
     }
   };
 
@@ -217,46 +193,25 @@ const VehicleForm = () => {
     setPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // 4. SUBIDA DE IMAGEN
-  const uploadImage = async (file: File, isMain: boolean) => {
-    const formDataUpload = new FormData();
-    formDataUpload.append("file", file);
-    formDataUpload.append("main", isMain ? "1" : "0");
-
-    const response = await api.post("/vehicle_images", formDataUpload);
-
-    if (response.data["@id"]) return response.data["@id"];
-    if (response.data.id) return `/api/vehicle_images/${response.data.id}`;
-
-    throw new Error("ID de imagen no devuelto por el servidor.");
-  };
-
-  // 5. ENVÍO FINAL
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const newImagePromises = selectedFiles.map((file, index) =>
-        uploadImage(file, index === 0 && previews.length === 0)
+      const newUploadedImageIRIs = await Promise.all(
+        selectedFiles.map((file, index) =>
+          uploadVehicleImage(file, index === 0 && previews.length === 0).then(
+            (res) => {
+              if (res.data["@id"]) return res.data["@id"];
+              if (res.data.id) return `/api/vehicle_images/${res.data.id}`;
+              throw new Error("ID de imagen no devuelto por el servidor.");
+            },
+          ),
+        ),
       );
-      const newUploadedImageIRIs = await Promise.all(newImagePromises);
 
       const cleanValue = (val: string) =>
         val && val.trim() !== "" ? val : undefined;
-
-      let finalDailyPrice = null;
-      let finalPrice = null;
-
-      if (formData.type === "RENT") {
-        if (formData.dailyPrice) {
-          finalDailyPrice = formData.dailyPrice.toString();
-        }
-      } else {
-        if (formData.price) {
-          finalPrice = formData.price.toString();
-        }
-      }
 
       const vehiclePayload = {
         brand: formData.brand,
@@ -270,33 +225,31 @@ const VehicleForm = () => {
         enviromentalBadge: cleanValue(formData.enviromentalBadge),
         province: cleanValue(formData.province),
         color: cleanValue(formData.color),
-        
-        // Parseamos enteros
         year: parseInt(formData.year.toString()),
         kilometres: parseInt(formData.kilometres.toString()),
         power: parseInt(formData.power.toString()),
         doors: parseInt(formData.doors.toString()),
         owners: parseInt(formData.owners.toString()),
-        
-        // Cilindrada opcional
         displacement: formData.displacement
           ? parseInt(formData.displacement.toString())
           : null,
-
         ...(newUploadedImageIRIs.length > 0 && {
           vehicleImages: newUploadedImageIRIs,
         }),
-
-        dailyPrice: finalDailyPrice,
-        price: finalPrice,
+        dailyPrice:
+          formData.type === "RENT" && formData.dailyPrice
+            ? formData.dailyPrice.toString()
+            : null,
+        price:
+          formData.type === "SALE" && formData.price
+            ? formData.price.toString()
+            : null,
       };
 
       if (isEditMode && id) {
-        await api.patch(`/vehicles/${id}`, vehiclePayload, {
-          headers: { "Content-Type": "application/merge-patch+json" },
-        });
+        await updateVehicle(id, vehiclePayload);
       } else {
-        await api.post("/vehicles", vehiclePayload);
+        await createVehicle(vehiclePayload);
       }
 
       navigate("/admin/coches");
@@ -343,9 +296,7 @@ const VehicleForm = () => {
         onSubmit={handleSubmit}
         className="grid grid-cols-1 xl:grid-cols-3 gap-8"
       >
-        {/* COLUMNA PRINCIPAL */}
         <div className="xl:col-span-2 space-y-8">
-          {/* Tarjeta: Datos Generales */}
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-300">
             <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
               <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
@@ -473,7 +424,6 @@ const VehicleForm = () => {
             </div>
           </div>
 
-          {/* Tarjeta: Motor y Mecánica */}
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-300">
             <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
               <div className="p-2 bg-indigo-100 rounded-lg text-indigo-600">
@@ -589,14 +539,13 @@ const VehicleForm = () => {
                   onWheel={(e) => e.currentTarget.blur()}
                   className={inputClass}
                   min="2"
-                  max="5"
+                  max="10"
                   required
                 />
               </div>
             </div>
           </div>
 
-          {/* Tarjeta: Descripción */}
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-300">
             <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
               <div className="p-2 bg-gray-100 rounded-lg text-gray-600">
@@ -615,7 +564,6 @@ const VehicleForm = () => {
           </div>
         </div>
 
-        {/* COLUMNA LATERAL */}
         <div className="space-y-8">
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-300">
             <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
@@ -668,7 +616,6 @@ const VehicleForm = () => {
             </div>
           </div>
 
-          {/* Tarjeta: Fotos */}
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-300">
             <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
               <div className="p-2 bg-purple-100 rounded-lg text-purple-600">

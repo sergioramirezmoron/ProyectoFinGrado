@@ -13,7 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import api from "../../api/axios";
+import { getVehicles, archiveVehicle } from "../../services/vehicleService";
 import type { Vehicle } from "../../types/vehicle";
 
 const VehicleList = () => {
@@ -21,7 +21,6 @@ const VehicleList = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-
   const [page, setPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const ITEMS_PER_PAGE = 20;
@@ -29,21 +28,10 @@ const VehicleList = () => {
   const fetchVehicles = async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
-      params.append("page", page.toString());
-      params.append("status[nest]", "DELETED");
-
-      if (searchTerm) {
-        params.append("brand.name", searchTerm);
-      }
-
-      const response = await api.get(`/vehicles?${params.toString()}`);
-
+      const response = await getVehicles(page, searchTerm);
       const allVehicles = response.data.member || [];
-      const total = response.data.totalItems || allVehicles.length;
-
       setVehicles(allVehicles);
-      setTotalItems(total);
+      setTotalItems(response.data.totalItems || allVehicles.length);
     } catch (error) {
       console.error("Error al cargar vehículos:", error);
     } finally {
@@ -59,21 +47,14 @@ const VehicleList = () => {
     const delayDebounceFn = setTimeout(() => {
       fetchVehicles();
     }, 500);
-
     return () => clearTimeout(delayDebounceFn);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, searchTerm]);
 
   const handleDelete = async (id: number) => {
     if (!window.confirm("¿Seguro que quieres archivar este vehículo?")) return;
-
     try {
-      await api.patch(
-        `/vehicles/${id}`,
-        { status: "DELETED" },
-        { headers: { "Content-Type": "application/merge-patch+json" } },
-      );
-
+      await archiveVehicle(id);
       setVehicles((prev) => prev.filter((v) => v.id !== id));
       setTotalItems((prev) => Math.max(0, prev - 1));
     } catch (err) {
