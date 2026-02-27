@@ -1,18 +1,8 @@
 import { useEffect, useState } from "react";
-import api from "../../api/axios";
-import {
-  Plus,
-  Trash2,
-  Tag,
-  Loader2,
-  CheckCircle2,
-  AlertCircle,
-  Pencil,
-  Check,
-  X,
-} from "lucide-react";
-import ConfirmModal from "../../helpers/ConfirmModal";
+import { getBrands, createBrand, updateBrand, deleteBrand } from "../../services/brandService";
 import type { Brand } from "../../types/brand";
+import ConfirmModal from "../../helpers/ConfirmModal";
+import { AlertCircle, Check, CheckCircle2, Loader2, Pencil, Plus, Tag, Trash2, X } from "lucide-react";
 
 const BrandManagement = () => {
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -30,9 +20,8 @@ const BrandManagement = () => {
 
   const fetchBrands = async () => {
     try {
-      const response = await api.get("/brands");
-      const data = response.data.member || [];
-      setBrands(data);
+      const response = await getBrands();
+      setBrands(response.data.member || []);
     } catch (error) {
       console.error("Error cargando marcas", error);
     } finally {
@@ -49,7 +38,7 @@ const BrandManagement = () => {
     setIsSubmitting(true);
     setMessage({ text: "", type: "" });
     try {
-      const response = await api.post("/brands", { name: newName });
+      const response = await createBrand(newName);
       setBrands((prev) => [...prev, response.data]);
       setNewName("");
       setMessage({ text: "Marca añadida correctamente", type: "success" });
@@ -69,9 +58,8 @@ const BrandManagement = () => {
     const brand = deleteModal.brand;
     if (!brand) return;
     setDeleteModal({ open: false, brand: null });
-
     try {
-      await api.delete(`/brands/${brand.id}`);
+      await deleteBrand(brand.id);
       setBrands((prev) => prev.filter((b) => b.id !== brand.id));
       setMessage({ text: `Marca "${brand.name}" eliminada correctamente`, type: "success" });
     } catch (error: unknown) {
@@ -100,14 +88,8 @@ const BrandManagement = () => {
   const handleSaveEdit = async (id: number) => {
     setIsSaving(true);
     try {
-      await api.patch(
-        `/brands/${id}`,
-        { name: editName },
-        { headers: { "Content-Type": "application/merge-patch+json" } }
-      );
-      setBrands((prev) =>
-        prev.map((b) => (b.id === id ? { ...b, name: editName } : b))
-      );
+      await updateBrand(id, editName);
+      setBrands((prev) => prev.map((b) => (b.id === id ? { ...b, name: editName } : b)));
       cancelEdit();
       setMessage({ text: "Marca actualizada correctamente", type: "success" });
     } catch (error) {
@@ -117,7 +99,6 @@ const BrandManagement = () => {
       setIsSaving(false);
     }
   };
-
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-8">
       <ConfirmModal
@@ -138,10 +119,9 @@ const BrandManagement = () => {
         </p>
       </div>
 
-      {/* FORMULARIO DE CREACIÓN */}
       <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl">
         <form onSubmit={handleAddBrand} className="flex flex-wrap items-end gap-4">
-          <div className="flex-1 min-w-[300px] space-y-1.5">
+          <div className="flex-1 min-w-75 space-y-1.5">
             <label className="text-xs font-bold uppercase text-slate-400 ml-1">
               Nombre de la Marca
             </label>
@@ -158,7 +138,7 @@ const BrandManagement = () => {
           <button
             type="submit"
             disabled={isSubmitting || !newName.trim()}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 disabled:opacity-50 h-[46px]"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 disabled:opacity-50 h-11.5"
           >
             {isSubmitting ? (
               <Loader2 className="animate-spin" size={20} />
@@ -184,7 +164,6 @@ const BrandManagement = () => {
         )}
       </div>
 
-      {/* LISTADO DE MARCAS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {loading ? (
           <div className="col-span-full py-10 text-center">
@@ -197,7 +176,6 @@ const BrandManagement = () => {
         ) : (
           brands.map((brand) =>
             editingId === brand.id ? (
-              // — MODO EDICIÓN —
               <div
                 key={brand.id}
                 className="bg-white p-4 rounded-2xl border-2 border-blue-300 shadow-md flex items-center gap-2"
@@ -228,7 +206,6 @@ const BrandManagement = () => {
                 </button>
               </div>
             ) : (
-              // — MODO NORMAL —
               <div
                 key={brand.id}
                 className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between group hover:border-blue-200 transition-all"

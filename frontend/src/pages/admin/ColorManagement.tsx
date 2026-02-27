@@ -1,48 +1,31 @@
 import { useEffect, useState } from "react";
-import api from "../../api/axios";
-import {
-  Plus,
-  Trash2,
-  Palette,
-  Loader2,
-  CheckCircle2,
-  AlertCircle,
-  Pencil,
-  Check,
-  X,
-} from "lucide-react";
-import ConfirmModal from "../../helpers/ConfirmModal";
+import { getColors, createColor, updateColor, deleteColor } from "../../services/colorService";
 import type { Color } from "../../types/color";
+import ConfirmModal from "../../helpers/ConfirmModal";
+import { AlertCircle, Check, CheckCircle2, Loader2, Palette, Pencil, Plus, Trash2, X } from "lucide-react";
 
 const FALLBACK_COLOR = "#cccccc";
 
 const ColorManagement = () => {
   const [colors, setColors] = useState<Color[]>([]);
   const [loading, setLoading] = useState(true);
-
   const [newName, setNewName] = useState("");
   const [newCode, setNewCode] = useState("#3b82f6");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
-
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
   const [editCode, setEditCode] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-
-  const [deleteModal, setDeleteModal] = useState<{
-    open: boolean;
-    color: Color | null;
-  }>({
+  const [deleteModal, setDeleteModal] = useState<{ open: boolean; color: Color | null }>({
     open: false,
     color: null,
   });
 
   const fetchColors = async () => {
     try {
-      const response = await api.get("/colors");
-      const data = response.data.member || [];
-      setColors(data);
+      const response = await getColors();
+      setColors(response.data.member || []);
     } catch (error) {
       console.error("Error cargando colores", error);
     } finally {
@@ -59,16 +42,13 @@ const ColorManagement = () => {
     setIsSubmitting(true);
     setMessage({ text: "", type: "" });
     try {
-      const response = await api.post("/colors", {
-        name: newName,
-        hexCode: newCode,
-      });
+      const response = await createColor(newName, newCode);
       setColors((prev) => [...prev, response.data]);
       setNewName("");
       setNewCode("#3b82f6");
       setMessage({ text: "Color añadido correctamente", type: "success" });
     } catch (error) {
-      setMessage({ text: `Error al añadir el color.`, type: "error" });
+      setMessage({ text: "Error al añadir el color.", type: "error" });
       console.error(error);
     } finally {
       setIsSubmitting(false);
@@ -83,24 +63,19 @@ const ColorManagement = () => {
     const color = deleteModal.color;
     if (!color) return;
     setDeleteModal({ open: false, color: null });
-
     try {
-      await api.delete(`/colors/${color.id}`);
+      await deleteColor(color.id);
       setColors((prev) => prev.filter((c) => c.id !== color.id));
-      setMessage({
-        text: `Color "${color.name}" eliminado correctamente`,
-        type: "success",
-      });
+      setMessage({ text: `Color "${color.name}" eliminado correctamente`, type: "success" });
     } catch (error: unknown) {
-      const status = (error as { response?: { status?: number } })?.response
-        ?.status;
+      const status = (error as { response?: { status?: number } })?.response?.status;
       if (status === 500 || status === 422) {
         setMessage({
           text: `No se puede eliminar "${color.name}" porque está asignado a uno o más vehículos.`,
           type: "error",
         });
       } else {
-        setMessage({ text: `Error al eliminar el color.`, type: "error" });
+        setMessage({ text: "Error al eliminar el color.", type: "error" });
       }
     }
   };
@@ -120,26 +95,19 @@ const ColorManagement = () => {
   const handleSaveEdit = async (id: number) => {
     setIsSaving(true);
     try {
-      await api.patch(
-        `/colors/${id}`,
-        { name: editName, hexCode: editCode },
-        { headers: { "Content-Type": "application/merge-patch+json" } },
-      );
+      await updateColor(id, editName, editCode);
       setColors((prev) =>
-        prev.map((c) =>
-          c.id === id ? { ...c, name: editName, hexCode: editCode } : c,
-        ),
+        prev.map((c) => (c.id === id ? { ...c, name: editName, hexCode: editCode } : c))
       );
       cancelEdit();
       setMessage({ text: "Color actualizado correctamente", type: "success" });
     } catch (error) {
-      setMessage({ text: `Error al editar el color.`, type: "error" });
+      setMessage({ text: "Error al editar el color.", type: "error" });
       console.error(error);
     } finally {
       setIsSaving(false);
     }
   };
-
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-8">
       <ConfirmModal
