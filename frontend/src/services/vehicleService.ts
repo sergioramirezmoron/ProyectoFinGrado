@@ -1,4 +1,5 @@
 import api from "../api/axios";
+import type { Vehicle } from "../types/vehicle";
 
 export const loadFormOptions = () =>
   Promise.all([
@@ -45,3 +46,36 @@ export const archiveVehicle = (id: number) =>
       headers: { "Content-Type": "application/merge-patch+json" },
     },
   );
+
+export const getCatalogOptions = () =>
+  Promise.all([
+    api.get("/brands"),
+    api.get("/fuels"),
+    api.get("/transmissions"),
+    api.get("/provinces"),
+    api.get("/colors"),
+    api.get("/body_types"),
+  ]);
+
+export const getAllVehicles = async (): Promise<Vehicle[]> => {
+  const PAGE_SIZE = 30;
+  let currentPage = 1;
+  let collected: Vehicle[] = [];
+  let totalItems = Infinity;
+
+  while (collected.length < totalItems) {
+    const response = await api.get(
+      `/vehicles?page=${currentPage}&itemsPerPage=${PAGE_SIZE}`,
+    );
+    const data = response.data;
+    const batch: Vehicle[] = data.member ?? (Array.isArray(data) ? data : []);
+
+    if (currentPage === 1) totalItems = data.totalItems ?? batch.length;
+
+    collected = [...collected, ...batch];
+    if (batch.length === 0 || collected.length >= totalItems) break;
+    currentPage++;
+  }
+
+  return collected;
+};

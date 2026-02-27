@@ -1,10 +1,13 @@
 import { useState, useEffect, useMemo } from "react";
 import { ChevronLeft, ChevronRight, Search, Loader2 } from "lucide-react";
-import api from "../../api/axios";
 import VehicleCard from "../../components/public/VehicleCard";
 import VehicleFilter from "../../components/public/Filter";
 import type { Vehicle, SelectOption, HydraResponse } from "../../types/vehicle";
 import type { CatalogProps, FilterState } from "../../types/filters";
+import {
+  getAllVehicles,
+  getCatalogOptions,
+} from "../../services/vehicleService";
 
 type IriObject = Pick<SelectOption, "@id">;
 
@@ -61,14 +64,7 @@ const Catalog = ({ mode }: CatalogProps) => {
   useEffect(() => {
     const fetchOptions = async () => {
       try {
-        const [b, f, t, p, c, bt] = await Promise.all([
-          api.get("/brands"),
-          api.get("/fuels"),
-          api.get("/transmissions"),
-          api.get("/provinces"),
-          api.get("/colors"),
-          api.get("/body_types"),
-        ]);
+        const [b, f, t, p, c, bt] = await getCatalogOptions();
 
         const extract = (res: {
           data: HydraResponse<SelectOption>;
@@ -93,32 +89,8 @@ const Catalog = ({ mode }: CatalogProps) => {
     const fetchVehicles = async () => {
       setLoading(true);
       try {
-        const PAGE_SIZE = 30;
-        let currentPage = 1;
-        let collected: Vehicle[] = [];
-        let totalItems = Infinity;
-
-        while (collected.length < totalItems) {
-          const response = await api.get(
-            `/vehicles?page=${currentPage}&itemsPerPage=${PAGE_SIZE}`,
-          );
-          const data = response.data;
-
-          const batch: Vehicle[] =
-            data.member ?? (Array.isArray(data) ? data : []);
-
-          if (currentPage === 1) {
-            totalItems = data.totalItems ?? batch.length;
-          }
-
-          collected = [...collected, ...batch];
-
-          if (batch.length === 0 || collected.length >= totalItems) break;
-
-          currentPage++;
-        }
-
-        setAllVehicles(collected);
+        const vehicles = await getAllVehicles();
+        setAllVehicles(vehicles);
       } catch (e) {
         console.error("Error cargando vehículos:", e);
       } finally {
