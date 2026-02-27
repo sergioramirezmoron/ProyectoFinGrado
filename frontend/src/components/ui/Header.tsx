@@ -53,7 +53,6 @@ const Header = () => {
       <nav className="fixed top-0 w-full z-50 bg-slate-950/95 backdrop-blur-xl border-b border-white/10 text-white transition-all duration-300 shadow-lg shadow-black/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-4">
 
-          {/* Logo */}
           <Link
             to="/"
             className="text-lg sm:text-2xl font-bold tracking-tighter flex items-center gap-1 group shrink-0"
@@ -63,7 +62,6 @@ const Header = () => {
             <span className="text-blue-500 group-hover:text-white transition-colors duration-300">CARS</span>
           </Link>
 
-          {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-1 text-sm font-medium tracking-wide flex-1 justify-center">
             <NavLink to="/" end className={navLinkClass}>INICIO</NavLink>
             <NavLink to="/venta" className={navLinkClass}>COMPRAR</NavLink>
@@ -108,7 +106,6 @@ const Header = () => {
             )}
           </div>
 
-          {/* Right Icons */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {isAuthenticated ? (
               <>
@@ -129,7 +126,6 @@ const Header = () => {
                   )}
                 </Link>
 
-                {/* Avatar / perfil — siempre visible */}
                 <button
                   onClick={() => setIsPanelOpen(true)}
                   className="flex items-center gap-2 sm:pl-3 sm:border-l sm:border-white/10 hover:opacity-80 transition-opacity cursor-pointer"
@@ -167,7 +163,6 @@ const Header = () => {
               </div>
             )}
 
-            {/* Mobile Menu Button */}
             <button
               className="lg:hidden p-2 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -177,7 +172,6 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Mobile Menu Dropdown */}
         <div
           className={`lg:hidden absolute w-full bg-slate-900/98 backdrop-blur-xl border-b border-white/10 transition-all duration-300 ease-in-out ${
             isMobileMenuOpen

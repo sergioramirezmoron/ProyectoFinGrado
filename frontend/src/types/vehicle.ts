@@ -91,3 +91,6 @@ export interface Vehicle {
   createdAt: string;
   updatedAt?: string;
 }
+export interface VehicleCardProps {
+  vehicle: Vehicle;
+}

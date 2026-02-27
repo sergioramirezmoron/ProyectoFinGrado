@@ -10,13 +10,9 @@ import {
   Zap,
   Heart,
 } from "lucide-react";
-import type { Vehicle } from "../../types/vehicle";
 import { useFavorite } from "../../hooks/useFavorite";
 import { useAuth } from "../../hooks/useAuth";
-
-interface VehicleCardProps {
-  vehicle: Vehicle;
-}
+import type { VehicleCardProps } from "../../types/vehicle";
 
 const VehicleCard = ({ vehicle }: VehicleCardProps) => {
   const { isAuthenticated } = useAuth();
@@ -42,7 +38,6 @@ const VehicleCard = ({ vehicle }: VehicleCardProps) => {
       to={`/vehiculo/${vehicle.id}`}
       className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full relative"
     >
-      {/* --- IMAGEN --- */}
       <div className="relative h-64 overflow-hidden">
         <img
           src={imageUrl}
@@ -51,7 +46,6 @@ const VehicleCard = ({ vehicle }: VehicleCardProps) => {
         />
         <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent opacity-60" />
 
-        {/* Badge estado */}
         {vehicle.type === "SALE" && (
           <div className="absolute top-4 left-4">
             <span
@@ -66,7 +60,6 @@ const VehicleCard = ({ vehicle }: VehicleCardProps) => {
           </div>
         )}
 
-        {/* Botón favorito — solo usuarios autenticados */}
         {isAuthenticated && (
           <button
             onClick={toggleFavorite}
@@ -85,7 +78,6 @@ const VehicleCard = ({ vehicle }: VehicleCardProps) => {
           </button>
         )}
 
-        {/* Badge ubicación */}
         <div className="absolute bottom-4 right-4">
           <span className="flex items-center gap-1.5 bg-white/90 backdrop-blur-md text-slate-800 text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm">
             <MapPin size={12} className="text-blue-600" />
@@ -94,7 +86,6 @@ const VehicleCard = ({ vehicle }: VehicleCardProps) => {
         </div>
       </div>
 
-      {/* --- CONTENIDO --- */}
       <div className="p-6 flex flex-col grow">
         <div className="mb-5">
           <h3 className="text-xs font-bold text-blue-600 uppercase tracking-widest mb-1">

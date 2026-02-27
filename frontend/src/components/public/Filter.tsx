@@ -1,23 +1,5 @@
 import { Filter as FilterIcon } from "lucide-react";
-import type { SelectOption } from "../../types/vehicle";
-import type { FilterState } from "../../types/filters";
-
-interface FilterProps {
-  filters: FilterState;
-  onChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => void;
-  onClear: () => void;
-  options: {
-    brands: SelectOption[];
-    fuels: SelectOption[];
-    transmissions: SelectOption[];
-    provinces: SelectOption[];
-    colors: SelectOption[];
-    bodyTypes: SelectOption[];
-  };
-  mode: "SALE" | "RENT";
-}
+import type { FilterProps } from "../../types/filters";
 
 const VehicleFilter = ({
   filters,
@@ -60,7 +42,6 @@ const VehicleFilter = ({
             </div>
           )}
 
-          {/* MARCA */}
           <div>
             <label className="text-sm font-semibold text-gray-700 mb-2 block">
               Marca
@@ -80,7 +61,6 @@ const VehicleFilter = ({
             </select>
           </div>
 
-          {/* PROVINCIA */}
           <div>
             <label className="text-sm font-semibold text-gray-700 mb-2 block">
               Provincia
@@ -100,7 +80,6 @@ const VehicleFilter = ({
             </select>
           </div>
 
-          {/* PRECIO */}
           <div>
             <label className="text-sm font-semibold text-gray-700 mb-2 block">
               {mode === "RENT" ? "Precio / Día (€)" : "Precio Total (€)"}
@@ -125,7 +104,6 @@ const VehicleFilter = ({
             </div>
           </div>
 
-          {/* COMBUSTIBLE */}
           <div>
             <label className="text-sm font-semibold text-gray-700 mb-2 block">
               Combustible
@@ -144,8 +122,6 @@ const VehicleFilter = ({
               ))}
             </select>
           </div>
-
-          {/* Agrega aquí el resto de campos (Color, Carrocería, Transmisión) siguiendo el mismo patrón */}
         </div>
       </div>
     </aside>

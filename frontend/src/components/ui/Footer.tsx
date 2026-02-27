@@ -8,10 +8,8 @@ const Footer = () => {
     <footer className="bg-slate-950 text-slate-300 pt-12 pb-6 border-t border-white/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
-        {/* Grid principal */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10 md:gap-12 mb-10 sm:mb-12">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-8 sm:gap-10 md:gap-12 mb-10 sm:mb-12">
 
-          {/* Brand — ocupa las 2 columnas en móvil */}
           <div className="col-span-2 sm:col-span-2 md:col-span-1 space-y-4">
             <Link
               to="/"
@@ -36,7 +34,6 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Explorar */}
           <div>
             <h3 className="text-white font-bold mb-4 sm:mb-6 text-sm sm:text-base">Explorar</h3>
             <ul className="space-y-2 sm:space-y-3 text-sm">
@@ -55,26 +52,6 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Legal */}
-          <div>
-            <h3 className="text-white font-bold mb-4 sm:mb-6 text-sm sm:text-base">Legal</h3>
-            <ul className="space-y-2 sm:space-y-3 text-sm">
-              {[
-                { to: "/aviso-legal", label: "Aviso Legal" },
-                { to: "/privacidad", label: "Privacidad" },
-                { to: "/cookies", label: "Cookies" },
-                { to: "/condiciones", label: "Términos" },
-              ].map(({ to, label }) => (
-                <li key={to}>
-                  <Link to={to} className="hover:text-blue-400 transition-colors">
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Contacto — ocupa 2 columnas en móvil */}
           <div className="col-span-2 sm:col-span-1">
             <h3 className="text-white font-bold mb-4 sm:mb-6 text-sm sm:text-base">Contacto</h3>
             <ul className="space-y-3 sm:space-y-4 text-sm">
@@ -94,7 +71,6 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Bottom bar */}
         <div className="border-t border-white/5 pt-6 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-slate-500">
           <p>&copy; {currentYear} LuxuryCars. Todos los derechos reservados.</p>
           <p>Diseñado para amantes del motor.</p>
