@@ -17,8 +17,6 @@ export interface VehicleImage {
   main: boolean;
 }
 
-
-
 export interface Reservation {
   id: number;
   startDate: string;

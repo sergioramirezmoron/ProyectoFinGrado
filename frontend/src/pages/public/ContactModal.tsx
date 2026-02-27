@@ -3,22 +3,7 @@ import { useState, useEffect } from "react";
 import { X, Send, CheckCircle, Loader2, Phone } from "lucide-react";
 import api from "../../api/axios";
 import { useAuth } from "../../hooks/useAuth";
-
-interface ContactModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  vehicleId: number;
-  vehicleName: string;
-}
-
-interface ConversationPayloadInterface {
-  contactName: string;
-  contactEmail: string;
-  contactPhone: string;
-  vehicle: string;
-  user?: string;
-}
-
+import type { ContactModalProps, ConversationPayloadInterface } from "../../types/message";
 
 const ContactModal = ({
   isOpen,
@@ -57,13 +42,11 @@ const ContactModal = ({
     setLoading(true);
 
     try {
-      // PASO 1: Crear la Conversación (SIN MENSAJES ANIDADOS)
       const conversationPayload: ConversationPayloadInterface = {
         contactName: formData.name,
         contactEmail: formData.email,
         contactPhone: formData.phone,
         vehicle: `/api/vehicles/${vehicleId}`,
-        // Eliminamos 'messages' de aquí para evitar fallos de anidamiento
       };
 
       if (user && user["@id"]) {
@@ -72,15 +55,12 @@ const ContactModal = ({
 
       const conversationRes = await api.post("/conversations", conversationPayload);
       
-      // Obtenemos la ID (IRI) de la conversación creada
-      // Puede venir como '@id' o construirse con el ID numérico
       const conversationIri = conversationRes.data["@id"] || `/api/conversations/${conversationRes.data.id}`;
 
-      // PASO 2: Crear el Mensaje vinculado a esa conversación
       await api.post("/messages", {
         content: formData.message,
         isAdmin: false,
-        conversation: conversationIri, // Vinculamos aquí explícitamente
+        conversation: conversationIri,
       });
 
       setSuccess(true);
@@ -98,13 +78,8 @@ const ContactModal = ({
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // ... (El resto del renderizado es idéntico a tu código original)
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-        {/* ... (Tu JSX visual se mantiene igual) ... */}
-        {/* Solo he cambiado la lógica de handleSubmit arriba */}
-        
-        {/* Te pego el JSX resumido para que veas dónde encaja, pero usa el tuyo si no quieres cambiar estilos */}
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 relative">
         <button
           onClick={onClose}
@@ -155,7 +130,6 @@ const ContactModal = ({
             <form onSubmit={handleSubmit} className="space-y-4">
               
               {user ? (
-                // --- MODO LOGUEADO ---
                 <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex flex-col gap-2">
                   <div>
                     <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider block mb-1">
@@ -174,7 +148,6 @@ const ContactModal = ({
                     </div>
                   </div>
 
-                  {/* Input de teléfono: SOLO SI NO TIENE TELÉFONO */}
                   {!hasUserPhone && (
                     <div className="pt-2 border-t border-blue-200 mt-1">
                       <label className="block text-xs font-bold text-blue-600 mb-1">
@@ -193,7 +166,6 @@ const ContactModal = ({
                   )}
                 </div>
               ) : (
-                // --- MODO INVITADO ---
                 <>
                   <div>
                     <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">

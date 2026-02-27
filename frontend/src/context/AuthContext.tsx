@@ -5,7 +5,6 @@ import type { User, JWTPayload, AuthContextType } from "../types/auth";
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-// Función auxiliar
 const decodeTokenIfValid = (token: string): User | null => {
   try {
     const decoded = jwtDecode<JWTPayload>(token);
@@ -13,7 +12,6 @@ const decodeTokenIfValid = (token: string): User | null => {
       return null;
     }
     
-    // AQUÍ MAPEAMOS LOS DATOS NUEVOS
     return {
       email: decoded.username,
       roles: decoded.roles,

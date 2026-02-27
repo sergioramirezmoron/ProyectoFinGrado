@@ -10,6 +10,11 @@ export interface MessagePayload {
   user?: string;
 }
 
+export interface ChatContextType {
+  unreadCount: number;
+  refreshUnreadCount: () => void;
+}
+
 export interface Message {
   id: number;
   content: string;
@@ -33,4 +38,19 @@ export interface Conversation {
   updatedAt: string;
   status: string;
   messages: Message[];
+}
+
+export interface ContactModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  vehicleId: number;
+  vehicleName: string;
+}
+
+export interface ConversationPayloadInterface {
+  contactName: string;
+  contactEmail: string;
+  contactPhone: string;
+  vehicle: string;
+  user?: string;
 }

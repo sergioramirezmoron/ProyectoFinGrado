@@ -27,7 +27,10 @@ const ProvinceManagement = () => {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const [deleteModal, setDeleteModal] = useState<{ open: boolean; province: Province | null }>({
+  const [deleteModal, setDeleteModal] = useState<{
+    open: boolean;
+    province: Province | null;
+  }>({
     open: false,
     province: null,
   });
@@ -77,9 +80,13 @@ const ProvinceManagement = () => {
     try {
       await api.delete(`/provinces/${province.id}`);
       setProvinces((prev) => prev.filter((p) => p.id !== province.id));
-      setMessage({ text: `Provincia "${province.name}" eliminada correctamente`, type: "success" });
+      setMessage({
+        text: `Provincia "${province.name}" eliminada correctamente`,
+        type: "success",
+      });
     } catch (error: unknown) {
-      const status = (error as { response?: { status?: number } })?.response?.status;
+      const status = (error as { response?: { status?: number } })?.response
+        ?.status;
       if (status === 500 || status === 422) {
         setMessage({
           text: `No se puede eliminar "${province.name}" porque está asignada a uno o más vehículos.`,
@@ -107,13 +114,16 @@ const ProvinceManagement = () => {
       await api.patch(
         `/provinces/${id}`,
         { name: editName },
-        { headers: { "Content-Type": "application/merge-patch+json" } }
+        { headers: { "Content-Type": "application/merge-patch+json" } },
       );
       setProvinces((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, name: editName } : p))
+        prev.map((p) => (p.id === id ? { ...p, name: editName } : p)),
       );
       cancelEdit();
-      setMessage({ text: "Provincia actualizada correctamente", type: "success" });
+      setMessage({
+        text: "Provincia actualizada correctamente",
+        type: "success",
+      });
     } catch (error) {
       setMessage({ text: "Error al editar la provincia.", type: "error" });
       console.error(error);
@@ -142,10 +152,12 @@ const ProvinceManagement = () => {
         </p>
       </div>
 
-      {/* FORMULARIO DE CREACIÓN */}
       <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl">
-        <form onSubmit={handleAddProvince} className="flex flex-wrap items-end gap-4">
-          <div className="flex-1 min-w-[300px] space-y-1.5">
+        <form
+          onSubmit={handleAddProvince}
+          className="flex flex-wrap items-end gap-4"
+        >
+          <div className="flex-1 min-w-75 space-y-1.5">
             <label className="text-xs font-bold uppercase text-slate-400 ml-1">
               Nombre de la Provincia / Ciudad
             </label>
@@ -162,12 +174,14 @@ const ProvinceManagement = () => {
           <button
             type="submit"
             disabled={isSubmitting || !newName.trim()}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 disabled:opacity-50 h-[46px]"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 disabled:opacity-50 h-11.5"
           >
             {isSubmitting ? (
               <Loader2 className="animate-spin" size={20} />
             ) : (
-              <><Plus size={20} /> Añadir</>
+              <>
+                <Plus size={20} /> Añadir
+              </>
             )}
           </button>
         </form>
@@ -188,7 +202,6 @@ const ProvinceManagement = () => {
         )}
       </div>
 
-      {/* LISTADO DE PROVINCIAS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {loading ? (
           <div className="col-span-full py-10 text-center">
@@ -201,7 +214,6 @@ const ProvinceManagement = () => {
         ) : (
           provinces.map((province) =>
             editingId === province.id ? (
-              // — MODO EDICIÓN —
               <div
                 key={province.id}
                 className="bg-white p-4 rounded-2xl border-2 border-blue-300 shadow-md flex items-center gap-2"
@@ -232,7 +244,6 @@ const ProvinceManagement = () => {
                 </button>
               </div>
             ) : (
-              // — MODO NORMAL —
               <div
                 key={province.id}
                 className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between group hover:border-blue-200 transition-all"
@@ -241,7 +252,9 @@ const ProvinceManagement = () => {
                   <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
                     <MapPin size={18} />
                   </div>
-                  <span className="font-bold text-slate-700">{province.name}</span>
+                  <span className="font-bold text-slate-700">
+                    {province.name}
+                  </span>
                 </div>
                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
                   <button
@@ -258,7 +271,7 @@ const ProvinceManagement = () => {
                   </button>
                 </div>
               </div>
-            )
+            ),
           )
         )}
       </div>

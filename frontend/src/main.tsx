@@ -5,14 +5,17 @@ import App from "./App.tsx";
 import { AuthProvider } from "./context/AuthContext.tsx";
 import { BrowserRouter } from "react-router-dom";
 import { FavoriteProvider } from "./context/FavoriteContext.tsx";
+import { ChatProvider } from "./context/ChatContext.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <AuthProvider>
       <BrowserRouter>
-        <FavoriteProvider>
-          <App />
-        </FavoriteProvider>
+        <ChatProvider>
+          <FavoriteProvider>
+            <App />
+          </FavoriteProvider>
+        </ChatProvider>
       </BrowserRouter>
     </AuthProvider>
   </StrictMode>,

@@ -22,7 +22,6 @@ import { useChatNotification } from "../../hooks/useChatNotification";
 import Toast from "../../helpers/Toast";
 import ConfirmModal from "../../helpers/ConfirmModal";
 
-// Tipos
 import type { ApiResource, Message } from "../../types/message";
 import type { Conversation } from "../../types/reservation";
 
@@ -34,7 +33,6 @@ const Chat = () => {
     user?.roles?.includes("ROLE_SALES") ||
     false;
 
-  // ESTADOS COMUNES
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedChat, setSelectedChat] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -44,7 +42,6 @@ const Chat = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"SALE" | "RENT">("RENT");
 
-  // Estados Admin
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{
     status: "CONFIRMED" | "REJECTED";
@@ -56,7 +53,6 @@ const Chat = () => {
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  // --- 1. CARGA DE DATOS ---
   useEffect(() => {
     if (user) {
       fetchConversations();
@@ -100,7 +96,6 @@ const Chat = () => {
     return null;
   };
 
-  // --- 2. LÓGICA ---
   const fetchConversations = async (isPolling = false) => {
     try {
       if (!isPolling) setLoading(true);
@@ -157,7 +152,6 @@ const Chat = () => {
         { status: "READ" },
         { headers: { "Content-Type": "application/merge-patch+json" } },
       );
-      // Actualizar el contador global (Header)
       refreshUnreadCount();
     } catch (e) {
       console.error(e);
@@ -191,7 +185,6 @@ const Chat = () => {
     }
   };
 
-  // --- 3. FILTRADO ---
   const filteredConversations = useMemo(() => {
     let filtered = conversations;
 
@@ -223,8 +216,6 @@ const Chat = () => {
     );
   }, [conversations, activeTab, searchQuery]);
 
-  // --- 4. ACCIONES DE ADMIN ---
-
   const handleAdminAction_StatusChange = async (newStatus: string) => {
     if (!isAdmin || !selectedChat?.vehicle) return;
 
@@ -246,17 +237,14 @@ const Chat = () => {
         { headers: { "Content-Type": "application/merge-patch+json" } },
       );
 
-      // 1. Actualizar el chat seleccionado
       setSelectedChat((prev) =>
         prev
           ? { ...prev, vehicle: { ...prev.vehicle!, status: newStatus } }
           : null,
       );
 
-      // 2. Actualizar TODAS las conversaciones que tengan ESE vehículo
       setConversations((prev) =>
         prev.map((c) => {
-          // Usamos el helper para comparar IDs de forma segura
           const cVehicleId = getUniqueId(c.vehicle);
           if (
             cVehicleId &&
@@ -293,7 +281,6 @@ const Chat = () => {
         { headers: { "Content-Type": "application/merge-patch+json" } },
       );
 
-      // Actualizar solo el chat actual (La reserva es única por chat)
       setSelectedChat((prev) =>
         prev
           ? { ...prev, reservation: { ...prev.reservation!, status } }
@@ -317,7 +304,6 @@ const Chat = () => {
         status === "CONFIRMED" &&
         selectedChat.vehicle?.status === "AVAILABLE"
       ) {
-        // Si se confirma, esto llamará a la función de arriba que ahora SÍ actualiza todos los chats
         await handleAdminAction_StatusChange("RESERVED");
       }
       setToast({
@@ -332,7 +318,6 @@ const Chat = () => {
     }
   };
 
-  // UI Helpers
   const getImageUrl = (chat: Conversation) => {
     if (chat.vehicle?.vehicleImages?.length) {
       const main =
@@ -370,7 +355,6 @@ const Chat = () => {
   };
   const isChatLocked = selectedChat?.vehicle?.status === "SOLD";
 
-  // Contadores
   const unreadSales = conversations.filter(
     (c) => !c.reservation && c.vehicle?.type !== "RENT" && hasUnreadMessages(c),
   ).length;
@@ -385,8 +369,8 @@ const Chat = () => {
     <div
       className={`bg-white rounded-none shadow-sm border-x border-gray-200 flex overflow-hidden relative ${
         isAdmin
-          ? "h-[calc(100vh-100px)] rounded-2xl border-y" // Admin layout has padding, so we keep rounded corners and border
-          : "h-[calc(100vh-80px)]" // Public layout: Full height minus header (80px), no rounded corners, no top/bottom border to blend perfectly
+          ? "h-[calc(100vh-100px)] rounded-2xl border-y"
+          : "h-[calc(100vh-80px)]"
       }`}
     >
       {toast && (
@@ -416,7 +400,6 @@ const Chat = () => {
         />
       )}
 
-      {/* SIDEBAR */}
       <div className="w-1/3 border-r border-gray-200 flex flex-col bg-gray-50 min-w-70">
         <div className="flex border-b border-gray-100 bg-white">
           <button
@@ -530,7 +513,6 @@ const Chat = () => {
         </div>
       </div>
 
-      {/* ZONA DE CHAT (DERECHA) */}
       <div className="flex-1 flex flex-col bg-[#eef1f6]">
         {selectedChat ? (
           <>

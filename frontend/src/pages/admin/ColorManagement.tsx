@@ -12,12 +12,7 @@ import {
   X,
 } from "lucide-react";
 import ConfirmModal from "../../helpers/ConfirmModal";
-
-interface Color {
-  id: number;
-  name: string;
-  hexCode?: string;
-}
+import type { Color } from "../../types/color";
 
 const FALLBACK_COLOR = "#cccccc";
 
@@ -25,19 +20,16 @@ const ColorManagement = () => {
   const [colors, setColors] = useState<Color[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Nuevo color
   const [newName, setNewName] = useState("");
   const [newCode, setNewCode] = useState("#3b82f6");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
 
-  // Edición inline
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
   const [editCode, setEditCode] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  // Modal de confirmación de borrado
   const [deleteModal, setDeleteModal] = useState<{
     open: boolean;
     color: Color | null;
@@ -168,13 +160,12 @@ const ColorManagement = () => {
         </p>
       </div>
 
-      {/* FORMULARIO DE CREACIÓN */}
       <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl">
         <form
           onSubmit={handleAddColor}
           className="flex flex-wrap items-end gap-4"
         >
-          <div className="flex-1 min-w-[200px] space-y-1.5">
+          <div className="flex-1 min-w-5 space-y-1.5">
             <label className="text-xs font-bold uppercase text-slate-400 ml-1">
               Nombre del Color
             </label>
@@ -236,7 +227,6 @@ const ColorManagement = () => {
         )}
       </div>
 
-      {/* LISTADO DE COLORES */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {loading ? (
           <div className="col-span-full py-10 text-center">
@@ -245,7 +235,6 @@ const ColorManagement = () => {
         ) : (
           colors.map((color) =>
             editingId === color.id ? (
-              // — MODO EDICIÓN —
               <div
                 key={color.id}
                 className="bg-white p-4 rounded-2xl border-2 border-blue-300 shadow-md flex flex-col gap-3"
@@ -290,7 +279,6 @@ const ColorManagement = () => {
                 </div>
               </div>
             ) : (
-              // — MODO NORMAL —
               <div
                 key={color.id}
                 className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow group"

@@ -13,21 +13,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import ConfirmModal from "../../helpers/ConfirmModal";
-
-interface Brand {
-  id: number;
-  "@id": string;
-  name: string;
-}
-
-interface Model {
-  id: number;
-  name: string;
-  brand: {
-    "@id": string;
-    name: string;
-  };
-}
+import type { Brand, Model } from "../../types/brand";
 
 const ModelManagement = () => {
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -41,7 +27,10 @@ const ModelManagement = () => {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const [deleteModal, setDeleteModal] = useState<{ open: boolean; model: Model | null }>({
+  const [deleteModal, setDeleteModal] = useState<{
+    open: boolean;
+    model: Model | null;
+  }>({
     open: false,
     model: null,
   });
@@ -64,13 +53,11 @@ const ModelManagement = () => {
     fetchData();
   }, []);
 
-  // Modelos filtrados por marca seleccionada en el listado
   const filteredModels = useMemo(() => {
     if (!filterBrandIri) return models;
     return models.filter((m) => m.brand["@id"] === filterBrandIri);
   }, [models, filterBrandIri]);
 
-  // Modelos agrupados por marca
   const groupedModels = useMemo(() => {
     const groups: Record<string, { brandName: string; models: Model[] }> = {};
     filteredModels.forEach((m) => {
@@ -79,7 +66,7 @@ const ModelManagement = () => {
       groups[key].models.push(m);
     });
     return Object.values(groups).sort((a, b) =>
-      a.brandName.localeCompare(b.brandName)
+      a.brandName.localeCompare(b.brandName),
     );
   }, [filteredModels]);
 
@@ -90,7 +77,7 @@ const ModelManagement = () => {
     try {
       const response = await api.post("/models", {
         name: newName,
-        brand: selectedBrandIri, // IRI de la marca
+        brand: selectedBrandIri,
       });
       setModels((prev) => [...prev, response.data]);
       setNewName("");
@@ -115,9 +102,13 @@ const ModelManagement = () => {
     try {
       await api.delete(`/models/${model.id}`);
       setModels((prev) => prev.filter((m) => m.id !== model.id));
-      setMessage({ text: `Modelo "${model.name}" eliminado correctamente`, type: "success" });
+      setMessage({
+        text: `Modelo "${model.name}" eliminado correctamente`,
+        type: "success",
+      });
     } catch (error: unknown) {
-      const status = (error as { response?: { status?: number } })?.response?.status;
+      const status = (error as { response?: { status?: number } })?.response
+        ?.status;
       if (status === 500 || status === 422) {
         setMessage({
           text: `No se puede eliminar "${model.name}" porque tiene vehículos asociados.`,
@@ -145,10 +136,10 @@ const ModelManagement = () => {
       await api.patch(
         `/models/${id}`,
         { name: editName },
-        { headers: { "Content-Type": "application/merge-patch+json" } }
+        { headers: { "Content-Type": "application/merge-patch+json" } },
       );
       setModels((prev) =>
-        prev.map((m) => (m.id === id ? { ...m, name: editName } : m))
+        prev.map((m) => (m.id === id ? { ...m, name: editName } : m)),
       );
       cancelEdit();
       setMessage({ text: "Modelo actualizado correctamente", type: "success" });
@@ -180,11 +171,11 @@ const ModelManagement = () => {
         </p>
       </div>
 
-      {/* FORMULARIO DE CREACIÓN */}
       <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl">
-        <form onSubmit={handleAddModel} className="flex flex-wrap items-end gap-4">
-
-          {/* Selector de marca */}
+        <form
+          onSubmit={handleAddModel}
+          className="flex flex-wrap items-end gap-4"
+        >
           <div className="space-y-1.5 min-w-[180px]">
             <label className="text-xs font-bold uppercase text-slate-400 ml-1">
               Marca
@@ -203,11 +194,13 @@ const ModelManagement = () => {
                   </option>
                 ))}
               </select>
-              <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <ChevronDown
+                size={16}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+              />
             </div>
           </div>
 
-          {/* Nombre del modelo */}
           <div className="flex-1 min-w-[200px] space-y-1.5">
             <label className="text-xs font-bold uppercase text-slate-400 ml-1">
               Nombre del Modelo
@@ -230,7 +223,9 @@ const ModelManagement = () => {
             {isSubmitting ? (
               <Loader2 className="animate-spin" size={20} />
             ) : (
-              <><Plus size={20} /> Añadir</>
+              <>
+                <Plus size={20} /> Añadir
+              </>
             )}
           </button>
         </form>
@@ -251,9 +246,10 @@ const ModelManagement = () => {
         )}
       </div>
 
-      {/* FILTRO DEL LISTADO */}
       <div className="flex items-center gap-3">
-        <span className="text-sm font-semibold text-slate-500">Filtrar por marca:</span>
+        <span className="text-sm font-semibold text-slate-500">
+          Filtrar por marca:
+        </span>
         <div className="relative">
           <select
             value={filterBrandIri}
@@ -267,25 +263,28 @@ const ModelManagement = () => {
               </option>
             ))}
           </select>
-          <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          <ChevronDown
+            size={14}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+          />
         </div>
         <span className="text-xs text-slate-400">
           {filteredModels.length} modelo{filteredModels.length !== 1 ? "s" : ""}
         </span>
       </div>
 
-      {/* LISTADO AGRUPADO POR MARCA */}
       {loading ? (
         <div className="py-10 text-center">
           <Loader2 className="animate-spin mx-auto text-blue-500" />
         </div>
       ) : groupedModels.length === 0 ? (
-        <p className="text-center text-slate-400 py-10">No hay modelos registrados.</p>
+        <p className="text-center text-slate-400 py-10">
+          No hay modelos registrados.
+        </p>
       ) : (
         <div className="space-y-6">
           {groupedModels.map((group) => (
             <div key={group.brandName}>
-              {/* Cabecera de grupo */}
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-sm font-extrabold text-slate-700 uppercase tracking-wider">
                   {group.brandName}
@@ -296,11 +295,9 @@ const ModelManagement = () => {
                 <div className="flex-1 h-px bg-slate-100" />
               </div>
 
-              {/* Grid de modelos */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {group.models.map((model) =>
                   editingId === model.id ? (
-                    // — MODO EDICIÓN —
                     <div
                       key={model.id}
                       className="bg-white p-3 rounded-2xl border-2 border-blue-300 shadow-md flex items-center gap-2"
@@ -331,7 +328,6 @@ const ModelManagement = () => {
                       </button>
                     </div>
                   ) : (
-                    // — MODO NORMAL —
                     <div
                       key={model.id}
                       className="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between group hover:border-blue-200 transition-all"
@@ -359,7 +355,7 @@ const ModelManagement = () => {
                         </button>
                       </div>
                     </div>
-                  )
+                  ),
                 )}
               </div>
             </div>

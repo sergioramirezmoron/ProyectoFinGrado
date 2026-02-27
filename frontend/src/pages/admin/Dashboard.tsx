@@ -75,7 +75,6 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 mt-10">
-      {/* CABECERA */}
       <div className="flex justify-between items-end mb-2">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">
@@ -102,7 +101,6 @@ const Dashboard = () => {
         </button>
       </div>
 
-      {/* GRID SUPERIOR */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCardsData.map((stat, index) => (
           <StatCard
@@ -115,9 +113,7 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {/* SECCIÓN INFERIOR (LAYOUT ASIMÉTRICO) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* COLUMNA IZQUIERDA (2/3): ESTADO DE LA FLOTA */}
         <div className="lg:col-span-2">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-full">
             <h3 className="font-bold text-slate-800 mb-6 flex items-center gap-2">
@@ -125,7 +121,6 @@ const Dashboard = () => {
               Flota
             </h3>
 
-            {/* Contadores Grandes */}
             <div className="grid grid-cols-3 gap-4 text-center mb-8">
               <div className="p-5 bg-blue-50/50 rounded-xl border border-blue-100 hover:shadow-md transition-shadow">
                 <div className="text-3xl font-extrabold text-blue-700">
@@ -155,9 +150,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* COLUMNA DERECHA (1/3): MARCAS + ACTIVIDAD */}
         <div className="space-y-4 flex flex-col h-full">
-          {/* 1. TARJETA PEQUEÑA: MARCAS (Ahora arriba) */}
           <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
             <div>
               <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">
@@ -172,7 +165,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* 2. PANEL: ACTIVIDAD RECIENTE (Con scroll y altura fija para alinear) */}
           <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex-1 flex flex-col min-h-75">
             <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 text-sm">
               <Clock size={16} className="text-blue-500" /> Actividad Reciente
@@ -185,7 +177,6 @@ const Dashboard = () => {
                     key={i}
                     className="flex gap-3 items-start relative pb-4 last:pb-0"
                   >
-                    {/* Línea vertical decorativa */}
                     {i !== stats.recentActivity.length - 1 && (
                       <div className="absolute left-1.25 top-2 bottom-0 w-px bg-gray-100"></div>
                     )}
@@ -197,7 +188,6 @@ const Dashboard = () => {
                         className="text-xs text-slate-600 font-medium leading-snug line-clamp-2"
                         title={act.text}
                       >
-                        {/* Limpiamos un poco el texto visualmente */}
                         {act.text.replace("Mensaje en chat", "Chat")}
                       </p>
                       <span className="text-[10px] text-gray-400 block mt-1">

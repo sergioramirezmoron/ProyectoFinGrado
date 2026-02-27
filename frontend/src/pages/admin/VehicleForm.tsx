@@ -14,11 +14,9 @@ import {
 } from "lucide-react";
 import api from "../../api/axios";
 import type {
-  SelectOption,
   VehicleModel as Model,
   FormOptions,
   VehicleFormData,
-  HydraResponse,
   Vehicle,
 } from "../../types/vehicle";
 
@@ -82,7 +80,7 @@ const VehicleForm = () => {
 
       const load = async (url: string) => {
         try {
-          const res = await api.get<HydraResponse<SelectOption>>(url);
+          const res = await api.get(url);
           return res.data.member || [];
         } catch (error) {
           console.error(`Error cargando ${url}`, error);

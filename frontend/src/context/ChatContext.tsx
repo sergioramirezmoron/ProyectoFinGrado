@@ -7,11 +7,7 @@ import {
 } from "react";
 import api from "../api/axios";
 import { useAuth } from "../hooks/useAuth";
-
-interface ChatContextType {
-  unreadCount: number;
-  refreshUnreadCount: () => void;
-}
+import type { ChatContextType } from "../types/message";
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
@@ -31,10 +27,8 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       let url = "/conversations?page=1&itemsPerPage=1";
       
       if (isStaff) {
-          // Staff wants to see messages FROM CLIENTS (or legacy 'NEW')
           url += "&status[]=NEW_FROM_CLIENT&status[]=NEW";
       } else {
-        // Clients want to see messages FROM ADMINS
          url += "&status=NEW_FROM_ADMIN";
 
          const email = user.email || user.name;

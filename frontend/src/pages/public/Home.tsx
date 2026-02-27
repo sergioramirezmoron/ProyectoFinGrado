@@ -10,10 +10,12 @@ import {
 } from "lucide-react";
 import type { HydraResponse, Vehicle } from "../../types/vehicle";
 import api from "../../api/axios";
+import { useAuth } from "../../hooks/useAuth";
 
 const Home = () => {
   const [featuredVehicles, setFeaturedVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchVehicles = async () => {
@@ -26,7 +28,6 @@ const Home = () => {
         });
 
         const vehiclesData = response.data.member || [];
-        // Limitamos a 5 para el ejemplo
         vehiclesData.length = Math.min(vehiclesData.length, 5);
         setFeaturedVehicles(vehiclesData);
       } catch (error) {
@@ -38,7 +39,6 @@ const Home = () => {
     fetchVehicles();
   }, []);
 
-  // Helper para imagen
   const getImageUrl = (vehicle: Vehicle) => {
     if (vehicle.vehicleImages && vehicle.vehicleImages.length > 0) {
       const mainImg =
@@ -49,15 +49,12 @@ const Home = () => {
     return "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=2672&auto=format&fit=crop";
   };
 
-  // Preparamos la lista doble para el efecto infinito
-  // Solo la duplicamos si ya cargó (para evitar duplicar loading skeletons)
   const carouselItems = loading
     ? []
     : [...featuredVehicles, ...featuredVehicles];
 
   return (
     <div className="bg-slate-950 text-white overflow-x-hidden font-sans selection:bg-blue-500 selection:text-white">
-      {/* Estilos para la animación del carrusel */}
       <style>{`
         @keyframes scroll {
           0% { transform: translateX(0); }
@@ -72,9 +69,7 @@ const Home = () => {
         }
       `}</style>
 
-      {/* HERO SECTION (Sin cambios) */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        {/* ... (Todo el código del Hero igual que antes) ... */}
         <div className="absolute inset-0 z-0">
           <img
             src="https://images.unsplash.com/photo-1503376763036-066120622c74?q=80&w=2940&auto=format&fit=crop"
@@ -133,7 +128,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* FEATURED FLEET (MODO INFINITE MARQUEE) */}
       <section className="py-32 bg-slate-950 relative border-b border-white/5 overflow-hidden">
         <div className="w-full max-w-7xl mx-auto px-6 mb-16 text-center">
           <span className="text-blue-500 font-bold tracking-[0.2em] text-xs uppercase mb-2 block">
@@ -148,8 +142,6 @@ const Home = () => {
           </p>
         </div>
 
-        {/* CONTENEDOR DEL CARRUSEL */}
-        {/* 'pause-on-hover' es una clase auxiliar definida en el style tag de arriba */}
         <div className="w-full overflow-hidden flex pause-on-hover py-10">
           {loading ? (
             <div className="w-full flex justify-center py-20">
@@ -158,15 +150,10 @@ const Home = () => {
               </span>
             </div>
           ) : featuredVehicles.length > 0 ? (
-            /* El contenedor interno tiene 'w-max' para permitir que los elementos se estiren horizontalmente.
-               Tiene la clase 'animate-infinite-scroll' que lo mueve.
-            */
             <div className="flex w-max animate-infinite-scroll gap-8 hover:[animation-play-state:paused]">
-              {/* Mapeamos 'carouselItems' que contiene la lista duplicada */}
               {carouselItems.map((vehicle, index) => (
                 <Link
                   to={`/vehiculo/${vehicle.id}`}
-                  /* Usamos index como key porque los IDs estarán duplicados */
                   key={`${vehicle.id}-${index}`}
                   className="shrink-0 w-[85vw] md:w-150 h-100 relative rounded-3xl overflow-hidden group cursor-pointer border border-white/5 block hover:border-blue-500/50 transition-colors"
                 >
@@ -221,10 +208,8 @@ const Home = () => {
         </div>
       </section>
 
-      {/* RESTO DE SECCIONES (Philosophy, Why Choose Us, CTA) IGUALES QUE ANTES... */}
       <section className="py-32 bg-slate-900 relative">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-          {/* ... Contenido igual ... */}
           <div className="order-2 lg:order-1 relative">
             <div className="absolute -inset-4 bg-linear-to-br from-blue-600 to-purple-600 rounded-3xl opacity-20 blur-2xl"></div>
             <img
@@ -266,7 +251,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* WHY CHOOSE US (Sin cambios visuales importantes) */}
       <section className="py-32 bg-slate-950 relative overflow-hidden">
         <div className="w-full max-w-7xl mx-auto px-6 relative z-10">
           <div className="text-center mb-20 space-y-4">
@@ -276,38 +260,63 @@ const Home = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { icon: Shield, title: "Garantía Total", desc: "Cobertura integral..." },
-              { icon: Zap, title: "Entrega Express", desc: "Tu vehículo listo en menos de 24h..." },
-              { icon: Award, title: "Club Elite", desc: "Membresía exclusiva..." },
+              {
+                icon: Shield,
+                title: "Garantía Total",
+                desc: "Cobertura integral...",
+              },
+              {
+                icon: Zap,
+                title: "Entrega Express",
+                desc: "Tu vehículo listo en menos de 24h...",
+              },
+              {
+                icon: Award,
+                title: "Club Elite",
+                desc: "Membresía exclusiva...",
+              },
             ].map((feature, idx) => (
               <div
                 key={idx}
                 className="group p-10 rounded-4xl bg-slate-900/50 border border-white/5 hover:border-blue-500/30 hover:bg-slate-900 transition-all duration-500 relative overflow-hidden hover:shadow-2xl"
               >
-                 <div className="w-14 h-14 bg-slate-800 rounded-2xl flex items-center justify-center mb-8 border border-white/5">
+                <div className="w-14 h-14 bg-slate-800 rounded-2xl flex items-center justify-center mb-8 border border-white/5">
                   <feature.icon size={28} className="text-blue-500" />
                 </div>
-                <h3 className="text-xl font-bold mb-4 text-slate-100">{feature.title}</h3>
-                <p className="text-slate-400 leading-relaxed text-sm">{feature.desc}</p>
+                <h3 className="text-xl font-bold mb-4 text-slate-100">
+                  {feature.title}
+                </h3>
+                <p className="text-slate-400 leading-relaxed text-sm">
+                  {feature.desc}
+                </p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA (Sin cambios) */}
-      <section className="py-40 relative overflow-hidden flex items-center justify-center bg-fixed">
-        <div className="absolute inset-0">
-            <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=2800&auto=format&fit=crop" className="w-full h-full object-cover opacity-20 grayscale scale-110" />
+      {!user && (
+        <section className="py-40 relative overflow-hidden flex items-center justify-center bg-fixed">
+          <div className="absolute inset-0">
+            <img
+              src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=2800&auto=format&fit=crop"
+              className="w-full h-full object-cover opacity-20 grayscale scale-110"
+            />
             <div className="absolute inset-0 bg-slate-950/90"></div>
-        </div>
-        <div className="relative z-10 text-center max-w-4xl mx-auto px-6 space-y-10">
-          <h2 className="text-5xl md:text-8xl font-bold tracking-tight">Tu Legado <br /> Comienza Aquí</h2>
-          <Link to="/register" className="inline-flex px-12 py-5 bg-white text-slate-950 font-bold text-lg rounded-full hover:bg-blue-500 hover:text-white transition-all">
+          </div>
+          <div className="relative z-10 text-center max-w-4xl mx-auto px-6 space-y-10">
+            <h2 className="text-5xl md:text-8xl font-bold tracking-tight">
+              Tu Legado <br /> Comienza Aquí
+            </h2>
+            <Link
+              to="/register"
+              className="inline-flex px-12 py-5 bg-white text-slate-950 font-bold text-lg rounded-full hover:bg-blue-500 hover:text-white transition-all"
+            >
               Solicitar Acceso
-          </Link>
-        </div>
-      </section>
+            </Link>
+          </div>
+        </section>
+      )}
     </div>
   );
 };

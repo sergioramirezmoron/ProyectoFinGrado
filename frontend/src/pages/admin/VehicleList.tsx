@@ -14,7 +14,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import api from "../../api/axios";
-import type { HydraResponse, Vehicle } from "../../types/vehicle";
+import type { Vehicle } from "../../types/vehicle";
 
 const VehicleList = () => {
   const navigate = useNavigate();
@@ -37,9 +37,7 @@ const VehicleList = () => {
         params.append("brand.name", searchTerm);
       }
 
-      const response = await api.get<HydraResponse<Vehicle>>(
-        `/vehicles?${params.toString()}`,
-      );
+      const response = await api.get(`/vehicles?${params.toString()}`);
 
       const allVehicles = response.data.member || [];
       const total = response.data.totalItems || allVehicles.length;
@@ -109,7 +107,6 @@ const VehicleList = () => {
 
   return (
     <div className="space-y-6 p-6">
-      {/* HEADER */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">
@@ -127,7 +124,6 @@ const VehicleList = () => {
         </button>
       </div>
 
-      {/* BARRA DE BÚSQUEDA */}
       <div className="relative">
         <Search
           className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -142,7 +138,6 @@ const VehicleList = () => {
         />
       </div>
 
-      {/* TABLA / LISTA */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
         {loading ? (
           <div className="p-20 text-center flex flex-col items-center gap-3">
@@ -180,7 +175,6 @@ const VehicleList = () => {
                       key={vehicle.id}
                       className="hover:bg-gray-50 transition-colors"
                     >
-                      {/* COLUMNA 1: Vehículo */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
                           <div className="h-16 w-24 shrink-0 rounded-lg overflow-hidden border border-gray-200 bg-gray-100">
@@ -202,7 +196,6 @@ const VehicleList = () => {
                         </div>
                       </td>
 
-                      {/* COLUMNA 2: Estado */}
                       <td className="px-6 py-4">
                         <div className="space-y-1">
                           <span
@@ -216,7 +209,6 @@ const VehicleList = () => {
                         </div>
                       </td>
 
-                      {/* COLUMNA 3: Precio */}
                       <td className="px-6 py-4">
                         <div className="font-bold text-gray-900 text-base">
                           {vehicle.type === "SALE"
@@ -225,7 +217,6 @@ const VehicleList = () => {
                         </div>
                       </td>
 
-                      {/* COLUMNA 4: Detalles */}
                       <td className="px-6 py-4 hidden md:table-cell">
                         <div className="flex flex-col gap-1 text-xs text-gray-500">
                           <div className="flex items-center gap-1">
@@ -241,7 +232,6 @@ const VehicleList = () => {
                         </div>
                       </td>
 
-                      {/* COLUMNA 5: Acciones */}
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <Link

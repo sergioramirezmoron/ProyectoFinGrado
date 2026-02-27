@@ -24,7 +24,6 @@ import api from "../../api/axios";
 import type { HydraResponse, Vehicle } from "../../types/vehicle";
 import { useAuth } from "../../hooks/useAuth";
 
-// Imports Calendario
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { es } from "date-fns/locale/es";
@@ -44,22 +43,17 @@ const VehicleDetail = () => {
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState<string>("");
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
-
-  // Estados Reserva
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [totalPrice, setTotalPrice] = useState<number | null>(null);
   const [reserving, setReserving] = useState(false);
   const [reserveError, setReserveError] = useState("");
   const [reserveSuccess, setReserveSuccess] = useState(false);
-
-  // Guardamos las fechas como TEXTO "YYYY-MM-DD"
   const [blockedDatesStrings, setBlockedDatesStrings] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchVehicleData = async () => {
       try {
-        // 1. Cargar Coche
         const response = await api.get<Vehicle>(`/vehicles/${id}`);
         setVehicle(response.data);
 
@@ -70,7 +64,6 @@ const VehicleDetail = () => {
           setActiveImage(`${import.meta.env.VITE_BACKEND_URL}${main.imageUrl}`);
         }
 
-        // 2. CARGAR RESERVAS
         if (response.data.type === "RENT") {
           const resReservations = await api.get<HydraResponse<Reservation>>(
             `/reservations?vehicle.id=${id}`,
@@ -219,7 +212,6 @@ const VehicleDetail = () => {
 
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* INFO IZQUIERDA */}
           <div className="lg:col-span-2 space-y-8">
             <div className="bg-white rounded-3xl p-2 shadow-sm border border-gray-100">
               <div className="aspect-video w-full rounded-2xl overflow-hidden relative bg-gray-100">
@@ -258,7 +250,7 @@ const VehicleDetail = () => {
                 </div>
               )}
             </div>
-            {/* Ficha Técnica */}
+
             <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
               <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
                 <Settings2 className="text-blue-600" /> Ficha Técnica
@@ -323,7 +315,6 @@ const VehicleDetail = () => {
             </div>
           </div>
 
-          {/* COLUMNA DERECHA */}
           <div className="lg:col-span-1">
             <div className="sticky top-24 space-y-6">
               <div className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100">
@@ -377,7 +368,6 @@ const VehicleDetail = () => {
                       </div>
                     ) : (
                       <>
-                        {/* CALENDARIOS */}
                         <div className="space-y-3 relative z-10">
                           <div>
                             <label className="text-xs font-bold text-gray-700 uppercase mb-1 block">

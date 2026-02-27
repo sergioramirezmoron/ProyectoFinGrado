@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useContext } from "react";
-import { Link } from "react-router-dom";
 import {
   X,
   Pencil,
@@ -11,15 +10,14 @@ import {
   Phone,
   Mail,
   User as UserIcon,
-  ChevronRight,
   Loader2,
   ShieldCheck,
-  Trash2,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { FavoriteContext } from "../../context/FavoriteContext";
 import api from "../../api/axios";
 import type { Vehicle } from "../../types/vehicle";
+import FavCard from "./FavCard";
 
 interface UserProfilePanelProps {
   isOpen: boolean;
@@ -37,7 +35,10 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
   const [editField, setEditField] = useState<EditField>(null);
   const [editValue, setEditValue] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const [localUser, setLocalUser] = useState({ name: user?.name ?? "", phone: user?.phone ?? "" });
+  const [localUser, setLocalUser] = useState({
+    name: user?.name ?? "",
+    phone: user?.phone ?? "",
+  });
 
   // Favoritos con datos completos
   const [favVehicles, setFavVehicles] = useState<Vehicle[]>([]);
@@ -47,7 +48,9 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
 
   // Cerrar con Escape
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
@@ -65,11 +68,16 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
         const results = await Promise.allSettled(
           favorites.map((f) =>
             // vehicleIri es "/api/vehicles/419" — axios añade baseURL automáticamente
-            api.get(f.vehicleIri.replace('/api/', '/')).then((r) => r.data as Vehicle)
-          )
+            api
+              .get(f.vehicleIri.replace("/api/", "/"))
+              .then((r) => r.data as Vehicle),
+          ),
         );
         const vehicles = results
-          .filter((r): r is PromiseFulfilledResult<Vehicle> => r.status === "fulfilled")
+          .filter(
+            (r): r is PromiseFulfilledResult<Vehicle> =>
+              r.status === "fulfilled",
+          )
           .map((r) => r.value);
         setFavVehicles(vehicles);
       } catch (e) {
@@ -90,7 +98,10 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
     setEditValue(field === "name" ? localUser.name : localUser.phone);
   };
 
-  const cancelEdit = () => { setEditField(null); setEditValue(""); };
+  const cancelEdit = () => {
+    setEditField(null);
+    setEditValue("");
+  };
 
   const saveEdit = async () => {
     if (!user?.id || !editField) return;
@@ -99,7 +110,7 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
       await api.patch(
         `/users/${user.id}`,
         { [editField]: editValue },
-        { headers: { "Content-Type": "application/merge-patch+json" } }
+        { headers: { "Content-Type": "application/merge-patch+json" } },
       );
       setLocalUser((prev) => ({ ...prev, [editField]: editValue }));
       cancelEdit();
@@ -145,7 +156,9 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
       {/* Backdrop */}
       <div
         className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${
-          isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          isOpen
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
         }`}
         onClick={onClose}
       />
@@ -158,7 +171,7 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
         }`}
       >
         {/* Header del panel */}
-        <div className="relative bg-slate-950 px-6 pt-10 pb-8 flex-shrink-0">
+        <div className="relative bg-slate-950 px-6 pt-10 pb-8 shrink-0">
           {/* Botón cerrar */}
           <button
             onClick={onClose}
@@ -169,7 +182,7 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
 
           {/* Avatar + info */}
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center text-white font-black text-2xl ring-4 ring-blue-500/30 flex-shrink-0">
+            <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center text-white font-black text-2xl ring-4 ring-blue-500/30 shrink-0">
               {initials}
             </div>
             <div className="min-w-0">
@@ -178,7 +191,7 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
                   {localUser.name || "Sin nombre"}
                 </p>
                 {(isAdmin || isSales) && (
-                  <ShieldCheck size={16} className="text-blue-400 flex-shrink-0" />
+                  <ShieldCheck size={16} className="text-blue-400 shrink-0" />
                 )}
               </div>
               <p className="text-slate-400 text-sm truncate">{user?.email}</p>
@@ -191,7 +204,6 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
 
         {/* Contenido scrollable */}
         <div className="flex-1 overflow-y-auto">
-
           {/* SECCIÓN: Mis datos */}
           <div className="px-6 py-5 border-b border-slate-100">
             <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">
@@ -201,16 +213,20 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
             <div className="space-y-3">
               {/* Email (no editable) */}
               <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-                <Mail size={16} className="text-slate-400 flex-shrink-0" />
+                <Mail size={16} className="text-slate-400 shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] text-slate-400 font-semibold uppercase">Email</p>
-                  <p className="text-sm font-medium text-slate-700 truncate">{user?.email}</p>
+                  <p className="text-[10px] text-slate-400 font-semibold uppercase">
+                    Email
+                  </p>
+                  <p className="text-sm font-medium text-slate-700 truncate">
+                    {user?.email}
+                  </p>
                 </div>
               </div>
 
               {/* Nombre */}
               <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-                <UserIcon size={16} className="text-slate-400 flex-shrink-0" />
+                <UserIcon size={16} className="text-slate-400 shrink-0" />
                 {editField === "name" ? (
                   <div className="flex-1 flex items-center gap-2">
                     <input
@@ -225,7 +241,11 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
                       disabled={isSaving}
                       className="p-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 cursor-pointer"
                     >
-                      {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                      {isSaving ? (
+                        <Loader2 size={14} className="animate-spin" />
+                      ) : (
+                        <Check size={14} />
+                      )}
                     </button>
                     <button
                       onClick={cancelEdit}
@@ -237,14 +257,20 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
                 ) : (
                   <div className="flex-1 flex items-center justify-between min-w-0">
                     <div className="min-w-0">
-                      <p className="text-[10px] text-slate-400 font-semibold uppercase">Nombre</p>
+                      <p className="text-[10px] text-slate-400 font-semibold uppercase">
+                        Nombre
+                      </p>
                       <p className="text-sm font-medium text-slate-700 truncate">
-                        {localUser.name || <span className="text-slate-400 italic">Sin nombre</span>}
+                        {localUser.name || (
+                          <span className="text-slate-400 italic">
+                            Sin nombre
+                          </span>
+                        )}
                       </p>
                     </div>
                     <button
                       onClick={() => startEdit("name")}
-                      className="p-1.5 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all cursor-pointer flex-shrink-0"
+                      className="p-1.5 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all cursor-pointer shrink-0"
                     >
                       <Pencil size={14} />
                     </button>
@@ -252,9 +278,8 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
                 )}
               </div>
 
-              {/* Teléfono */}
               <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-                <Phone size={16} className="text-slate-400 flex-shrink-0" />
+                <Phone size={16} className="text-slate-400 shrink-0" />
                 {editField === "phone" ? (
                   <div className="flex-1 flex items-center gap-2">
                     <input
@@ -270,7 +295,11 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
                       disabled={isSaving}
                       className="p-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 cursor-pointer"
                     >
-                      {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                      {isSaving ? (
+                        <Loader2 size={14} className="animate-spin" />
+                      ) : (
+                        <Check size={14} />
+                      )}
                     </button>
                     <button
                       onClick={cancelEdit}
@@ -282,14 +311,20 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
                 ) : (
                   <div className="flex-1 flex items-center justify-between min-w-0">
                     <div className="min-w-0">
-                      <p className="text-[10px] text-slate-400 font-semibold uppercase">Teléfono</p>
+                      <p className="text-[10px] text-slate-400 font-semibold uppercase">
+                        Teléfono
+                      </p>
                       <p className="text-sm font-medium text-slate-700 truncate">
-                        {localUser.phone || <span className="text-slate-400 italic">Sin teléfono</span>}
+                        {localUser.phone || (
+                          <span className="text-slate-400 italic">
+                            Sin teléfono
+                          </span>
+                        )}
                       </p>
                     </div>
                     <button
                       onClick={() => startEdit("phone")}
-                      className="p-1.5 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all cursor-pointer flex-shrink-0"
+                      className="p-1.5 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all cursor-pointer shrink-0"
                     >
                       <Pencil size={14} />
                     </button>
@@ -299,7 +334,6 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
             </div>
           </div>
 
-          {/* SECCIÓN: Favoritos */}
           <div className="px-6 py-5">
             <div className="flex items-center gap-2 mb-4">
               <Heart size={14} className="text-red-500 fill-red-500" />
@@ -318,12 +352,12 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
             ) : favorites.length === 0 ? (
               <div className="text-center py-8">
                 <Heart size={32} className="mx-auto text-slate-200 mb-2" />
-                <p className="text-sm text-slate-400">No tienes favoritos todavía</p>
+                <p className="text-sm text-slate-400">
+                  No tienes favoritos todavía
+                </p>
               </div>
             ) : (
               <div className="space-y-6">
-
-                {/* Favoritos en VENTA */}
                 {favSale.length > 0 && (
                   <div>
                     <div className="flex items-center gap-2 mb-3">
@@ -337,13 +371,18 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
                     </div>
                     <div className="space-y-2">
                       {favSale.map((v) => (
-                        <FavCard key={v.id} vehicle={v} price={formatPrice(v)} image={getImageUrl(v)} onClose={onClose} />
+                        <FavCard
+                          key={v.id}
+                          vehicle={v}
+                          price={formatPrice(v)}
+                          image={getImageUrl(v)}
+                          onClose={onClose}
+                        />
                       ))}
                     </div>
                   </div>
                 )}
 
-                {/* Favoritos en ALQUILER */}
                 {favRent.length > 0 && (
                   <div>
                     <div className="flex items-center gap-2 mb-3">
@@ -357,7 +396,13 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
                     </div>
                     <div className="space-y-2">
                       {favRent.map((v) => (
-                        <FavCard key={v.id} vehicle={v} price={formatPrice(v)} image={getImageUrl(v)} onClose={onClose} />
+                        <FavCard
+                          key={v.id}
+                          vehicle={v}
+                          price={formatPrice(v)}
+                          image={getImageUrl(v)}
+                          onClose={onClose}
+                        />
                       ))}
                     </div>
                   </div>
@@ -367,10 +412,12 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-slate-100 flex-shrink-0">
+        <div className="px-6 py-4 border-t border-slate-100 shrink-0">
           <button
-            onClick={() => { logout(); onClose(); }}
+            onClick={() => {
+              logout();
+              onClose();
+            }}
             className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-red-500 hover:bg-red-50 font-semibold text-sm transition-all cursor-pointer"
           >
             <LogOut size={18} />
@@ -379,93 +426,6 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
         </div>
       </div>
     </>
-  );
-};
-
-// — Tarjeta de favorito mini —
-const FavCard = ({
-  vehicle,
-  price,
-  image,
-  onClose,
-}: {
-  vehicle: Vehicle;
-  price: string;
-  image: string;
-  onClose: () => void;
-}) => {
-  const favoriteCtx = useContext(FavoriteContext);
-  const isAccessible = vehicle.status === "AVAILABLE" || vehicle.status === "RESERVED";
-  const to = isAccessible ? `/vehiculo/${vehicle.id}` : "/";
-
-  const statusLabel: Record<string, string> = {
-    RESERVED: "Reservado",
-    SOLD: "Vendido",
-    DELETED: "No disponible",
-  };
-
-  const handleRemove = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (favoriteCtx) {
-      favoriteCtx.toggleFavorite(vehicle["@id"], e);
-    }
-  };
-
-  return (
-    <Link
-      to={to}
-      onClick={onClose}
-      className="flex items-center gap-3 p-2.5 rounded-xl border border-slate-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all group"
-      title={!isAccessible ? "Este vehículo ya no está disponible" : undefined}
-    >
-      {/* Imagen con overlay si no está disponible */}
-      <div className="relative w-16 h-12 flex-shrink-0">
-        <img
-          src={image}
-          alt={`${vehicle.brand.name} ${vehicle.model.name}`}
-          className={`w-full h-full object-cover rounded-lg bg-slate-100 ${!isAccessible ? "opacity-50 grayscale" : ""}`}
-        />
-        {!isAccessible && (
-          <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/30">
-            <span className="text-[9px] font-black text-white uppercase tracking-wide text-center leading-tight px-1">
-              {statusLabel[vehicle.status] ?? "No disp."}
-            </span>
-          </div>
-        )}
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <p className="text-[10px] font-bold text-blue-600 uppercase tracking-wider truncate">
-          {vehicle.brand.name}
-        </p>
-        <p className={`text-sm font-bold truncate ${isAccessible ? "text-slate-800" : "text-slate-400"}`}>
-          {vehicle.model.name}
-        </p>
-        <p className="text-xs font-semibold text-slate-500">
-          {isAccessible ? price : (
-            <span className="text-orange-400">
-              {statusLabel[vehicle.status] ?? "No disponible"}
-            </span>
-          )}
-        </p>
-      </div>
-
-      {isAccessible ? (
-        <ChevronRight
-          size={16}
-          className="flex-shrink-0 text-slate-300 group-hover:text-blue-500 transition-colors"
-        />
-      ) : (
-        <button
-          onClick={handleRemove}
-          className="flex-shrink-0 p-1.5 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer"
-          title="Eliminar de favoritos"
-        >
-          <Trash2 size={14} />
-        </button>
-      )}
-    </Link>
   );
 };
 

@@ -1,14 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import api from "../../api/axios";
 import { ShieldCheck, ShieldAlert, Loader2, Search, UserCog, ChevronLeft, ChevronRight } from "lucide-react";
-
-interface User {
-  id: number;
-  email: string;
-  name: string;
-  surname: string;
-  roles: string[];
-}
+import type { User } from "../../types/auth";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -36,7 +29,7 @@ const UserManagement = () => {
   }, []);
 
   const toggleSalesRole = async (user: User) => {
-    setUpdatingId(user.id);
+    setUpdatingId(user.id || null);
     const hasSalesRole = user.roles.includes("ROLE_SALES");
     const newRoles = hasSalesRole
       ? user.roles.filter((r) => r !== "ROLE_SALES")
@@ -63,7 +56,8 @@ const UserManagement = () => {
     return users.filter(
       (u) =>
         u.email.toLowerCase().includes(term) ||
-        u.name.toLowerCase().includes(term)
+        u.name?.toLowerCase().includes(term) ||
+        u.surname?.toLowerCase().includes(term)
     );
   }, [users, searchTerm]);
 
@@ -187,7 +181,6 @@ const UserManagement = () => {
           </tbody>
         </table>
 
-        {/* Footer con paginación + contador */}
         {!loading && filteredUsers.length > 0 && (
           <div className="flex justify-between items-center px-6 py-4 border-t border-slate-100 bg-slate-50/50">
             <p className="text-xs text-slate-400">

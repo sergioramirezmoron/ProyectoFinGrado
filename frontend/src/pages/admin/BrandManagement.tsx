@@ -12,27 +12,17 @@ import {
   X,
 } from "lucide-react";
 import ConfirmModal from "../../helpers/ConfirmModal";
-
-interface Brand {
-  id: number;
-  name: string;
-}
+import type { Brand } from "../../types/brand";
 
 const BrandManagement = () => {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Nuevo
   const [newName, setNewName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
-
-  // Edición inline
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-
-  // Modal confirmación borrado
   const [deleteModal, setDeleteModal] = useState<{ open: boolean; brand: Brand | null }>({
     open: false,
     brand: null,

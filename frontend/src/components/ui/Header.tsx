@@ -112,7 +112,6 @@ const Header = () => {
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {isAuthenticated ? (
               <>
-                {/* Chat icon */}
                 <Link
                   to={isStaff || isAdmin ? "/admin/mensajes" : "/mis-chats"}
                   className={`p-2 rounded-full hover:bg-white/10 transition-colors relative ${
@@ -187,7 +186,6 @@ const Header = () => {
           }`}
         >
           <div className="p-5 flex flex-col space-y-1">
-            {/* Nav links */}
             {[
               { to: "/", label: "INICIO" },
               { to: "/venta", label: "COMPRAR" },
@@ -203,7 +201,6 @@ const Header = () => {
               </Link>
             ))}
 
-            {/* Auth buttons si no está logueado */}
             {!isAuthenticated && (
               <div className="grid grid-cols-2 gap-3 pt-4">
                 <Link
@@ -223,7 +220,6 @@ const Header = () => {
               </div>
             )}
 
-            {/* Panel Staff/Admin en móvil */}
             {isAuthenticated && isStaff && (
               <div className="pt-4 mt-2">
                 <span className="text-xs font-bold text-blue-500 uppercase tracking-wider mb-3 block px-2">
@@ -269,7 +265,6 @@ const Header = () => {
               </div>
             )}
 
-            {/* Perfil en móvil si está logueado */}
             {isAuthenticated && (
               <div className="pt-4 mt-2 border-t border-white/5">
                 <button
