@@ -11,13 +11,8 @@ import {
   MapPin,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
-import api from "../../api/axios";
-
-interface Province {
-  "@id": string;
-  id: number;
-  name: string;
-}
+import { loginUser, registerUser, getProvinces } from "../../services/authService";
+import type { Province } from "../../types/provinces";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -44,7 +39,7 @@ const Register = () => {
   useEffect(() => {
     const fetchProvinces = async () => {
       try {
-        const response = await api.get("/provinces");
+        const response = await getProvinces();
         const data = response.data.member || [];
         setProvinces(data);
         if (data.length > 0) {
@@ -63,7 +58,7 @@ const Register = () => {
     setLoading(true);
 
     try {
-      await api.post("/users", {
+      await registerUser({
         email,
         plainPassword: password,
         name,
@@ -72,11 +67,7 @@ const Register = () => {
         province: selectedProvince,
       });
 
-      const loginResponse = await api.post("/login_check", {
-        email,
-        password,
-      });
-
+      const loginResponse = await loginUser(email, password);
       login(loginResponse.data.token);
       navigate("/");
     } catch (err) {
@@ -141,7 +132,6 @@ const Register = () => {
             </div>
           </div>
 
-          {/* Email */}
           <div className="auth-field">
             <label className="auth-label">Email</label>
             <div className="auth-input-wrapper">

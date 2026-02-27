@@ -30,3 +30,12 @@ export interface AuthContextType {
   login: (token: string) => void;
   logout: () => void;
 }
+
+export interface RegisterData {
+  email: string;
+  plainPassword: string;
+  name: string;
+  surname: string;
+  phone: string;
+  province: string;
+}

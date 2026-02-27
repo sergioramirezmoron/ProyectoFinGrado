@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { LogIn, Mail, Lock, AlertCircle, Loader2 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
-import api from "../../api/axios";
+import { loginUser } from "../../services/authService";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -25,10 +25,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await api.post("/login_check", {
-        email,
-        password,
-      });
+      const response = await loginUser(email, password);
 
       login(response.data.token);
       navigate("/");
@@ -62,6 +59,7 @@ const Login = () => {
             </div>
           )}
 
+          {/* Email */}
           <div className="auth-field">
             <label className="auth-label-normal">Email</label>
             <div className="auth-input-wrapper">
@@ -79,6 +77,7 @@ const Login = () => {
             </div>
           </div>
 
+          {/* Contraseña */}
           <div className="auth-field">
             <label className="auth-label-normal">Contraseña</label>
             <div className="auth-input-wrapper">
