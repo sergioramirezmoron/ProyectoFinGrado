@@ -1,7 +1,15 @@
 import { useEffect, useState, useMemo } from "react";
-import api from "../../api/axios";
-import { ShieldCheck, ShieldAlert, Loader2, Search, UserCog, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ShieldCheck,
+  ShieldAlert,
+  Loader2,
+  Search,
+  UserCog,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import type { User } from "../../types/auth";
+import { getUsers, updateUserRoles } from "../../services/userService";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -14,9 +22,8 @@ const UserManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await api.get("/users");
-      const data = response.data.member || [];
-      setUsers(data);
+      const response = await getUsers();
+      setUsers(response.data.member || []);
     } catch (error) {
       console.error("Error cargando usuarios", error);
     } finally {
@@ -36,13 +43,9 @@ const UserManagement = () => {
       : [...user.roles, "ROLE_SALES"];
 
     try {
-      await api.patch(
-        `/users/${user.id}`,
-        { roles: newRoles },
-        { headers: { "Content-Type": "application/merge-patch+json" } }
-      );
+      await updateUserRoles(user.id!, newRoles);
       setUsers((prev) =>
-        prev.map((u) => (u.id === user.id ? { ...u, roles: newRoles } : u))
+        prev.map((u) => (u.id === user.id ? { ...u, roles: newRoles } : u)),
       );
     } catch (error) {
       throw new Error(`Error actualizando roles: ${error}`);
@@ -57,7 +60,7 @@ const UserManagement = () => {
       (u) =>
         u.email.toLowerCase().includes(term) ||
         u.name?.toLowerCase().includes(term) ||
-        u.surname?.toLowerCase().includes(term)
+        u.surname?.toLowerCase().includes(term),
     );
   }, [users, searchTerm]);
 
@@ -65,7 +68,12 @@ const UserManagement = () => {
     setPage(1);
   }, [searchTerm]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm]);
+
   const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE) || 1;
+  
   const displayedUsers = filteredUsers.slice(
     (page - 1) * ITEMS_PER_PAGE,
     page * ITEMS_PER_PAGE
@@ -75,7 +83,9 @@ const UserManagement = () => {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Gestión de Personal</h1>
+          <h1 className="text-2xl font-bold text-slate-800">
+            Gestión de Personal
+          </h1>
           <p className="text-slate-500 text-sm">
             Asigna permisos de ventas a los usuarios registrados.
           </p>
@@ -121,7 +131,10 @@ const UserManagement = () => {
               </tr>
             ) : displayedUsers.length === 0 ? (
               <tr>
-                <td colSpan={3} className="py-20 text-center text-slate-400 text-sm">
+                <td
+                  colSpan={3}
+                  className="py-20 text-center text-slate-400 text-sm"
+                >
                   No se encontraron usuarios
                 </td>
               </tr>
@@ -184,7 +197,8 @@ const UserManagement = () => {
         {!loading && filteredUsers.length > 0 && (
           <div className="flex justify-between items-center px-6 py-4 border-t border-slate-100 bg-slate-50/50">
             <p className="text-xs text-slate-400">
-              {filteredUsers.length} usuario{filteredUsers.length !== 1 ? "s" : ""}
+              {filteredUsers.length} usuario
+              {filteredUsers.length !== 1 ? "s" : ""}
               {searchTerm && " encontrados"}
             </p>
 
