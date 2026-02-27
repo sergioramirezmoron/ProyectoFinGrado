@@ -11,8 +11,9 @@ import {
   MapPin,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
-import { loginUser, registerUser, getProvinces } from "../../services/authService";
+import { loginUser, registerUser } from "../../services/authService";
 import type { Province } from "../../types/provinces";
+import { getProvinces } from "../../services/provinceService";
 
 const Register = () => {
   const navigate = useNavigate();

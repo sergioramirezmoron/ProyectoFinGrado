@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import api from "../../api/axios";
 import {
   Plus,
   Trash2,
@@ -12,11 +11,8 @@ import {
   X,
 } from "lucide-react";
 import ConfirmModal from "../../helpers/ConfirmModal";
-
-interface Province {
-  id: number;
-  name: string;
-}
+import type { Province } from "../../types/provinces";
+import { createProvince, deleteProvince, getProvinces, updateProvince } from "../../services/provinceService";
 
 const ProvinceManagement = () => {
   const [provinces, setProvinces] = useState<Province[]>([]);
@@ -37,9 +33,8 @@ const ProvinceManagement = () => {
 
   const fetchProvinces = async () => {
     try {
-      const response = await api.get("/provinces");
-      const data = response.data.member || [];
-      setProvinces(data);
+      const response = await getProvinces();
+      setProvinces(response.data.member || []);
     } catch (error) {
       console.error("Error cargando provincias", error);
     } finally {
@@ -56,7 +51,7 @@ const ProvinceManagement = () => {
     setIsSubmitting(true);
     setMessage({ text: "", type: "" });
     try {
-      const response = await api.post("/provinces", { name: newName });
+      const response = await createProvince(newName);
       setProvinces((prev) => [...prev, response.data]);
       setNewName("");
       setMessage({ text: "Provincia añadida correctamente", type: "success" });
@@ -76,9 +71,8 @@ const ProvinceManagement = () => {
     const province = deleteModal.province;
     if (!province) return;
     setDeleteModal({ open: false, province: null });
-
     try {
-      await api.delete(`/provinces/${province.id}`);
+      await deleteProvince(province.id);
       setProvinces((prev) => prev.filter((p) => p.id !== province.id));
       setMessage({
         text: `Provincia "${province.name}" eliminada correctamente`,
@@ -111,11 +105,7 @@ const ProvinceManagement = () => {
   const handleSaveEdit = async (id: number) => {
     setIsSaving(true);
     try {
-      await api.patch(
-        `/provinces/${id}`,
-        { name: editName },
-        { headers: { "Content-Type": "application/merge-patch+json" } },
-      );
+      await updateProvince(id, editName);
       setProvinces((prev) =>
         prev.map((p) => (p.id === id ? { ...p, name: editName } : p)),
       );
