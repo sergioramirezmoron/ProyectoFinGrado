@@ -11,14 +11,14 @@ const decodeTokenIfValid = (token: string): User | null => {
     if (decoded.exp * 1000 < Date.now()) {
       return null;
     }
-    
+
     return {
       email: decoded.username,
       roles: decoded.roles,
       id: decoded.id,
       "@id": decoded.id ? `/api/users/${decoded.id}` : undefined,
       name: decoded.name,
-      phone: decoded.phone
+      phone: decoded.phone,
     };
   } catch {
     return null;
@@ -52,12 +52,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
   };
 
+  const updateUser = (fields: Partial<User>) => {
+    setUser((prev) => (prev ? { ...prev, ...fields } : null));
+  };
+
   const isAdmin =
     user?.roles.includes("ROLE_ADMIN") ||
     user?.roles.includes("ROLE_SALES") ||
     false;
 
-  const value = { user, token, isAuthenticated: !!user, isAdmin, login, logout };
+  const value = {
+    user,
+    token,
+    isAuthenticated: !!user,
+    isAdmin,
+    login,
+    logout,
+    updateUser
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

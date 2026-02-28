@@ -10,3 +10,12 @@ export const updateUserRoles = (id: number, roles: string[]) =>
       headers: { "Content-Type": "application/merge-patch+json" },
     },
   );
+
+export const updateUserProfile = (id: number, field: string, value: string) =>
+  api.patch(
+    `/users/${id}`,
+    { [field]: value },
+    {
+      headers: { "Content-Type": "application/merge-patch+json" },
+    },
+  );

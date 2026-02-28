@@ -12,28 +12,25 @@ import {
   User as UserIcon,
   Loader2,
   ShieldCheck,
+  Info,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { FavoriteContext } from "../../context/FavoriteContext";
-import api from "../../api/axios";
 import type { Vehicle } from "../../types/vehicle";
 import FavCard from "./FavCard";
-
-interface UserProfilePanelProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-type EditField = "name" | "phone" | null;
+import type { EditField, UserProfilePanelProps } from "../../types/auth";
+import { updateUserProfile } from "../../services/userService";
+import { getFavoriteVehicles } from "../../services/favoriteService";
 
 const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const favoriteCtx = useContext(FavoriteContext);
   const favorites = favoriteCtx?.favorites ?? [];
 
   const [editField, setEditField] = useState<EditField>(null);
   const [editValue, setEditValue] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [profileUpdated, setProfileUpdated] = useState(false);
   const [localUser, setLocalUser] = useState({
     name: user?.name ?? "",
     phone: user?.phone ?? "",
@@ -43,6 +40,20 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
   const [loadingFavs, setLoadingFavs] = useState(false);
 
   const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isOpen && user) {
+      setLocalUser({
+        name: user.name ?? "",
+        phone: user.phone ?? "",
+      });
+    }
+  }, [isOpen, user]);
+
+  // Resetea el aviso al cerrar el panel
+  useEffect(() => {
+    if (!isOpen) setProfileUpdated(false);
+  }, [isOpen]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -61,19 +72,9 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
     const fetchFavVehicles = async () => {
       setLoadingFavs(true);
       try {
-        const results = await Promise.allSettled(
-          favorites.map((f) =>
-            api
-              .get(f.vehicleIri.replace("/api/", "/"))
-              .then((r) => r.data as Vehicle),
-          ),
+        const vehicles = await getFavoriteVehicles(
+          favorites.map((f) => f.vehicleIri),
         );
-        const vehicles = results
-          .filter(
-            (r): r is PromiseFulfilledResult<Vehicle> =>
-              r.status === "fulfilled",
-          )
-          .map((r) => r.value);
         setFavVehicles(vehicles);
       } catch (e) {
         console.error("Error cargando vehículos favoritos", e);
@@ -102,12 +103,10 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
     if (!user?.id || !editField) return;
     setIsSaving(true);
     try {
-      await api.patch(
-        `/users/${user.id}`,
-        { [editField]: editValue },
-        { headers: { "Content-Type": "application/merge-patch+json" } },
-      );
+      await updateUserProfile(user.id, editField, editValue);
       setLocalUser((prev) => ({ ...prev, [editField]: editValue }));
+      updateUser({ [editField]: editValue });
+      setProfileUpdated(true);
       cancelEdit();
     } catch (e) {
       console.error("Error actualizando perfil", e);
@@ -247,9 +246,7 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
                       </p>
                       <p className="text-sm font-medium text-slate-700 truncate">
                         {localUser.name || (
-                          <span className="text-slate-400 italic">
-                            Sin nombre
-                          </span>
+                          <span className="text-slate-400 italic">Sin nombre</span>
                         )}
                       </p>
                     </div>
@@ -269,9 +266,15 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
                   <div className="flex-1 flex items-center gap-2">
                     <input
                       autoFocus
-                      type="tel"
+                      type="number"
+                      min="0"
+                      max="9999999999"
                       value={editValue}
-                      onChange={(e) => setEditValue(e.target.value)}
+                      onChange={(e) => {
+                        if (e.target.value.length <= 10) {
+                          setEditValue(e.target.value);
+                        }
+                      }}
                       onKeyDown={(e) => e.key === "Enter" && saveEdit()}
                       className="flex-1 text-sm bg-white border border-blue-300 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-blue-500 text-black"
                     />
@@ -301,9 +304,7 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
                       </p>
                       <p className="text-sm font-medium text-slate-700 truncate">
                         {localUser.phone || (
-                          <span className="text-slate-400 italic">
-                            Sin teléfono
-                          </span>
+                          <span className="text-slate-400 italic">Sin teléfono</span>
                         )}
                       </p>
                     </div>
@@ -317,6 +318,14 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
                 )}
               </div>
             </div>
+
+            {/* Aviso de cambios guardados */}
+            {profileUpdated && (
+              <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-700 flex items-center gap-2">
+                <Info size={14} className="shrink-0" />
+                Cambios guardados. Cierra sesión y vuelve a entrar para verlos reflejados.
+              </div>
+            )}
           </div>
 
           <div className="px-6 py-5">
@@ -337,9 +346,7 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
             ) : favorites.length === 0 ? (
               <div className="text-center py-8">
                 <Heart size={32} className="mx-auto text-slate-200 mb-2" />
-                <p className="text-sm text-slate-400">
-                  No tienes favoritos todavía
-                </p>
+                <p className="text-sm text-slate-400">No tienes favoritos todavía</p>
               </div>
             ) : (
               <div className="space-y-6">
@@ -399,10 +406,7 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
 
         <div className="px-6 py-4 border-t border-slate-100 shrink-0">
           <button
-            onClick={() => {
-              logout();
-              onClose();
-            }}
+            onClick={() => { logout(); onClose(); }}
             className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-red-500 hover:bg-red-50 font-semibold text-sm transition-all cursor-pointer"
           >
             <LogOut size={18} />

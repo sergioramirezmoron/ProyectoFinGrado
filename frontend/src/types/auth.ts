@@ -9,12 +9,12 @@ export interface JWTPayload {
 }
 
 export interface User {
-  id?: number;          
-  "@id"?: string;       
+  id?: number;
+  "@id"?: string;
   email: string;
   roles: string[];
-  name?: string;        
-  surname?: string;        
+  name?: string;
+  surname?: string;
   phone?: string;
 }
 
@@ -29,6 +29,7 @@ export interface AuthContextType {
   isAdmin: boolean;
   login: (token: string) => void;
   logout: () => void;
+  updateUser: (fields: Partial<User>) => void;
 }
 
 export interface RegisterData {
@@ -39,3 +40,10 @@ export interface RegisterData {
   phone: string;
   province: string;
 }
+
+export interface UserProfilePanelProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export type EditField = "name" | "phone" | null;
