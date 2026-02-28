@@ -275,18 +275,12 @@ const Chat = () => {
           ? "✅ Hemos aceptado tu solicitud. El vehículo está reservado para ti."
           : "❌ Lo siento, no hemos podido aceptar la reserva.";
       await handleSendMessage(undefined, reply);
-      if (
-        status === "CONFIRMED" &&
-        selectedChat.vehicle?.status === "AVAILABLE"
-      ) {
-        await handleAdminAction_StatusChange("RESERVED");
-      }
       setToast({
         msg: `Reserva ${status === "CONFIRMED" ? "aceptada" : "rechazada"}`,
         type: "success",
       });
     } catch (e) {
-      setToast({ msg: "Error procesando reserva", type: "error" });
+      setToast({ msg: "Error procesando reserva. Es posible que el vehiculo ya esté reservado en esta fecha.", type: "error" });
       console.error(e);
     } finally {
       setUpdatingStatus(false);

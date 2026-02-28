@@ -20,8 +20,7 @@ import {
   DoorClosed,
 } from "lucide-react";
 import { AxiosError } from "axios";
-import api from "../../api/axios";
-import type { HydraResponse, Vehicle } from "../../types/vehicle";
+import type { Vehicle } from "../../types/vehicle";
 import { useAuth } from "../../hooks/useAuth";
 
 import DatePicker, { registerLocale } from "react-datepicker";
@@ -30,7 +29,12 @@ import { es } from "date-fns/locale/es";
 import { eachDayOfInterval, parseISO, format } from "date-fns";
 import SpecItem from "../../components/public/SpecItem";
 import ContactModal from "./ContactModal";
-import type { ApiError, Reservation } from "../../types/reservation";
+import type { ApiError } from "../../types/reservation";
+import { getVehicleDetail } from "../../services/vehicleService";
+import {
+  createReservation,
+  getVehicleReservations,
+} from "../../services/reservation";
 
 registerLocale("es", es);
 
@@ -54,7 +58,7 @@ const VehicleDetail = () => {
   useEffect(() => {
     const fetchVehicleData = async () => {
       try {
-        const response = await api.get<Vehicle>(`/vehicles/${id}`);
+        const response = await getVehicleDetail(id!);
         setVehicle(response.data);
 
         if (response.data.vehicleImages?.length > 0) {
@@ -65,20 +69,12 @@ const VehicleDetail = () => {
         }
 
         if (response.data.type === "RENT") {
-          const resReservations = await api.get<HydraResponse<Reservation>>(
-            `/reservations?vehicle.id=${id}`,
-          );
-
+          const resReservations = await getVehicleReservations(id!);
           const reservations = resReservations.data.member || [];
-
           const newBlockedStrings: string[] = [];
 
           reservations.forEach((res) => {
-            const BLOCKING_STATUSES = ["CONFIRMED"];
-
-            if (!BLOCKING_STATUSES.includes(res.status)) {
-              return;
-            }
+            if (!["CONFIRMED"].includes(res.status)) return;
 
             const start = parseISO(res.startDate);
             const end = parseISO(res.endDate);
@@ -137,7 +133,7 @@ const VehicleDetail = () => {
     try {
       const formatDateAPI = (d: Date) => format(d, "yyyy-MM-dd");
 
-      await api.post<Reservation>("/reservations", {
+      await createReservation({
         startDate: formatDateAPI(startDate),
         endDate: formatDateAPI(endDate),
         vehicle: `/api/vehicles/${id}`,
@@ -155,7 +151,6 @@ const VehicleDetail = () => {
     } catch (error) {
       console.error("Error reservando", error);
       const err = error as AxiosError<ApiError>;
-
       if (err.response?.data?.detail) {
         setReserveError(err.response.data.detail);
       } else {

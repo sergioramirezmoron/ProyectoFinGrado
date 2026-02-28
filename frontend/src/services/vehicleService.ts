@@ -84,9 +84,15 @@ export const getFeaturedVehicles = async (): Promise<Vehicle[]> => {
   const response = await api.get<HydraResponse<Vehicle>>("/vehicles", {
     params: { type: "SALE", status: "AVAILABLE" },
   });
-  console.log(response.data.member)
+  console.log(response.data.member);
   return (response.data.member || [])
     .filter((v) => v.type === "SALE" && v.status === "AVAILABLE")
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    )
     .slice(0, 5);
 };
+
+export const getVehicleDetail = (id: string) =>
+  api.get<Vehicle>(`/vehicles/${id}`);
