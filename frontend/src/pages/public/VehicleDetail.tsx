@@ -11,7 +11,6 @@ import {
   Car,
   Info,
   Phone,
-  Share2,
   CheckCircle2,
   CalendarDays,
   AlertCircle,
@@ -197,11 +196,7 @@ const VehicleDetail = () => {
           >
             <ChevronLeft size={20} /> Volver al catálogo
           </button>
-          <div className="flex gap-4">
-            <button className="text-gray-400 hover:text-blue-600 transition-colors">
-              <Share2 size={20} />
-            </button>
-          </div>
+         
         </div>
       </div>
 

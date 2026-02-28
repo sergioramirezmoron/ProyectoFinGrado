@@ -84,7 +84,6 @@ export const getFeaturedVehicles = async (): Promise<Vehicle[]> => {
   const response = await api.get<HydraResponse<Vehicle>>("/vehicles", {
     params: { type: "SALE", status: "AVAILABLE" },
   });
-  console.log(response.data.member);
   return (response.data.member || [])
     .filter((v) => v.type === "SALE" && v.status === "AVAILABLE")
     .sort(
