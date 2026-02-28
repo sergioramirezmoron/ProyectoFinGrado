@@ -16,7 +16,6 @@ import {
   Tag,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import api from "../../api/axios";
 import { useAuth } from "../../hooks/useAuth";
 import { useChatNotification } from "../../hooks/useChatNotification";
 import Toast from "../../helpers/Toast";
@@ -24,6 +23,14 @@ import ConfirmModal from "../../helpers/ConfirmModal";
 
 import type { ApiResource, Message } from "../../types/message";
 import type { Conversation } from "../../types/reservation";
+import {
+  getConversation,
+  getConversations,
+  markConversationAsRead,
+  sendMessage,
+  updateReservationStatus,
+  updateVehicleStatus,
+} from "../../services/conversationService";
 
 const Chat = () => {
   const { user } = useAuth();
@@ -99,14 +106,9 @@ const Chat = () => {
   const fetchConversations = async (isPolling = false) => {
     try {
       if (!isPolling) setLoading(true);
-      let url = "/conversations";
-      if (!isAdmin && user) {
-        const email = user.email || user.name;
-        url += `?contactEmail=${email}`;
-      }
-      const response = await api.get(url);
-      const data = response.data.member || [];
-      setConversations(data);
+      const email = user?.email || user?.name;
+      const response = await getConversations(isAdmin, email);
+      setConversations(response.data.member || []);
     } catch (error) {
       console.error("Error cargando chats", error);
     } finally {
@@ -116,9 +118,8 @@ const Chat = () => {
 
   const fetchMessages = async (id: number) => {
     try {
-      const response = await api.get(`/conversations/${id}`);
+      const response = await getConversation(id);
       setMessages(response.data.messages || []);
-
       if (isAdmin && selectedChat) {
         const updatedReservation = response.data.reservation;
         if (
@@ -147,11 +148,7 @@ const Chat = () => {
       prev.map((c) => (c.id === chat.id ? { ...c, status: "READ" } : c)),
     );
     try {
-      await api.patch(
-        `/conversations/${chat.id}`,
-        { status: "READ" },
-        { headers: { "Content-Type": "application/merge-patch+json" } },
-      );
+      await markConversationAsRead(chat.id);
       refreshUnreadCount();
     } catch (e) {
       console.error(e);
@@ -168,12 +165,9 @@ const Chat = () => {
 
     setSending(true);
     try {
-      await api.post("/messages", {
-        content: content,
-        isAdmin: isAdmin,
-        conversation:
-          selectedChat["@id"] || `/api/conversations/${selectedChat.id}`,
-      });
+      const conversationIri =
+        selectedChat["@id"] || `/api/conversations/${selectedChat.id}`;
+      await sendMessage(content, isAdmin, conversationIri);
       setNewMessage("");
       fetchMessages(selectedChat.id);
       fetchConversations(true);
@@ -218,9 +212,7 @@ const Chat = () => {
 
   const handleAdminAction_StatusChange = async (newStatus: string) => {
     if (!isAdmin || !selectedChat?.vehicle) return;
-
     const vehicleId = getUniqueId(selectedChat.vehicle);
-
     if (!vehicleId) {
       setToast({
         msg: "Error: No se encuentra ID del vehículo",
@@ -228,21 +220,14 @@ const Chat = () => {
       });
       return;
     }
-
     setUpdatingStatus(true);
     try {
-      await api.patch(
-        `/vehicles/${vehicleId}`,
-        { status: newStatus },
-        { headers: { "Content-Type": "application/merge-patch+json" } },
-      );
-
+      await updateVehicleStatus(vehicleId, newStatus);
       setSelectedChat((prev) =>
         prev
           ? { ...prev, vehicle: { ...prev.vehicle!, status: newStatus } }
           : null,
       );
-
       setConversations((prev) =>
         prev.map((c) => {
           const cVehicleId = getUniqueId(c.vehicle);
@@ -256,7 +241,6 @@ const Chat = () => {
           return c;
         }),
       );
-
       setToast({ msg: "Estado actualizado", type: "success" });
     } catch (e) {
       setToast({ msg: "Error al actualizar estado", type: "error" });
@@ -270,17 +254,10 @@ const Chat = () => {
     if (!isAdmin || !selectedChat?.reservation || !confirmAction) return;
     const { status } = confirmAction;
     const reservationId = getUniqueId(selectedChat.reservation);
-
     setConfirmAction(null);
     setUpdatingStatus(true);
-
     try {
-      await api.patch(
-        `/reservations/${reservationId}`,
-        { status },
-        { headers: { "Content-Type": "application/merge-patch+json" } },
-      );
-
+      await updateReservationStatus(reservationId!, status);
       setSelectedChat((prev) =>
         prev
           ? { ...prev, reservation: { ...prev.reservation!, status } }
@@ -293,13 +270,11 @@ const Chat = () => {
             : c,
         ),
       );
-
       const reply =
         status === "CONFIRMED"
           ? "✅ Hemos aceptado tu solicitud. El vehículo está reservado para ti."
           : "❌ Lo siento, no hemos podido aceptar la reserva.";
       await handleSendMessage(undefined, reply);
-
       if (
         status === "CONFIRMED" &&
         selectedChat.vehicle?.status === "AVAILABLE"

@@ -1,5 +1,5 @@
 import api from "../api/axios";
-import type { Vehicle } from "../types/vehicle";
+import type { HydraResponse, Vehicle } from "../types/vehicle";
 
 export const loadFormOptions = () =>
   Promise.all([
@@ -78,4 +78,15 @@ export const getAllVehicles = async (): Promise<Vehicle[]> => {
   }
 
   return collected;
+};
+
+export const getFeaturedVehicles = async (): Promise<Vehicle[]> => {
+  const response = await api.get<HydraResponse<Vehicle>>("/vehicles", {
+    params: { type: "SALE", status: "AVAILABLE" },
+  });
+  console.log(response.data.member)
+  return (response.data.member || [])
+    .filter((v) => v.type === "SALE" && v.status === "AVAILABLE")
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 5);
 };

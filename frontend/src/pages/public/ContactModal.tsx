@@ -1,9 +1,11 @@
-// Imports igual que antes...
 import { useState, useEffect } from "react";
 import { X, Send, CheckCircle, Loader2, Phone } from "lucide-react";
-import api from "../../api/axios";
 import { useAuth } from "../../hooks/useAuth";
-import type { ContactModalProps, ConversationPayloadInterface } from "../../types/message";
+import type {
+  ContactModalProps,
+  ConversationPayloadInterface,
+} from "../../types/message";
+import { createConversation, sendPublicMessage } from "../../services/conversationService";
 
 const ContactModal = ({
   isOpen,
@@ -53,15 +55,12 @@ const ContactModal = ({
         conversationPayload.user = user["@id"];
       }
 
-      const conversationRes = await api.post("/conversations", conversationPayload);
-      
-      const conversationIri = conversationRes.data["@id"] || `/api/conversations/${conversationRes.data.id}`;
+      const conversationRes = await createConversation(conversationPayload);
+      const conversationIri =
+        conversationRes.data["@id"] ||
+        `/api/conversations/${conversationRes.data.id}`;
 
-      await api.post("/messages", {
-        content: formData.message,
-        isAdmin: false,
-        conversation: conversationIri,
-      });
+      await sendPublicMessage(formData.message, conversationIri);
 
       setSuccess(true);
     } catch (error) {
@@ -71,9 +70,8 @@ const ContactModal = ({
       setLoading(false);
     }
   };
-
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -102,7 +100,8 @@ const ContactModal = ({
                 " Verás la respuesta en tu panel de mensajes."
               ) : (
                 <span>
-                  {" "}Te contactarán pronto a <strong>{formData.email}</strong>.
+                  {" "}
+                  Te contactarán pronto a <strong>{formData.email}</strong>.
                 </span>
               )}
             </p>
@@ -128,23 +127,26 @@ const ContactModal = ({
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              
               {user ? (
                 <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex flex-col gap-2">
                   <div>
                     <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider block mb-1">
-                        Tus datos
+                      Tus datos
                     </span>
                     <div className="flex justify-between items-start">
-                        <div>
-                            <p className="font-bold text-slate-900 text-sm">{formData.name}</p>
-                            <p className="text-xs text-slate-600">{formData.email}</p>
-                        </div>
-                        {hasUserPhone && (
-                            <span className="bg-white text-blue-700 text-[10px] font-bold px-2 py-1 rounded border border-blue-100 flex items-center gap-1 shadow-sm">
-                                <Phone size={10} /> {formData.phone}
-                            </span>
-                        )}
+                      <div>
+                        <p className="font-bold text-slate-900 text-sm">
+                          {formData.name}
+                        </p>
+                        <p className="text-xs text-slate-600">
+                          {formData.email}
+                        </p>
+                      </div>
+                      {hasUserPhone && (
+                        <span className="bg-white text-blue-700 text-[10px] font-bold px-2 py-1 rounded border border-blue-100 flex items-center gap-1 shadow-sm">
+                          <Phone size={10} /> {formData.phone}
+                        </span>
+                      )}
                     </div>
                   </div>
 

@@ -8,9 +8,9 @@ import {
   ChevronDown,
   Check,
 } from "lucide-react";
-import type { HydraResponse, Vehicle } from "../../types/vehicle";
-import api from "../../api/axios";
+import type { Vehicle } from "../../types/vehicle";
 import { useAuth } from "../../hooks/useAuth";
+import { getFeaturedVehicles } from "../../services/vehicleService";
 
 const Home = () => {
   const [featuredVehicles, setFeaturedVehicles] = useState<Vehicle[]>([]);
@@ -20,15 +20,8 @@ const Home = () => {
   useEffect(() => {
     const fetchVehicles = async () => {
       try {
-        const response = await api.get<HydraResponse<Vehicle>>("/vehicles", {
-          params: {
-            type: "SALE",
-            status: "AVAILABLE",
-          },
-        });
-
-        const vehiclesData = response.data.member || [];
-        vehiclesData.length = Math.min(vehiclesData.length, 5);
+        const response = await getFeaturedVehicles();
+        const vehiclesData = response || [];
         setFeaturedVehicles(vehiclesData);
       } catch (error) {
         console.error("Error fetching vehicles:", error);
@@ -63,7 +56,6 @@ const Home = () => {
         .animate-infinite-scroll {
           animation: scroll 40s linear infinite;
         }
-        /* Pausar animación al hacer hover */
         .pause-on-hover:hover .animate-infinite-scroll {
           animation-play-state: paused;
         }

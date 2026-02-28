@@ -31,7 +31,6 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
   const favoriteCtx = useContext(FavoriteContext);
   const favorites = favoriteCtx?.favorites ?? [];
 
-  // Datos del perfil
   const [editField, setEditField] = useState<EditField>(null);
   const [editValue, setEditValue] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -40,13 +39,11 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
     phone: user?.phone ?? "",
   });
 
-  // Favoritos con datos completos
   const [favVehicles, setFavVehicles] = useState<Vehicle[]>([]);
   const [loadingFavs, setLoadingFavs] = useState(false);
 
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // Cerrar con Escape
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -55,7 +52,6 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  // Cargar vehículos de favoritos cuando se abre el panel
   useEffect(() => {
     if (!isOpen || favorites.length === 0) {
       setFavVehicles([]);
@@ -67,7 +63,6 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
       try {
         const results = await Promise.allSettled(
           favorites.map((f) =>
-            // vehicleIri es "/api/vehicles/419" — axios añade baseURL automáticamente
             api
               .get(f.vehicleIri.replace("/api/", "/"))
               .then((r) => r.data as Vehicle),
@@ -135,7 +130,6 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
   const getImageUrl = (v: Vehicle) => {
     const main = v.vehicleImages?.find((i) => i.main) ?? v.vehicleImages?.[0];
     if (!main) return "https://placehold.co/120x80?text=Sin+foto";
-    // Si imageUrl ya contiene http es una URL externa, usarla directamente
     if (main.imageUrl.includes("http")) return main.imageUrl;
     return `${import.meta.env.VITE_BACKEND_URL}${main.imageUrl}`;
   };
@@ -153,7 +147,6 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
 
   return (
     <>
-      {/* Backdrop */}
       <div
         className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${
           isOpen
@@ -163,16 +156,13 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
         onClick={onClose}
       />
 
-      {/* Panel */}
       <div
         ref={panelRef}
         className={`fixed top-0 right-0 h-full w-full max-w-md z-50 bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        {/* Header del panel */}
         <div className="relative bg-slate-950 px-6 pt-10 pb-8 shrink-0">
-          {/* Botón cerrar */}
           <button
             onClick={onClose}
             className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-all cursor-pointer"
@@ -180,7 +170,6 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
             <X size={20} />
           </button>
 
-          {/* Avatar + info */}
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center text-white font-black text-2xl ring-4 ring-blue-500/30 shrink-0">
               {initials}
@@ -202,16 +191,13 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
           </div>
         </div>
 
-        {/* Contenido scrollable */}
         <div className="flex-1 overflow-y-auto">
-          {/* SECCIÓN: Mis datos */}
           <div className="px-6 py-5 border-b border-slate-100">
             <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">
               Mis datos
             </h3>
 
             <div className="space-y-3">
-              {/* Email (no editable) */}
               <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
                 <Mail size={16} className="text-slate-400 shrink-0" />
                 <div className="flex-1 min-w-0">
@@ -224,7 +210,6 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
                 </div>
               </div>
 
-              {/* Nombre */}
               <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
                 <UserIcon size={16} className="text-slate-400 shrink-0" />
                 {editField === "name" ? (
