@@ -244,48 +244,67 @@ const Home = () => {
       </section>
 
       <section className="py-32 bg-slate-950 relative overflow-hidden">
-        <div className="w-full max-w-7xl mx-auto px-6 relative z-10">
-          <div className="text-center mb-20 space-y-4">
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
-              Excelencia sin <span className="text-blue-500">Límites</span>
-            </h2>
+  <div className="w-full max-w-7xl mx-auto px-6 relative z-10">
+    <div className="text-center mb-20 space-y-4">
+      <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
+        Excelencia sin <span className="text-blue-500">Límites</span>
+      </h2>
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      {[
+        {
+          icon: Shield,
+          title: "Garantía Total",
+          desc: "Cobertura integral...",
+        },
+        {
+          icon: Zap,
+          title: "Entrega Express",
+          desc: "Tu vehículo listo en menos de 24h...",
+        },
+        {
+          icon: Award,
+          title: "Club Elite",
+          desc: "Membresía exclusiva...",
+        },
+      ].map((feature, idx) => (
+        <div
+          key={idx}
+          className="group p-10 rounded-4xl bg-slate-900/50 border border-white/5 hover:border-blue-500/30 hover:bg-slate-900 transition-all duration-500 relative overflow-hidden hover:shadow-2xl"
+        >
+          <div className="w-14 h-14 bg-slate-800 rounded-2xl flex items-center justify-center mb-8 border border-white/5">
+            <feature.icon size={28} className="text-blue-500" />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: Shield,
-                title: "Garantía Total",
-                desc: "Cobertura integral...",
-              },
-              {
-                icon: Zap,
-                title: "Entrega Express",
-                desc: "Tu vehículo listo en menos de 24h...",
-              },
-              {
-                icon: Award,
-                title: "Club Elite",
-                desc: "Membresía exclusiva...",
-              },
-            ].map((feature, idx) => (
-              <div
-                key={idx}
-                className="group p-10 rounded-4xl bg-slate-900/50 border border-white/5 hover:border-blue-500/30 hover:bg-slate-900 transition-all duration-500 relative overflow-hidden hover:shadow-2xl"
-              >
-                <div className="w-14 h-14 bg-slate-800 rounded-2xl flex items-center justify-center mb-8 border border-white/5">
-                  <feature.icon size={28} className="text-blue-500" />
-                </div>
-                <h3 className="text-xl font-bold mb-4 text-slate-100">
-                  {feature.title}
-                </h3>
-                <p className="text-slate-400 leading-relaxed text-sm">
-                  {feature.desc}
-                </p>
-              </div>
-            ))}
-          </div>
+          <h3 className="text-xl font-bold mb-4 text-slate-100">
+            {feature.title}
+          </h3>
+          <p className="text-slate-400 leading-relaxed text-sm">
+            {feature.desc}
+          </p>
         </div>
-      </section>
+      ))}
+      
+      {/* Enlace a GasoFlow */}
+      <a
+        href="https://www.gasoflow.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group p-10 rounded-4xl bg-gradient-to-br from-blue-600/10 to-purple-600/10 border border-blue-500/20 hover:border-blue-500/50 hover:from-blue-600/20 hover:to-purple-600/20 transition-all duration-500 relative overflow-hidden hover:shadow-2xl hover:shadow-blue-500/20 cursor-pointer"
+      >
+        <div className="w-14 h-14 bg-slate-800 rounded-2xl flex items-center justify-center mb-8 border border-blue-500/30">
+          <Zap size={28} className="text-blue-400 group-hover:text-blue-300 transition-colors" />
+        </div>
+        <h3 className="text-xl font-bold mb-4 text-slate-100 flex items-center gap-2">
+          GasoFlow
+          <ArrowRight size={18} className="text-blue-500 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+        </h3>
+        <p className="text-slate-400 leading-relaxed text-sm group-hover:text-slate-300 transition-colors">
+          Encuentra las gasolineras más baratas en tiempo real y ahorra en cada repostaje.
+        </p>
+      </a>
+    </div>
+  </div>
+</section>
 
       {!user && (
         <section className="py-40 relative overflow-hidden flex items-center justify-center bg-fixed">
