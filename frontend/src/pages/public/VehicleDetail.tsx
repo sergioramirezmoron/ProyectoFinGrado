@@ -363,7 +363,7 @@ const VehicleDetail = () => {
                             <label className="text-xs font-bold text-gray-700 uppercase mb-1 block">
                               Selecciona Fechas
                             </label>
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
                               <div className="relative">
                                 <DatePicker
                                   selected={startDate}
