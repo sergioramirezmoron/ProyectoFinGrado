@@ -2,7 +2,7 @@
 
 namespace App\Security;
 
-use Symfony\Component\HttpFoundation\JsonResponse; // <--- CAMBIO IMPORTANTE
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -34,7 +34,6 @@ class LoginAuthenticator extends AbstractLoginFormAuthenticator
         return new JsonResponse([
             'message' => 'Login satisfactorio',
             'user' => $token->getUserIdentifier(),
-            // Aquí en el futuro meteremos el Token JWT
         ]);
     }
 

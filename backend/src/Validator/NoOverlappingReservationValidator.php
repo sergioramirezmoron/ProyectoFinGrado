@@ -40,7 +40,7 @@ class NoOverlappingReservationValidator extends ConstraintValidator
             $value->getEndDate()
         );
 
-        // 2. MEJORA: Filtramos los resultados para ignorar la propia reserva
+        // Filtramos los resultados para ignorar la propia reserva
         // (por si estamos editando una existente y choca consigo misma)
         foreach ($conflicts as $conflict) {
             // Si el ID es el mismo, es la misma reserva -> Ignorar
@@ -54,7 +54,7 @@ class NoOverlappingReservationValidator extends ConstraintValidator
                 ->setParameter('{{ end }}', $conflict->getEndDate()->format('d/m/Y'))
                 ->addViolation();
             
-            // Con encontrar una basta, salimos.
+            // Con encontrar una, salimos.
             return;
         }
     }

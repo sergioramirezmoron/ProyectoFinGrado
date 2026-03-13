@@ -24,9 +24,6 @@ class JWTCreatedListener
 
         // --- AÑADIMOS LOS DATOS EXTRA ---
         $payload['id'] = $user->getId();
-        
-        // Asegúrate de que en tu entidad User tienes los métodos getName() y getPhone()
-        // Si se llaman diferente (ej: getNombre()), cámbialo aquí.
         $payload['name'] = $user->getName(); 
         $payload['phone'] = $user->getPhone();
 
