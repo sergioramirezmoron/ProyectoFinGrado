@@ -33,7 +33,6 @@ export const uploadVehicleImage = (file: File, isMain: boolean) => {
 export const getVehicles = (page: number, searchTerm?: string) => {
   const params = new URLSearchParams();
   params.append("page", page.toString());
-  params.append("status[nest]", "DELETED");
   if (searchTerm) params.append("brand.name", searchTerm);
   return api.get(`/vehicles?${params.toString()}`);
 };
