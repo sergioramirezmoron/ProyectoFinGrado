@@ -17,7 +17,7 @@ import {
 import { useAuth } from "../../hooks/useAuth";
 import { FavoriteContext } from "../../context/FavoriteContext";
 import type { Vehicle } from "../../types/vehicle";
-import FavCard from "./FavCard";
+import FavCard from "../../components/public/FavCard";
 import type { EditField, UserProfilePanelProps } from "../../types/auth";
 import { updateUserProfile } from "../../services/userService";
 import { getFavoriteVehicles } from "../../services/favoriteService";
@@ -147,7 +147,7 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
   return (
     <>
       <div
-        className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${
+        className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${
           isOpen
             ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"

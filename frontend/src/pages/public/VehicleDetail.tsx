@@ -27,7 +27,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { es } from "date-fns/locale/es";
 import { eachDayOfInterval, parseISO, format } from "date-fns";
 import SpecItem from "../../components/public/SpecItem";
-import ContactModal from "./ContactModal";
+import ContactModal from "../../components/public/ContactModal";
 import type { ApiError } from "../../types/reservation";
 import { getVehicleDetail } from "../../services/vehicleService";
 import {
