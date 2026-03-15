@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+
 export interface StatCardProps {
   title: string;
   value: string;
@@ -7,13 +8,13 @@ export interface StatCardProps {
 }
 
 const StatCard = ({ title, value, icon: Icon, color }: StatCardProps) => (
-  <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 transition-transform hover:scale-105 duration-200">
-    <div className={`p-4 rounded-full ${color} text-white shadow-md`}>
-      <Icon size={24} />
+  <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center gap-2 transition-transform hover:scale-105 duration-200">
+    <div className={`p-3 rounded-full ${color} text-white shadow-md`}>
+      <Icon size={20} />
     </div>
-    <div>
-      <p className="text-sm text-gray-500 font-medium">{title}</p>
-      <h3 className="text-2xl font-bold text-gray-800">{value}</h3>
+    <div className="text-center">
+      <p className="text-xs text-gray-500 font-medium">{title}</p>
+      <h3 className="text-xl font-bold text-gray-800">{value}</h3>
     </div>
   </div>
 );
