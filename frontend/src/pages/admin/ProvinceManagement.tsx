@@ -12,7 +12,12 @@ import {
 } from "lucide-react";
 import ConfirmModal from "../../helpers/ConfirmModal";
 import type { Province } from "../../types/provinces";
-import { createProvince, deleteProvince, getProvinces, updateProvince } from "../../services/provinceService";
+import {
+  createProvince,
+  deleteProvince,
+  getProvinces,
+  updateProvince,
+} from "../../services/provinceService";
 
 const ProvinceManagement = () => {
   const [provinces, setProvinces] = useState<Province[]>([]);
@@ -123,7 +128,7 @@ const ProvinceManagement = () => {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-8">
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-8">
       <ConfirmModal
         isOpen={deleteModal.open}
         title="Eliminar Provincia"
@@ -133,6 +138,7 @@ const ProvinceManagement = () => {
         onCancel={() => setDeleteModal({ open: false, province: null })}
       />
 
+      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
           <MapPin className="text-blue-600" /> Gestión de Provincias
@@ -142,12 +148,13 @@ const ProvinceManagement = () => {
         </p>
       </div>
 
-      <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl">
+      {/* Formulario */}
+      <div className="bg-white p-4 sm:p-6 rounded-3xl border border-slate-100 shadow-xl">
         <form
           onSubmit={handleAddProvince}
-          className="flex flex-wrap items-end gap-4"
+          className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3"
         >
-          <div className="flex-1 min-w-75 space-y-1.5">
+          <div className="flex-1 space-y-1.5">
             <label className="text-xs font-bold uppercase text-slate-400 ml-1">
               Nombre de la Provincia / Ciudad
             </label>
@@ -164,7 +171,7 @@ const ProvinceManagement = () => {
           <button
             type="submit"
             disabled={isSubmitting || !newName.trim()}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 disabled:opacity-50 h-11.5"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {isSubmitting ? (
               <Loader2 className="animate-spin" size={20} />
@@ -192,6 +199,7 @@ const ProvinceManagement = () => {
         )}
       </div>
 
+      {/* Grid provincias */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {loading ? (
           <div className="col-span-full py-10 text-center">
@@ -218,6 +226,7 @@ const ProvinceManagement = () => {
                 <button
                   onClick={() => handleSaveEdit(province.id)}
                   disabled={isSaving || !editName.trim()}
+                  aria-label="Guardar"
                   className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all disabled:opacity-50"
                 >
                   {isSaving ? (
@@ -228,6 +237,7 @@ const ProvinceManagement = () => {
                 </button>
                 <button
                   onClick={cancelEdit}
+                  aria-label="Cancelar"
                   className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all"
                 >
                   <X size={16} />
@@ -239,23 +249,26 @@ const ProvinceManagement = () => {
                 className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between group hover:border-blue-200 transition-all"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                  <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
                     <MapPin size={18} />
                   </div>
                   <span className="font-bold text-slate-700">
                     {province.name}
                   </span>
                 </div>
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                {/* Siempre visible en móvil, hover en desktop */}
+                <div className="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-all">
                   <button
                     onClick={() => startEdit(province)}
-                    className="p-2 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                    aria-label={`Editar ${province.name}`}
+                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
                   >
                     <Pencil size={16} />
                   </button>
                   <button
                     onClick={() => confirmDelete(province)}
-                    className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                    aria-label={`Eliminar ${province.name}`}
+                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                   >
                     <Trash2 size={16} />
                   </button>
