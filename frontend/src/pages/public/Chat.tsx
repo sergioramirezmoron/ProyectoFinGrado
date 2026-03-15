@@ -355,11 +355,11 @@ const Chat = () => {
 
   return (
     <div
-      className={`bg-white shadow-sm flex overflow-hidden relative ${
+      className={`shadow-sm flex overflow-hidden relative ${
         isAdmin
           ? "h-[calc(100vh-100px)] rounded-none sm:rounded-2xl border-0 sm:border sm:border-gray-200"
           : "h-[calc(100vh-80px)] rounded-none sm:rounded-xl border-0 sm:border-x sm:border-gray-200"
-      }`}
+      } ${!selectedChat || isSidebarOpen ? "bg-white" : "bg-white"}`}
     >
       {toast && (
         <Toast
@@ -388,25 +388,24 @@ const Chat = () => {
         />
       )}
 
-      {/* Overlay para cerrar sidebar en móvil */}
+      {/* Overlay */}
       {isSidebarOpen && selectedChat && (
         <div
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+          className="lg:hidden fixed inset-0 bg-[#f1f5f9] z-30"
           onClick={() => setIsSidebarOpen(false)}
-        ></div>
+        />
       )}
 
-      {/* Sidebar de conversaciones */}
+      {/* Sidebar */}
       <div
         className={`
-          ${selectedChat ? "absolute lg:static" : "static"}
-          ${isSidebarOpen && selectedChat ? "left-0" : selectedChat ? "-left-full lg:left-0" : "left-0"}
+          ${selectedChat && !isSidebarOpen ? "absolute lg:static -left-full lg:left-0" : "static left-0"}
           top-0 bottom-0
-          w-full sm:w-96 lg:w-1/3
-          border-r border-gray-200 
-          flex flex-col 
+          ${!selectedChat || isSidebarOpen ? "w-full" : "w-full"} lg:w-1/3
+          border-r border-gray-200
+          flex flex-col
           bg-white
-          transition-all duration-300 ease-in-out 
+          transition-all duration-300 ease-in-out
           z-40
         `}
       >
@@ -440,13 +439,10 @@ const Chat = () => {
           </button>
         </div>
 
-        {/* Barra de búsqueda */}
+        {/* Búsqueda */}
         <div className="p-3 sm:p-4 border-b border-gray-200 bg-white shrink-0">
           <div className="relative">
-            <Search
-              className="absolute left-3 top-2 sm:top-2.5 text-gray-400"
-              size={14}
-            />
+            <Search className="absolute left-3 top-2 sm:top-2.5 text-gray-400" size={14} />
             <input
               type="text"
               placeholder="Buscar..."
@@ -457,8 +453,8 @@ const Chat = () => {
           </div>
         </div>
 
-        {/* Lista de conversaciones */}
-        <div className="flex-1 overflow-y-auto min-h-0 bg-gray-50">
+        {/* Lista conversaciones */}
+        <div className="flex-1 overflow-y-auto min-h-0 bg-white">
           {loading ? (
             <div className="p-6 sm:p-8 text-center flex flex-col items-center gap-2 text-gray-400">
               <Loader2 className="animate-spin" size={20} />
@@ -475,12 +471,16 @@ const Chat = () => {
                 <button
                   key={chat.id}
                   onClick={() => handleSelectChat(chat)}
-                  className={`w-full text-left p-3 sm:p-4 border-b border-gray-100 hover:bg-white transition-all flex gap-2 sm:gap-3 relative hover:cursor-pointer hover:shadow-sm ${selectedChat?.id === chat.id ? "bg-white border-l-4 border-l-blue-600 shadow-sm" : "border-l-4 border-l-transparent"}`}
+                  className={`w-full text-left p-3 sm:p-4 border-b border-gray-100 hover:bg-white transition-all flex gap-2 sm:gap-3 relative hover:cursor-pointer hover:shadow-sm ${
+                    selectedChat?.id === chat.id
+                      ? "bg-white border-l-4 border-l-blue-600 shadow-sm"
+                      : "border-l-4 border-l-transparent"
+                  }`}
                 >
                   {isUnread && (
-                    <div className="absolute top-3 sm:top-4 right-3 sm:right-4 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-red-500 rounded-full animate-pulse z-10"></div>
+                    <div className="absolute top-3 sm:top-4 right-3 sm:right-4 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-red-500 rounded-full animate-pulse z-10" />
                   )}
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-slate-200 overflow-hidden shrink-0 relative">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-slate-200 overflow-hidden shrink-0">
                     {getImageUrl(chat) ? (
                       <img
                         src={getImageUrl(chat)!}
@@ -493,9 +493,7 @@ const Chat = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start mb-1 gap-2">
-                      <h4
-                        className={`text-xs sm:text-sm font-bold truncate flex-1 ${isUnread ? "text-slate-900" : "text-slate-700"}`}
-                      >
+                      <h4 className={`text-xs sm:text-sm font-bold truncate flex-1 ${isUnread ? "text-slate-900" : "text-slate-700"}`}>
                         {isAdmin
                           ? chat.contactName
                           : `${chat.vehicle?.brand?.name} ${chat.vehicle?.model?.name}`}
@@ -504,9 +502,7 @@ const Chat = () => {
                         {formatDate(chat.updatedAt)}
                       </span>
                     </div>
-                    <p
-                      className={`text-[10px] sm:text-xs truncate ${isUnread ? "font-bold text-blue-600" : "text-gray-500"}`}
-                    >
+                    <p className={`text-[10px] sm:text-xs truncate ${isUnread ? "font-bold text-blue-600" : "text-gray-500"}`}>
                       {isAdmin
                         ? `${chat.vehicle?.brand?.name} ${chat.vehicle?.model?.name}`
                         : isUnread
@@ -514,12 +510,8 @@ const Chat = () => {
                           : "Ver conversación"}
                     </p>
                     {chat.vehicle?.status !== "AVAILABLE" && (
-                      <span
-                        className={`inline-block text-[8px] sm:text-[9px] px-1 sm:px-1.5 rounded mt-1 font-bold ${chat.vehicle?.status === "SOLD" ? "bg-red-100 text-red-600" : "bg-yellow-100 text-yellow-700"}`}
-                      >
-                        {chat.vehicle?.status === "SOLD"
-                          ? "VENDIDO"
-                          : "RESERVADO"}
+                      <span className={`inline-block text-[8px] sm:text-[9px] px-1 sm:px-1.5 rounded mt-1 font-bold ${chat.vehicle?.status === "SOLD" ? "bg-red-100 text-red-600" : "bg-yellow-100 text-yellow-700"}`}>
+                        {chat.vehicle?.status === "SOLD" ? "VENDIDO" : "RESERVADO"}
                       </span>
                     )}
                   </div>
@@ -530,26 +522,21 @@ const Chat = () => {
         </div>
       </div>
 
-      {/* Área de chat */}
-      <div
-        className={`flex-1 flex flex-col bg-[#eef1f6] min-w-0 ${selectedChat ? "" : "hidden lg:flex"}`}
-      >
+      {/* Área de chat — oculta en móvil cuando no hay chat o sidebar está abierto */}
+      <div className={`flex-1 flex flex-col bg-[#eef1f6] min-w-0 ${!selectedChat || isSidebarOpen ? "hidden lg:flex" : "flex"}`}>
         {selectedChat ? (
           <>
-            {/* Header del chat */}
+            {/* Header */}
             <div className="p-3 sm:p-4 bg-white border-b border-gray-200 flex justify-between items-center shadow-sm min-h-16 sm:h-20 z-10">
               <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                {/* Botón hamburguesa integrado */}
                 <button
-                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                  onClick={() => setIsSidebarOpen(true)}
                   className="lg:hidden shrink-0 text-blue-600 hover:bg-blue-50 p-1.5 rounded-lg transition-colors"
+                  aria-label="Ver conversaciones"
                 >
                   <Menu size={20} />
                 </button>
-
-                <div
-                  className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-sm sm:text-lg text-white shadow-sm shrink-0 ${isAdmin ? "bg-gradient-to-br from-blue-500 to-indigo-600" : "bg-slate-700"}`}
-                >
+                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-sm sm:text-lg text-white shadow-sm shrink-0 ${isAdmin ? "bg-gradient-to-br from-blue-500 to-indigo-600" : "bg-slate-700"}`}>
                   {isAdmin ? (
                     selectedChat.contactName.charAt(0).toUpperCase()
                   ) : (
@@ -565,10 +552,8 @@ const Chat = () => {
                   <p className="text-[10px] sm:text-xs text-gray-500 flex items-center gap-1 truncate">
                     {isAdmin ? (
                       <>
-                        <User size={8} className="sm:w-2.5 sm:h-2.5 shrink-0" />{" "}
-                        <span className="truncate">
-                          {selectedChat.contactEmail}
-                        </span>
+                        <User size={8} className="sm:w-2.5 sm:h-2.5 shrink-0" />
+                        <span className="truncate">{selectedChat.contactEmail}</span>
                       </>
                     ) : (
                       "Chat con Soporte"
@@ -576,7 +561,8 @@ const Chat = () => {
                   </p>
                 </div>
               </div>
-              <div className="flex flex-col items-end gap-1 sm:gap-1 shrink-0 ml-2">
+
+              <div className="flex flex-col items-end gap-1 shrink-0 ml-2">
                 <Link
                   to={`/vehiculo/${selectedChat.vehicle?.["@id"].split("/").pop()}`}
                   className="flex items-center gap-1 text-[10px] sm:text-xs font-semibold text-blue-600 border-2 px-2 py-1 sm:p-2 rounded-full hover:bg-sky-300"
@@ -585,93 +571,80 @@ const Chat = () => {
                   <Car size={10} className="sm:w-3 sm:h-3" />
                 </Link>
                 {isAdmin ? (
-                  <>
-                    {selectedChat.vehicle && (
-                      <div className="relative">
-                        <select
-                          value={selectedChat.vehicle.status}
-                          onChange={(e) =>
-                            handleAdminAction_StatusChange(e.target.value)
-                          }
-                          disabled={updatingStatus}
-                          className={`cursor-pointer pl-1.5 sm:pl-2 pr-4 sm:pr-6 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs font-bold border outline-none ${getStatusColor(selectedChat.vehicle.status)} flex items-center justify-center gap-2 shadow-sm hover:shadow-md ${updatingStatus ? "bg-gray-200" : ""}`}
-                        >
-                          <option value="AVAILABLE">DISPONIBLE</option>
-                          <option value="RESERVED">RESERVADO</option>
-                          <option value="SOLD">VENDIDO</option>
-                        </select>
-                      </div>
-                    )}
-                  </>
+                  selectedChat.vehicle && (
+                    <div className="relative">
+                      <select
+                        value={selectedChat.vehicle.status}
+                        onChange={(e) => handleAdminAction_StatusChange(e.target.value)}
+                        disabled={updatingStatus}
+                        className={`cursor-pointer pl-1.5 sm:pl-2 pr-4 sm:pr-6 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs font-bold border outline-none ${getStatusColor(selectedChat.vehicle.status)} shadow-sm hover:shadow-md ${updatingStatus ? "bg-gray-200" : ""}`}
+                      >
+                        <option value="AVAILABLE">DISPONIBLE</option>
+                        <option value="RESERVED">RESERVADO</option>
+                        <option value="SOLD">VENDIDO</option>
+                      </select>
+                    </div>
+                  )
                 ) : (
-                  <div
-                    className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold border flex items-center gap-1 sm:gap-1.5 ${selectedChat.vehicle?.status === "SOLD" ? "bg-red-50 text-red-600 border-red-200" : selectedChat.vehicle?.status === "RESERVED" ? "bg-yellow-50 text-yellow-700 border-yellow-200" : "bg-green-50 text-green-700 border-green-200"}`}
-                  >
+                  <div className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold border flex items-center gap-1 sm:gap-1.5 ${
+                    selectedChat.vehicle?.status === "SOLD"
+                      ? "bg-red-50 text-red-600 border-red-200"
+                      : selectedChat.vehicle?.status === "RESERVED"
+                        ? "bg-yellow-50 text-yellow-700 border-yellow-200"
+                        : "bg-green-50 text-green-700 border-green-200"
+                  }`}>
                     {selectedChat.vehicle?.status === "SOLD" ? (
                       <Lock size={10} className="sm:w-3 sm:h-3" />
                     ) : (
                       <Tag size={10} className="sm:w-3 sm:h-3" />
                     )}
                     <span className="hidden sm:inline">
-                      {selectedChat.vehicle?.status === "AVAILABLE"
-                        ? "DISPONIBLE"
-                        : selectedChat.vehicle?.status}
+                      {selectedChat.vehicle?.status === "AVAILABLE" ? "DISPONIBLE" : selectedChat.vehicle?.status}
                     </span>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Banner de reserva pendiente */}
-            {selectedChat.reservation &&
-              selectedChat.reservation.status === "PENDING" && (
-                <div className="mx-3 sm:mx-6 mt-3 sm:mt-6 p-3 sm:p-4 bg-white border border-orange-200 rounded-xl flex flex-col gap-3 sm:gap-0 sm:flex-row justify-between items-start sm:items-center shadow-sm relative overflow-hidden">
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-orange-400"></div>
-                  <div className="w-full sm:w-auto">
-                    <h4 className="font-bold text-slate-800 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
-                      <CalendarClock
-                        size={14}
-                        className="sm:w-4.5 sm:h-4.5 text-orange-500"
-                      />
-                      Solicitud de Reserva
-                    </h4>
-                    <p className="text-[10px] sm:text-xs text-slate-500 mt-1 ml-0 sm:ml-6">
-                      {formatDate(selectedChat.reservation.startDate)} -{" "}
-                      {formatDate(selectedChat.reservation.endDate)}
-                      <span className="block font-bold text-slate-700 mt-1">
-                        Total:{" "}
-                        {formatPrice(selectedChat.reservation.totalPrice)}
-                      </span>
-                    </p>
-                  </div>
-                  {isAdmin ? (
-                    <div className="flex gap-2 w-full sm:w-auto">
-                      <button
-                        onClick={() =>
-                          setConfirmAction({ status: "REJECTED" })
-                        }
-                        className="flex-1 sm:flex-none px-2.5 sm:px-3 py-1 sm:py-1.5 bg-white text-red-600 border border-red-200 hover:bg-red-50 rounded-lg text-[10px] sm:text-xs font-bold flex items-center justify-center gap-1"
-                      >
-                        <XCircle size={12} className="sm:w-3.5 sm:h-3.5" />{" "}
-                        Rechazar
-                      </button>
-                      <button
-                        onClick={() =>
-                          setConfirmAction({ status: "CONFIRMED" })
-                        }
-                        className="flex-1 sm:flex-none px-2.5 sm:px-3 py-1 sm:py-1.5 bg-slate-900 text-white hover:bg-slate-800 rounded-lg text-[10px] sm:text-xs font-bold flex items-center justify-center gap-1 shadow-md"
-                      >
-                        <CheckCircle2 size={12} className="sm:w-3.5 sm:h-3.5" />{" "}
-                        Aceptar
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="w-full sm:w-auto text-center sm:text-left px-2 sm:px-3 py-1 bg-orange-100 text-orange-700 text-[10px] sm:text-xs font-bold rounded-lg animate-pulse">
-                      Pendiente de confirmación
-                    </div>
-                  )}
+            {/* Banner reserva pendiente */}
+            {selectedChat.reservation && selectedChat.reservation.status === "PENDING" && (
+              <div className="mx-3 sm:mx-6 mt-3 sm:mt-6 p-3 sm:p-4 bg-white border border-orange-200 rounded-xl flex flex-col gap-3 sm:gap-0 sm:flex-row justify-between items-start sm:items-center shadow-sm relative overflow-hidden">
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-orange-400" />
+                <div className="w-full sm:w-auto">
+                  <h4 className="font-bold text-slate-800 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
+                    <CalendarClock size={14} className="text-orange-500" />
+                    Solicitud de Reserva
+                  </h4>
+                  <p className="text-[10px] sm:text-xs text-slate-500 mt-1 ml-0 sm:ml-6">
+                    {formatDate(selectedChat.reservation.startDate)} -{" "}
+                    {formatDate(selectedChat.reservation.endDate)}
+                    <span className="block font-bold text-slate-700 mt-1">
+                      Total: {formatPrice(selectedChat.reservation.totalPrice)}
+                    </span>
+                  </p>
                 </div>
-              )}
+                {isAdmin ? (
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <button
+                      onClick={() => setConfirmAction({ status: "REJECTED" })}
+                      className="flex-1 sm:flex-none px-2.5 sm:px-3 py-1 sm:py-1.5 bg-white text-red-600 border border-red-200 hover:bg-red-50 rounded-lg text-[10px] sm:text-xs font-bold flex items-center justify-center gap-1"
+                    >
+                      <XCircle size={12} className="sm:w-3.5 sm:h-3.5" /> Rechazar
+                    </button>
+                    <button
+                      onClick={() => setConfirmAction({ status: "CONFIRMED" })}
+                      className="flex-1 sm:flex-none px-2.5 sm:px-3 py-1 sm:py-1.5 bg-slate-900 text-white hover:bg-slate-800 rounded-lg text-[10px] sm:text-xs font-bold flex items-center justify-center gap-1 shadow-md"
+                    >
+                      <CheckCircle2 size={12} className="sm:w-3.5 sm:h-3.5" /> Aceptar
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-full sm:w-auto text-center sm:text-left px-2 sm:px-3 py-1 bg-orange-100 text-orange-700 text-[10px] sm:text-xs font-bold rounded-lg animate-pulse">
+                    Pendiente de confirmación
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Mensajes */}
             <div
@@ -681,23 +654,12 @@ const Chat = () => {
               {messages.map((msg) => {
                 const isMe = isAdmin ? msg.isAdmin : !msg.isAdmin;
                 return (
-                  <div
-                    key={msg.id}
-                    className={`flex ${isMe ? "justify-end" : "justify-start"}`}
-                  >
-                    <div
-                      className={`max-w-[85%] sm:max-w-[75%] rounded-2xl p-3 sm:p-4 shadow-sm text-xs sm:text-sm relative ${isMe ? "bg-blue-600 text-white rounded-tr-none" : "bg-white text-slate-800 rounded-tl-none border border-gray-200"}`}
-                    >
-                      <p className="whitespace-pre-wrap leading-relaxed">
-                        {msg.content}
-                      </p>
-                      <div
-                        className={`text-[9px] sm:text-[10px] mt-1.5 sm:mt-2 flex items-center justify-end gap-1 ${isMe ? "text-blue-100" : "text-gray-400"}`}
-                      >
+                  <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+                    <div className={`max-w-[85%] sm:max-w-[75%] rounded-2xl p-3 sm:p-4 shadow-sm text-xs sm:text-sm relative ${isMe ? "bg-blue-600 text-white rounded-tr-none" : "bg-white text-slate-800 rounded-tl-none border border-gray-200"}`}>
+                      <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                      <div className={`text-[9px] sm:text-[10px] mt-1.5 sm:mt-2 flex items-center justify-end gap-1 ${isMe ? "text-blue-100" : "text-gray-400"}`}>
                         {formatDate(msg.createdAt)}
-                        {isMe && (
-                          <CheckCheck size={10} className="sm:w-3 sm:h-3" />
-                        )}
+                        {isMe && <CheckCheck size={10} className="sm:w-3 sm:h-3" />}
                       </div>
                     </div>
                   </div>
@@ -705,7 +667,7 @@ const Chat = () => {
               })}
             </div>
 
-            {/* Input de mensaje */}
+            {/* Input mensaje */}
             <div className="p-2 sm:p-4 bg-white border-t border-gray-200">
               {isChatLocked ? (
                 <div className="flex items-center justify-center gap-2 p-3 sm:p-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-500 text-xs sm:text-sm font-medium">
@@ -716,10 +678,7 @@ const Chat = () => {
                   </span>
                 </div>
               ) : (
-                <form
-                  onSubmit={handleSendMessage}
-                  className="flex gap-1.5 sm:gap-3"
-                >
+                <form onSubmit={handleSendMessage} className="flex gap-1.5 sm:gap-3">
                   <input
                     type="text"
                     value={newMessage}
@@ -745,14 +704,9 @@ const Chat = () => {
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-gray-400 bg-slate-50/50 p-4">
             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-full flex items-center justify-center mb-3 sm:mb-4 shadow-sm border border-gray-100">
-              <MessageSquare
-                size={32}
-                className="sm:w-10 sm:h-10 text-blue-200"
-              />
+              <MessageSquare size={32} className="sm:w-10 sm:h-10 text-blue-200" />
             </div>
-            <p className="text-xs sm:text-base text-center">
-              Selecciona una conversación
-            </p>
+            <p className="text-xs sm:text-base text-center">Selecciona una conversación</p>
           </div>
         )}
       </div>
