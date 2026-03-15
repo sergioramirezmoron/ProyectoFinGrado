@@ -1,8 +1,23 @@
 import { useEffect, useState } from "react";
-import { getColors, createColor, updateColor, deleteColor } from "../../services/colorService";
+import {
+  getColors,
+  createColor,
+  updateColor,
+  deleteColor,
+} from "../../services/colorService";
 import type { Color } from "../../types/color";
 import ConfirmModal from "../../helpers/ConfirmModal";
-import { AlertCircle, Check, CheckCircle2, Loader2, Palette, Pencil, Plus, Trash2, X } from "lucide-react";
+import {
+  AlertCircle,
+  Check,
+  CheckCircle2,
+  Loader2,
+  Palette,
+  Pencil,
+  Plus,
+  Trash2,
+  X,
+} from "lucide-react";
 
 const FALLBACK_COLOR = "#cccccc";
 
@@ -17,7 +32,10 @@ const ColorManagement = () => {
   const [editName, setEditName] = useState("");
   const [editCode, setEditCode] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const [deleteModal, setDeleteModal] = useState<{ open: boolean; color: Color | null }>({
+  const [deleteModal, setDeleteModal] = useState<{
+    open: boolean;
+    color: Color | null;
+  }>({
     open: false,
     color: null,
   });
@@ -66,9 +84,13 @@ const ColorManagement = () => {
     try {
       await deleteColor(color.id);
       setColors((prev) => prev.filter((c) => c.id !== color.id));
-      setMessage({ text: `Color "${color.name}" eliminado correctamente`, type: "success" });
+      setMessage({
+        text: `Color "${color.name}" eliminado correctamente`,
+        type: "success",
+      });
     } catch (error: unknown) {
-      const status = (error as { response?: { status?: number } })?.response?.status;
+      const status = (error as { response?: { status?: number } })?.response
+        ?.status;
       if (status === 500 || status === 422) {
         setMessage({
           text: `No se puede eliminar "${color.name}" porque está asignado a uno o más vehículos.`,
@@ -97,7 +119,9 @@ const ColorManagement = () => {
     try {
       await updateColor(id, editName, editCode);
       setColors((prev) =>
-        prev.map((c) => (c.id === id ? { ...c, name: editName, hexCode: editCode } : c))
+        prev.map((c) =>
+          c.id === id ? { ...c, name: editName, hexCode: editCode } : c,
+        ),
       );
       cancelEdit();
       setMessage({ text: "Color actualizado correctamente", type: "success" });
@@ -109,7 +133,7 @@ const ColorManagement = () => {
     }
   };
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-8">
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-8">
       <ConfirmModal
         isOpen={deleteModal.open}
         title="Eliminar Color"
@@ -119,6 +143,7 @@ const ColorManagement = () => {
         onCancel={() => setDeleteModal({ open: false, color: null })}
       />
 
+      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
           <Palette className="text-blue-600" /> Gestión de Colores
@@ -128,12 +153,13 @@ const ColorManagement = () => {
         </p>
       </div>
 
-      <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl">
+      {/* Formulario añadir */}
+      <div className="bg-white p-4 sm:p-6 rounded-3xl border border-slate-100 shadow-xl">
         <form
           onSubmit={handleAddColor}
-          className="flex flex-wrap items-end gap-4"
+          className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3"
         >
-          <div className="flex-1 min-w-5 space-y-1.5">
+          <div className="flex-1 space-y-1.5">
             <label className="text-xs font-bold uppercase text-slate-400 ml-1">
               Nombre del Color
             </label>
@@ -167,7 +193,7 @@ const ColorManagement = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 disabled:opacity-50"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {isSubmitting ? (
               <Loader2 className="animate-spin" size={20} />
@@ -195,6 +221,7 @@ const ColorManagement = () => {
         )}
       </div>
 
+      {/* Grid de colores */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {loading ? (
           <div className="col-span-full py-10 text-center">
@@ -203,6 +230,7 @@ const ColorManagement = () => {
         ) : (
           colors.map((color) =>
             editingId === color.id ? (
+              // Tarjeta en modo edición
               <div
                 key={color.id}
                 className="bg-white p-4 rounded-2xl border-2 border-blue-300 shadow-md flex flex-col gap-3"
@@ -247,6 +275,7 @@ const ColorManagement = () => {
                 </div>
               </div>
             ) : (
+              // Tarjeta normal — botones siempre visibles en móvil
               <div
                 key={color.id}
                 className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow group"
@@ -263,16 +292,19 @@ const ColorManagement = () => {
                     </p>
                   </div>
                 </div>
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                {/* En móvil siempre visibles, en desktop solo al hacer hover */}
+                <div className="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-all">
                   <button
                     onClick={() => startEdit(color)}
-                    className="p-2 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                    aria-label={`Editar ${color.name}`}
+                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
                   >
                     <Pencil size={16} />
                   </button>
                   <button
                     onClick={() => confirmDelete(color)}
-                    className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                    aria-label={`Eliminar ${color.name}`}
+                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                   >
                     <Trash2 size={16} />
                   </button>
