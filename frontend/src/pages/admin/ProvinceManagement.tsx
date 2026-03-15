@@ -213,36 +213,32 @@ const ProvinceManagement = () => {
           provinces.map((province) =>
             editingId === province.id ? (
               <div
-                key={province.id}
-                className="bg-white p-4 rounded-2xl border-2 border-blue-300 shadow-md flex items-center gap-2"
-              >
-                <input
-                  type="text"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-                  autoFocus
-                />
-                <button
-                  onClick={() => handleSaveEdit(province.id)}
-                  disabled={isSaving || !editName.trim()}
-                  aria-label="Guardar"
-                  className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all disabled:opacity-50"
-                >
-                  {isSaving ? (
-                    <Loader2 className="animate-spin" size={16} />
-                  ) : (
-                    <Check size={16} />
-                  )}
-                </button>
-                <button
-                  onClick={cancelEdit}
-                  aria-label="Cancelar"
-                  className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all"
-                >
-                  <X size={16} />
-                </button>
-              </div>
+  key={province.id}
+  className="bg-white p-4 rounded-2xl border-2 border-blue-300 shadow-md flex items-center gap-2 overflow-hidden"
+>
+  <input
+    type="text"
+    value={editName}
+    onChange={(e) => setEditName(e.target.value)}
+    className="flex-1 min-w-0 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+    autoFocus
+  />
+  <button
+    onClick={() => handleSaveEdit(province.id)}
+    disabled={isSaving || !editName.trim()}
+    aria-label="Guardar"
+    className="shrink-0 p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all disabled:opacity-50"
+  >
+    {isSaving ? <Loader2 className="animate-spin" size={16} /> : <Check size={16} />}
+  </button>
+  <button
+    onClick={cancelEdit}
+    aria-label="Cancelar"
+    className="shrink-0 p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all"
+  >
+    <X size={16} />
+  </button>
+</div>
             ) : (
               <div
                 key={province.id}

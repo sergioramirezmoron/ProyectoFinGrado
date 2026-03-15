@@ -152,7 +152,7 @@ const ModelManagement = () => {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-8">
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-8">
       <ConfirmModal
         isOpen={deleteModal.open}
         title="Eliminar Modelo"
@@ -162,6 +162,7 @@ const ModelManagement = () => {
         onCancel={() => setDeleteModal({ open: false, model: null })}
       />
 
+      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
           <Layers className="text-blue-600" /> Gestión de Modelos
@@ -171,12 +172,13 @@ const ModelManagement = () => {
         </p>
       </div>
 
-      <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl">
+      {/* Formulario */}
+      <div className="bg-white p-4 sm:p-6 rounded-3xl border border-slate-100 shadow-xl">
         <form
           onSubmit={handleAddModel}
-          className="flex flex-wrap items-end gap-4"
+          className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3"
         >
-          <div className="space-y-1.5 min-w-[180px]">
+          <div className="space-y-1.5">
             <label className="text-xs font-bold uppercase text-slate-400 ml-1">
               Marca
             </label>
@@ -201,13 +203,14 @@ const ModelManagement = () => {
             </div>
           </div>
 
-          <div className="flex-1 min-w-[200px] space-y-1.5">
+          <div className="flex-1 space-y-1.5">
             <label className="text-xs font-bold uppercase text-slate-400 ml-1">
               Nombre del Modelo
             </label>
             <input
               type="text"
               required
+              maxLength={50}
               placeholder="Ej: Serie 3, A4, Clase C..."
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               value={newName}
@@ -218,7 +221,7 @@ const ModelManagement = () => {
           <button
             type="submit"
             disabled={isSubmitting || !newName.trim() || !selectedBrandIri}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 disabled:opacity-50 h-[46px]"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {isSubmitting ? (
               <Loader2 className="animate-spin" size={20} />
@@ -232,9 +235,7 @@ const ModelManagement = () => {
 
         {message.text && (
           <div
-            className={`mt-4 flex items-center gap-2 text-sm font-medium ${
-              message.type === "success" ? "text-green-600" : "text-red-600"
-            }`}
+            className={`mt-4 flex items-center gap-2 text-sm font-medium ${message.type === "success" ? "text-green-600" : "text-red-600"}`}
           >
             {message.type === "success" ? (
               <CheckCircle2 size={16} />
@@ -246,7 +247,8 @@ const ModelManagement = () => {
         )}
       </div>
 
-      <div className="flex items-center gap-3">
+      {/* Filtro */}
+      <div className="flex flex-wrap items-center gap-3">
         <span className="text-sm font-semibold text-slate-500">
           Filtrar por marca:
         </span>
@@ -273,6 +275,7 @@ const ModelManagement = () => {
         </span>
       </div>
 
+      {/* Lista */}
       {loading ? (
         <div className="py-10 text-center">
           <Loader2 className="animate-spin mx-auto text-blue-500" />
@@ -300,19 +303,21 @@ const ModelManagement = () => {
                   editingId === model.id ? (
                     <div
                       key={model.id}
-                      className="bg-white p-3 rounded-2xl border-2 border-blue-300 shadow-md flex items-center gap-2"
+                      className="bg-white p-3 rounded-2xl border-2 border-blue-300 shadow-md flex items-center gap-2 overflow-hidden"
                     >
                       <input
                         type="text"
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}
-                        className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                        className="flex-1 min-w-0 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-blue-500"
                         autoFocus
+                        maxLength={50}
                       />
                       <button
                         onClick={() => handleSaveEdit(model.id)}
                         disabled={isSaving || !editName.trim()}
-                        className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all disabled:opacity-50"
+                        aria-label="Guardar"
+                        className="shrink-0 p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all disabled:opacity-50"
                       >
                         {isSaving ? (
                           <Loader2 className="animate-spin" size={14} />
@@ -322,7 +327,8 @@ const ModelManagement = () => {
                       </button>
                       <button
                         onClick={cancelEdit}
-                        className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all"
+                        aria-label="Cancelar"
+                        className="shrink-0 p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all"
                       >
                         <X size={14} />
                       </button>
@@ -333,23 +339,26 @@ const ModelManagement = () => {
                       className="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between group hover:border-blue-200 transition-all"
                     >
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                        <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
                           <Layers size={14} />
                         </div>
                         <span className="font-semibold text-slate-700 text-sm">
                           {model.name}
                         </span>
                       </div>
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                      {/* Siempre visible en móvil, hover en desktop */}
+                      <div className="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-all">
                         <button
                           onClick={() => startEdit(model)}
-                          className="p-1.5 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                          aria-label={`Editar ${model.name}`}
+                          className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
                         >
                           <Pencil size={14} />
                         </button>
                         <button
                           onClick={() => confirmDelete(model)}
-                          className="p-1.5 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                          aria-label={`Eliminar ${model.name}`}
+                          className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                         >
                           <Trash2 size={14} />
                         </button>

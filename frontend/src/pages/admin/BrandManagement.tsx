@@ -1,8 +1,23 @@
 import { useEffect, useState } from "react";
-import { getBrands, createBrand, updateBrand, deleteBrand } from "../../services/brandService";
+import {
+  getBrands,
+  createBrand,
+  updateBrand,
+  deleteBrand,
+} from "../../services/brandService";
 import type { Brand } from "../../types/brand";
 import ConfirmModal from "../../helpers/ConfirmModal";
-import { AlertCircle, Check, CheckCircle2, Loader2, Pencil, Plus, Tag, Trash2, X } from "lucide-react";
+import {
+  AlertCircle,
+  Check,
+  CheckCircle2,
+  Loader2,
+  Pencil,
+  Plus,
+  Tag,
+  Trash2,
+  X,
+} from "lucide-react";
 
 const BrandManagement = () => {
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -13,7 +28,10 @@ const BrandManagement = () => {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const [deleteModal, setDeleteModal] = useState<{ open: boolean; brand: Brand | null }>({
+  const [deleteModal, setDeleteModal] = useState<{
+    open: boolean;
+    brand: Brand | null;
+  }>({
     open: false,
     brand: null,
   });
@@ -61,9 +79,13 @@ const BrandManagement = () => {
     try {
       await deleteBrand(brand.id);
       setBrands((prev) => prev.filter((b) => b.id !== brand.id));
-      setMessage({ text: `Marca "${brand.name}" eliminada correctamente`, type: "success" });
+      setMessage({
+        text: `Marca "${brand.name}" eliminada correctamente`,
+        type: "success",
+      });
     } catch (error: unknown) {
-      const status = (error as { response?: { status?: number } })?.response?.status;
+      const status = (error as { response?: { status?: number } })?.response
+        ?.status;
       if (status === 500 || status === 422) {
         setMessage({
           text: `No se puede eliminar "${brand.name}" porque tiene modelos o vehículos asociados.`,
@@ -89,7 +111,9 @@ const BrandManagement = () => {
     setIsSaving(true);
     try {
       await updateBrand(id, editName);
-      setBrands((prev) => prev.map((b) => (b.id === id ? { ...b, name: editName } : b)));
+      setBrands((prev) =>
+        prev.map((b) => (b.id === id ? { ...b, name: editName } : b)),
+      );
       cancelEdit();
       setMessage({ text: "Marca actualizada correctamente", type: "success" });
     } catch (error) {
@@ -100,7 +124,7 @@ const BrandManagement = () => {
     }
   };
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-8">
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-8">
       <ConfirmModal
         isOpen={deleteModal.open}
         title="Eliminar Marca"
@@ -119,9 +143,12 @@ const BrandManagement = () => {
         </p>
       </div>
 
-      <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl">
-        <form onSubmit={handleAddBrand} className="flex flex-wrap items-end gap-4">
-          <div className="flex-1 min-w-75 space-y-1.5">
+      <div className="bg-white p-4 sm:p-6 rounded-3xl border border-slate-100 shadow-xl">
+        <form
+          onSubmit={handleAddBrand}
+          className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3"
+        >
+          <div className="flex-1 space-y-1.5">
             <label className="text-xs font-bold uppercase text-slate-400 ml-1">
               Nombre de la Marca
             </label>
@@ -131,6 +158,7 @@ const BrandManagement = () => {
               placeholder="Ej: BMW, Audi, Mercedes..."
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               value={newName}
+              maxLength={20}
               onChange={(e) => setNewName(e.target.value)}
             />
           </div>
@@ -138,12 +166,14 @@ const BrandManagement = () => {
           <button
             type="submit"
             disabled={isSubmitting || !newName.trim()}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 disabled:opacity-50 h-11.5"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {isSubmitting ? (
               <Loader2 className="animate-spin" size={20} />
             ) : (
-              <><Plus size={20} /> Añadir</>
+              <>
+                <Plus size={20} /> Añadir
+              </>
             )}
           </button>
         </form>
@@ -178,19 +208,21 @@ const BrandManagement = () => {
             editingId === brand.id ? (
               <div
                 key={brand.id}
-                className="bg-white p-4 rounded-2xl border-2 border-blue-300 shadow-md flex items-center gap-2"
+                className="bg-white p-4 rounded-2xl border-2 border-blue-300 shadow-md flex items-center gap-2 overflow-hidden"
               >
                 <input
                   type="text"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                  maxLength={20}
+                  className="flex-1 min-w-0 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-blue-500"
                   autoFocus
                 />
                 <button
                   onClick={() => handleSaveEdit(brand.id)}
                   disabled={isSaving || !editName.trim()}
-                  className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all disabled:opacity-50"
+                  aria-label="Guardar"
+                  className="shrink-0 p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all disabled:opacity-50"
                 >
                   {isSaving ? (
                     <Loader2 className="animate-spin" size={16} />
@@ -200,7 +232,8 @@ const BrandManagement = () => {
                 </button>
                 <button
                   onClick={cancelEdit}
-                  className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all"
+                  aria-label="Cancelar"
+                  className="shrink-0 p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all"
                 >
                   <X size={16} />
                 </button>
@@ -211,27 +244,30 @@ const BrandManagement = () => {
                 className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between group hover:border-blue-200 transition-all"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                  <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
                     <Tag size={16} />
                   </div>
                   <span className="font-bold text-slate-700">{brand.name}</span>
                 </div>
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                {/* Siempre visible en móvil, hover en desktop */}
+                <div className="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-all">
                   <button
                     onClick={() => startEdit(brand)}
-                    className="p-2 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                    aria-label={`Editar ${brand.name}`}
+                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
                   >
                     <Pencil size={16} />
                   </button>
                   <button
                     onClick={() => confirmDelete(brand)}
-                    className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                    aria-label={`Eliminar ${brand.name}`}
+                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                   >
                     <Trash2 size={16} />
                   </button>
                 </div>
               </div>
-            )
+            ),
           )
         )}
       </div>
