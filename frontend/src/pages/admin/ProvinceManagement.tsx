@@ -155,14 +155,14 @@ const ProvinceManagement = () => {
           className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3"
         >
           <div className="flex-1 space-y-1.5">
-            <label className="text-xs font-bold uppercase text-slate-400 ml-1">
+            <label className="crud-label">
               Nombre de la Provincia / Ciudad
             </label>
             <input
               type="text"
               required
               placeholder="Ej: Madrid, Barcelona, Valencia..."
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              className="crud-input"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
             />
@@ -220,21 +220,21 @@ const ProvinceManagement = () => {
     type="text"
     value={editName}
     onChange={(e) => setEditName(e.target.value)}
-    className="flex-1 min-w-0 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+    className="crud-input-sm flex-1 min-w-0"
     autoFocus
   />
   <button
     onClick={() => handleSaveEdit(province.id)}
     disabled={isSaving || !editName.trim()}
     aria-label="Guardar"
-    className="shrink-0 p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all disabled:opacity-50"
+    className="btn-inline-save"
   >
     {isSaving ? <Loader2 className="animate-spin" size={16} /> : <Check size={16} />}
   </button>
   <button
     onClick={cancelEdit}
     aria-label="Cancelar"
-    className="shrink-0 p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all"
+    className="btn-inline-cancel"
   >
     <X size={16} />
   </button>
@@ -257,14 +257,14 @@ const ProvinceManagement = () => {
                   <button
                     onClick={() => startEdit(province)}
                     aria-label={`Editar ${province.name}`}
-                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                    className="btn-icon-edit"
                   >
                     <Pencil size={16} />
                   </button>
                   <button
                     onClick={() => confirmDelete(province)}
                     aria-label={`Eliminar ${province.name}`}
-                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                    className="btn-icon-delete"
                   >
                     <Trash2 size={16} />
                   </button>

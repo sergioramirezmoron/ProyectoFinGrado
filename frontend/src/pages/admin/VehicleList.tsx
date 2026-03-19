@@ -12,10 +12,12 @@ import {
   Car,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
 import { getVehicles, archiveVehicle } from "../../services/vehicleService";
 import type { Vehicle } from "../../types/vehicle";
 import ConfirmModal from "../../helpers/ConfirmModal";
+import { buildImageUrl } from "../../utils/vehicleImages";
 
 const VehicleList = () => {
   const navigate = useNavigate();
@@ -88,10 +90,9 @@ const VehicleList = () => {
     const mainImage =
       vehicle.vehicleImages?.find((img) => img.main) ||
       vehicle.vehicleImages?.[0];
-    if (mainImage) {
-      return `${import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:8000"}${mainImage.imageUrl}`;
-    }
-    return "https://via.placeholder.com/150?text=Sin+Foto";
+    return mainImage
+      ? buildImageUrl(mainImage.imageUrl)
+      : "https://via.placeholder.com/150?text=Sin+Foto";
   };
 
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
@@ -150,7 +151,7 @@ const VehicleList = () => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
         {loading ? (
           <div className="p-20 text-center flex flex-col items-center gap-3">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <Loader2 className="animate-spin text-blue-600" size={32} />
             <p className="text-gray-500">Cargando flota...</p>
           </div>
         ) : filteredVehicles.length === 0 ? (

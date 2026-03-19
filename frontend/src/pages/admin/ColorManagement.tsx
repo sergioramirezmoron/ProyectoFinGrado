@@ -160,21 +160,21 @@ const ColorManagement = () => {
           className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3"
         >
           <div className="flex-1 space-y-1.5">
-            <label className="text-xs font-bold uppercase text-slate-400 ml-1">
+            <label className="crud-label">
               Nombre del Color
             </label>
             <input
               type="text"
               required
               placeholder="Ej: Rojo Ferrari"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              className="crud-input"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase text-slate-400 ml-1">
+            <label className="crud-label">
               Tono
             </label>
             <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
@@ -239,7 +239,7 @@ const ColorManagement = () => {
                   type="text"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                  className="crud-input-sm w-full"
                 />
                 <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5">
                   <input
@@ -297,14 +297,14 @@ const ColorManagement = () => {
                   <button
                     onClick={() => startEdit(color)}
                     aria-label={`Editar ${color.name}`}
-                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                    className="btn-icon-edit"
                   >
                     <Pencil size={16} />
                   </button>
                   <button
                     onClick={() => confirmDelete(color)}
                     aria-label={`Eliminar ${color.name}`}
-                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                    className="btn-icon-delete"
                   >
                     <Trash2 size={16} />
                   </button>

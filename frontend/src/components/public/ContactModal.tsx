@@ -170,7 +170,7 @@ const ContactModal = ({
               ) : (
                 <>
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                    <label className="field-label">
                       Nombre
                     </label>
                     <input
@@ -180,13 +180,13 @@ const ContactModal = ({
                       placeholder="Tu nombre completo"
                       value={formData.name}
                       onChange={handleChange}
-                      className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm text-gray-900"
+                      className="field-input"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                      <label className="field-label">
                         Email
                       </label>
                       <input
@@ -196,11 +196,11 @@ const ContactModal = ({
                         placeholder="tu@email.com"
                         value={formData.email}
                         onChange={handleChange}
-                        className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm text-gray-900"
+                        className="field-input"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                      <label className="field-label">
                         Teléfono
                       </label>
                       <input
@@ -210,7 +210,7 @@ const ContactModal = ({
                         placeholder="600 000 000"
                         value={formData.phone}
                         onChange={handleChange}
-                        className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm text-gray-900"
+                        className="field-input"
                       />
                     </div>
                   </div>
@@ -218,7 +218,7 @@ const ContactModal = ({
               )}
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                <label className="field-label">
                   Mensaje
                 </label>
                 <textarea
@@ -227,7 +227,7 @@ const ContactModal = ({
                   rows={3}
                   value={formData.message}
                   onChange={handleChange}
-                  className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none text-sm text-gray-900"
+                  className="field-input resize-none"
                 ></textarea>
               </div>
 
