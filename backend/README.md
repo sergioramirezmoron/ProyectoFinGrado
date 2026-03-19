@@ -8,12 +8,12 @@ API REST desarrollada con **Symfony 7.3** y **API Platform 4.2** para la platafo
 
 - [Requisitos previos](#requisitos-previos)
 - [Instalación y configuración](#instalación-y-configuración)
-  - [1. Clonar e instalar dependencias](#1-clonar-e-instalar-dependencias)
-  - [2. Configurar el archivo .env](#2-configurar-el-archivo-env)
-  - [3. Generar las claves JWT](#3-generar-las-claves-jwt)
-  - [4. Crear la base de datos y ejecutar migraciones](#4-crear-la-base-de-datos-y-ejecutar-migraciones)
-  - [5. Cargar datos de prueba (opcional)](#5-cargar-datos-de-prueba-opcional)
-  - [6. Arrancar el servidor](#6-arrancar-el-servidor)
+    - [1. Clonar e instalar dependencias](#1-clonar-e-instalar-dependencias)
+    - [2. Configurar el archivo .env](#2-configurar-el-archivo-env)
+    - [3. Generar las claves JWT](#3-generar-las-claves-jwt)
+    - [4. Crear la base de datos y ejecutar migraciones](#4-crear-la-base-de-datos-y-ejecutar-migraciones)
+    - [5. Cargar datos de prueba (opcional)](#5-cargar-datos-de-prueba-opcional)
+    - [6. Arrancar el servidor](#6-arrancar-el-servidor)
 - [Variables de entorno (.env)](#variables-de-entorno-env)
 - [Estructura del proyecto](#estructura-del-proyecto)
 - [Autenticación JWT](#autenticación-jwt)
@@ -21,23 +21,23 @@ API REST desarrollada con **Symfony 7.3** y **API Platform 4.2** para la platafo
 - [Formato de respuestas](#formato-de-respuestas)
 - [Códigos de estado HTTP](#códigos-de-estado-http)
 - [Endpoints](#endpoints)
-  - [Auth — Login](#auth--login)
-  - [Usuarios](#usuarios)
-  - [Vehículos](#vehículos)
-  - [Imágenes de vehículos](#imágenes-de-vehículos)
-  - [Reservas](#reservas)
-  - [Conversaciones](#conversaciones)
-  - [Mensajes](#mensajes)
-  - [Favoritos](#favoritos)
-  - [Marcas](#marcas)
-  - [Modelos](#modelos)
-  - [Colores](#colores)
-  - [Combustibles](#combustibles)
-  - [Transmisiones](#transmisiones)
-  - [Tipos de carrocería](#tipos-de-carrocería)
-  - [Distintivos ambientales](#distintivos-ambientales)
-  - [Provincias](#provincias)
-  - [Estadísticas del panel](#estadísticas-del-panel)
+    - [Auth — Login](#auth--login)
+    - [Usuarios](#usuarios)
+    - [Vehículos](#vehículos)
+    - [Imágenes de vehículos](#imágenes-de-vehículos)
+    - [Reservas](#reservas)
+    - [Conversaciones](#conversaciones)
+    - [Mensajes](#mensajes)
+    - [Favoritos](#favoritos)
+    - [Marcas](#marcas)
+    - [Modelos](#modelos)
+    - [Colores](#colores)
+    - [Combustibles](#combustibles)
+    - [Transmisiones](#transmisiones)
+    - [Tipos de carrocería](#tipos-de-carrocería)
+    - [Distintivos ambientales](#distintivos-ambientales)
+    - [Provincias](#provincias)
+    - [Estadísticas del panel](#estadísticas-del-panel)
 - [Filtros y paginación](#filtros-y-paginación)
 - [Lógica de negocio importante](#lógica-de-negocio-importante)
 - [Manejo de errores](#manejo-de-errores)
@@ -46,13 +46,13 @@ API REST desarrollada con **Symfony 7.3** y **API Platform 4.2** para la platafo
 
 ## Requisitos previos
 
-| Herramienta | Versión mínima | Notas |
-|-------------|---------------|-------|
-| PHP | 8.2 | Con extensiones `ctype`, `iconv`, `openssl`, `pdo_mysql` |
-| Composer | 2.x | Gestor de dependencias PHP |
-| MySQL | 8.0 | O MariaDB 10.11+ |
-| Symfony CLI | Última | Para el servidor de desarrollo |
-| OpenSSL | Cualquiera | Para generar las claves JWT |
+| Herramienta | Versión mínima | Notas                                                    |
+| ----------- | -------------- | -------------------------------------------------------- |
+| PHP         | 8.2            | Con extensiones `ctype`, `iconv`, `openssl`, `pdo_mysql` |
+| Composer    | 2.x            | Gestor de dependencias PHP                               |
+| MySQL       | 8.0            | O MariaDB 10.11+                                         |
+| Symfony CLI | Última         | Para el servidor de desarrollo                           |
+| OpenSSL     | Cualquiera     | Para generar las claves JWT                              |
 
 > Si no tienes Symfony CLI instalado: https://symfony.com/download
 
@@ -101,6 +101,7 @@ php bin/console lexik:jwt:generate-keypair
 ```
 
 Esto crea automáticamente:
+
 - `config/jwt/private.pem` — clave privada (nunca la subas a git)
 - `config/jwt/public.pem` — clave pública
 
@@ -145,6 +146,7 @@ php bin/console doctrine:fixtures:load
 > **Atención:** esto borra todos los datos existentes. Solo úsalo en desarrollo.
 
 Tras cargar los fixtures tendrás, entre otros:
+
 - Un usuario administrador de prueba (revisa `src/DataFixtures/AppFixtures.php` para ver las credenciales)
 
 ### 6. Arrancar el servidor
@@ -169,18 +171,18 @@ La documentación interactiva de OpenAPI en: `http://localhost:8000/api/docs`
 
 ## Variables de entorno (.env)
 
-| Variable | Descripción | Valor por defecto | Obligatoria |
-|----------|-------------|-------------------|-------------|
-| `APP_ENV` | Entorno de ejecución. Usa `dev` en local y `prod` en producción. | `dev` | Sí |
-| `APP_SECRET` | Cadena aleatoria usada para firmar tokens CSRF y cookies. Debe ser única y secreta. | vacío | Sí |
-| `DATABASE_URL` | Cadena de conexión completa a la base de datos. Cambia `usuario`, `contraseña`, `host` y `nombre_bd` por los tuyos. | `mysql://app:!ChangeMe!@127.0.0.1:3306/app` | Sí |
-| `CORS_ALLOW_ORIGIN` | Expresión regular de los orígenes permitidos para CORS. En producción, cambia `localhost` por tu dominio real. | `'^https?://(localhost\|127\.0\.0\.1)(:[0-9]+)?$'` | Sí |
-| `JWT_SECRET_KEY` | Ruta a la clave privada PEM para firmar tokens JWT. No cambiar si usaste el comando `lexik:jwt:generate-keypair`. | `%kernel.project_dir%/config/jwt/private.pem` | Sí |
-| `JWT_PUBLIC_KEY` | Ruta a la clave pública PEM para verificar tokens JWT. | `%kernel.project_dir%/config/jwt/public.pem` | Sí |
-| `JWT_PASSPHRASE` | Contraseña con la que se cifró la clave privada JWT. Debe coincidir con la usada al generarla. | `!ChangeMe!` | Sí |
-| `DEFAULT_URI` | URI base para generar URLs en contextos no-HTTP (comandos de consola). | `http://localhost` | No |
-| `MESSENGER_TRANSPORT_DSN` | DSN del transporte para Symfony Messenger. Con `doctrine://default` usa la propia BD. | `doctrine://default?auto_setup=0` | No |
-| `MAILER_DSN` | DSN del servidor de correo. `null://null` desactiva el envío real. | `null://null` | No |
+| Variable                  | Descripción                                                                                                         | Valor por defecto                                  | Obligatoria |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ----------- |
+| `APP_ENV`                 | Entorno de ejecución. Usa `dev` en local y `prod` en producción.                                                    | `dev`                                              | Sí          |
+| `APP_SECRET`              | Cadena aleatoria usada para firmar tokens CSRF y cookies. Debe ser única y secreta.                                 | vacío                                              | Sí          |
+| `DATABASE_URL`            | Cadena de conexión completa a la base de datos. Cambia `usuario`, `contraseña`, `host` y `nombre_bd` por los tuyos. | `mysql://app:!ChangeMe!@127.0.0.1:3306/app`        | Sí          |
+| `CORS_ALLOW_ORIGIN`       | Expresión regular de los orígenes permitidos para CORS. En producción, cambia `localhost` por tu dominio real.      | `'^https?://(localhost\|127\.0\.0\.1)(:[0-9]+)?$'` | Sí          |
+| `JWT_SECRET_KEY`          | Ruta a la clave privada PEM para firmar tokens JWT. No cambiar si usaste el comando `lexik:jwt:generate-keypair`.   | `%kernel.project_dir%/config/jwt/private.pem`      | Sí          |
+| `JWT_PUBLIC_KEY`          | Ruta a la clave pública PEM para verificar tokens JWT.                                                              | `%kernel.project_dir%/config/jwt/public.pem`       | Sí          |
+| `JWT_PASSPHRASE`          | Contraseña con la que se cifró la clave privada JWT. Debe coincidir con la usada al generarla.                      | `!ChangeMe!`                                       | Sí          |
+| `DEFAULT_URI`             | URI base para generar URLs en contextos no-HTTP (comandos de consola).                                              | `http://localhost`                                 | No          |
+| `MESSENGER_TRANSPORT_DSN` | DSN del transporte para Symfony Messenger. Con `doctrine://default` usa la propia BD.                               | `doctrine://default?auto_setup=0`                  | No          |
+| `MAILER_DSN`              | DSN del servidor de correo. `null://null` desactiva el envío real.                                                  | `null://null`                                      | No          |
 
 **Ejemplo completo de `.env.local` para producción:**
 
@@ -242,13 +244,13 @@ El token JWT contiene los siguientes datos decodificados:
 
 ```json
 {
-  "iat": 1742000000,
-  "exp": 1742086400,
-  "username": "usuario@example.com",
-  "roles": ["ROLE_USER"],
-  "id": 3,
-  "name": "Juan",
-  "phone": "666777888"
+    "iat": 1742000000,
+    "exp": 1742086400,
+    "username": "usuario@example.com",
+    "roles": ["ROLE_USER"],
+    "id": 3,
+    "name": "Juan",
+    "phone": "666777888"
 }
 ```
 
@@ -258,11 +260,11 @@ El token expira en **24 horas** por defecto (configurable en `config/packages/le
 
 ## Roles de usuario
 
-| Rol | Descripción | Permisos principales |
-|-----|-------------|---------------------|
-| `ROLE_USER` | Usuario registrado (asignado automáticamente al registrarse) | Crear y cancelar sus propias reservas, enviar mensajes, gestionar favoritos, actualizar su perfil |
-| `ROLE_SALES` | Responsable de ventas | Todo lo de `ROLE_USER` + crear/editar vehículos, ver todas las conversaciones y reservas |
-| `ROLE_ADMIN` | Administrador total | Acceso completo: usuarios, vehículos, reservas, conversaciones, catálogos |
+| Rol          | Descripción                                                  | Permisos principales                                                                              |
+| ------------ | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| `ROLE_USER`  | Usuario registrado (asignado automáticamente al registrarse) | Crear y cancelar sus propias reservas, enviar mensajes, gestionar favoritos, actualizar su perfil |
+| `ROLE_SALES` | Responsable de ventas                                        | Todo lo de `ROLE_USER` + crear/editar vehículos, ver todas las conversaciones y reservas          |
+| `ROLE_ADMIN` | Administrador total                                          | Acceso completo: usuarios, vehículos, reservas, conversaciones, catálogos                         |
 
 > En el `AuthContext` del frontend, `isAdmin` es `true` tanto para `ROLE_ADMIN` como para `ROLE_SALES`, lo que les da acceso al panel de administración.
 
@@ -295,17 +297,17 @@ Los recursos individuales incluyen `@id` (IRI) y `@type`. Las relaciones entre r
 
 ## Códigos de estado HTTP
 
-| Código | Significado | Cuándo ocurre |
-|--------|-------------|---------------|
-| `200` | OK | GET o PATCH exitoso |
-| `201` | Created | POST exitoso (recurso creado) |
-| `204` | No Content | DELETE exitoso |
-| `400` | Bad Request | JSON malformado o archivo no enviado |
-| `401` | Unauthorized | Token JWT ausente, inválido o expirado |
-| `403` | Forbidden | Token válido pero sin permisos para esa operación |
-| `404` | Not Found | El recurso solicitado no existe |
-| `422` | Unprocessable Entity | Errores de validación (fechas incorrectas, email duplicado, etc.) |
-| `500` | Internal Server Error | Error inesperado del servidor |
+| Código | Significado           | Cuándo ocurre                                                     |
+| ------ | --------------------- | ----------------------------------------------------------------- |
+| `200`  | OK                    | GET o PATCH exitoso                                               |
+| `201`  | Created               | POST exitoso (recurso creado)                                     |
+| `204`  | No Content            | DELETE exitoso                                                    |
+| `400`  | Bad Request           | JSON malformado o archivo no enviado                              |
+| `401`  | Unauthorized          | Token JWT ausente, inválido o expirado                            |
+| `403`  | Forbidden             | Token válido pero sin permisos para esa operación                 |
+| `404`  | Not Found             | El recurso solicitado no existe                                   |
+| `422`  | Unprocessable Entity  | Errores de validación (fechas incorrectas, email duplicado, etc.) |
+| `500`  | Internal Server Error | Error inesperado del servidor                                     |
 
 ---
 
@@ -314,11 +316,13 @@ Los recursos individuales incluyen `@id` (IRI) y `@type`. Las relaciones entre r
 > **Base URL:** `http://localhost:8000/api`
 >
 > Todos los endpoints que requieren autenticación necesitan el header:
+>
 > ```
 > Authorization: Bearer {tu_token_jwt}
 > ```
 >
 > Todos los PATCH necesitan además:
+>
 > ```
 > Content-Type: application/merge-patch+json
 > ```
@@ -334,6 +338,7 @@ Genera un token JWT a partir de email y contraseña.
 **Autenticación:** No requerida
 
 **Request Body:**
+
 ```json
 {
     "email": "admin@example.com",
@@ -342,6 +347,7 @@ Genera un token JWT a partir de email y contraseña.
 ```
 
 **Response 200 OK:**
+
 ```json
 {
     "token": "eyJhbGciOiJSUzI1NiJ9.eyJ1c2VybmFtZSI6ImFkbWluQGV4YW1wbGUuY29tIiwicm9sZXMiOlsiUk9MRV9BRE1JTiJdLCJpYXQiOjE3NDIwMDAwMDAsImV4cCI6MTc0MjA4NjQwMH0..."
@@ -349,6 +355,7 @@ Genera un token JWT a partir de email y contraseña.
 ```
 
 **Response 401 Unauthorized:**
+
 ```json
 {
     "code": 401,
@@ -367,6 +374,7 @@ Lista todos los usuarios del sistema.
 **Autenticación:** Requerida (Admin)
 
 **Response 200 OK:**
+
 ```json
 {
     "hydra:member": [
@@ -393,6 +401,7 @@ Obtiene un usuario por su ID.
 **Autenticación:** Requerida
 
 **Response 200 OK:**
+
 ```json
 {
     "id": 3,
@@ -414,6 +423,7 @@ Registra un nuevo usuario. El rol `ROLE_USER` se asigna automáticamente.
 **Autenticación:** No requerida (registro público)
 
 **Request Body:**
+
 ```json
 {
     "email": "nuevo@example.com",
@@ -425,16 +435,17 @@ Registra un nuevo usuario. El rol `ROLE_USER` se asigna automáticamente.
 }
 ```
 
-| Campo | Tipo | Obligatorio | Validación |
-|-------|------|-------------|------------|
-| `email` | string | Sí | Formato email válido, único en el sistema |
-| `plainPassword` | string | Sí (en creación) | Mínimo 6 caracteres |
-| `name` | string | Sí | No vacío |
-| `surname` | string | No | — |
-| `phone` | string | No | Máximo 20 caracteres |
-| `province` | IRI | No | IRI de una provincia existente |
+| Campo           | Tipo   | Obligatorio      | Validación                                |
+| --------------- | ------ | ---------------- | ----------------------------------------- |
+| `email`         | string | Sí               | Formato email válido, único en el sistema |
+| `plainPassword` | string | Sí (en creación) | Mínimo 6 caracteres                       |
+| `name`          | string | Sí               | No vacío                                  |
+| `surname`       | string | No               | —                                         |
+| `phone`         | string | No               | Máximo 20 caracteres                      |
+| `province`      | IRI    | No               | IRI de una provincia existente            |
 
 **Response 201 Created:**
+
 ```json
 {
     "id": 52,
@@ -454,11 +465,13 @@ Actualiza campos concretos de un usuario.
 **Autenticación:** Requerida
 
 **Headers:**
+
 ```
 Content-Type: application/merge-patch+json
 ```
 
 **Request Body** (solo los campos a modificar):
+
 ```json
 {
     "name": "María Actualizada",
@@ -467,6 +480,7 @@ Content-Type: application/merge-patch+json
 ```
 
 Para cambiar contraseña, usa `plainPassword`:
+
 ```json
 {
     "plainPassword": "nuevaContraseña456"
@@ -474,6 +488,7 @@ Para cambiar contraseña, usa `plainPassword`:
 ```
 
 Para cambiar roles (solo Admin):
+
 ```json
 {
     "roles": ["ROLE_USER", "ROLE_SALES"]
@@ -504,43 +519,45 @@ Lista vehículos con filtros, ordenación y paginación.
 
 **Parámetros de consulta:**
 
-| Parámetro | Tipo | Descripción | Ejemplo |
-|-----------|------|-------------|---------|
-| `page` | integer | Página (20 resultados por página) | `?page=2` |
-| `type` | string | `SALE` o `RENT` | `?type=RENT` |
-| `status` | string | `AVAILABLE`, `SOLD`, `RESERVED` | `?status=AVAILABLE` |
-| `brand` | integer | ID de la marca | `?brand=5` |
-| `model` | integer | ID del modelo | `?model=12` |
-| `fuelType` | integer | ID del combustible | `?fuelType=39` |
-| `transmission` | integer | ID de la transmisión | `?transmission=1` |
-| `bodyType` | integer | ID del tipo de carrocería | `?bodyType=2` |
-| `color` | integer | ID del color | `?color=3` |
-| `enviromentalBadge` | integer | ID del distintivo ambiental | `?enviromentalBadge=2` |
-| `province` | integer | ID de la provincia | `?province=8` |
-| `price[gte]` | decimal | Precio mínimo | `?price[gte]=20000` |
-| `price[lte]` | decimal | Precio máximo | `?price[lte]=50000` |
-| `dailyPrice[gte]` | decimal | Precio diario mínimo | `?dailyPrice[gte]=30` |
-| `dailyPrice[lte]` | decimal | Precio diario máximo | `?dailyPrice[lte]=100` |
-| `year[gte]` | integer | Año mínimo | `?year[gte]=2020` |
-| `year[lte]` | integer | Año máximo | `?year[lte]=2024` |
-| `kilometres[lte]` | integer | Kilómetros máximos | `?kilometres[lte]=50000` |
-| `power[gte]` | integer | Potencia mínima (CV) | `?power[gte]=150` |
-| `brand.name` | string | Búsqueda parcial por nombre de marca | `?brand.name=Toyota` |
-| `model.name` | string | Búsqueda parcial por nombre de modelo | `?model.name=Corolla` |
-| `order[price]` | string | Ordenar por precio (`asc`/`desc`) | `?order[price]=asc` |
-| `order[dailyPrice]` | string | Ordenar por precio diario | `?order[dailyPrice]=asc` |
-| `order[year]` | string | Ordenar por año | `?order[year]=desc` |
-| `order[kilometres]` | string | Ordenar por kilómetros | `?order[kilometres]=asc` |
-| `order[createdAt]` | string | Ordenar por fecha de creación | `?order[createdAt]=desc` |
+| Parámetro           | Tipo    | Descripción                           | Ejemplo                  |
+| ------------------- | ------- | ------------------------------------- | ------------------------ |
+| `page`              | integer | Página (20 resultados por página)     | `?page=2`                |
+| `type`              | string  | `SALE` o `RENT`                       | `?type=RENT`             |
+| `status`            | string  | `AVAILABLE`, `SOLD`, `RESERVED`       | `?status=AVAILABLE`      |
+| `brand`             | integer | ID de la marca                        | `?brand=5`               |
+| `model`             | integer | ID del modelo                         | `?model=12`              |
+| `fuelType`          | integer | ID del combustible                    | `?fuelType=39`           |
+| `transmission`      | integer | ID de la transmisión                  | `?transmission=1`        |
+| `bodyType`          | integer | ID del tipo de carrocería             | `?bodyType=2`            |
+| `color`             | integer | ID del color                          | `?color=3`               |
+| `enviromentalBadge` | integer | ID del distintivo ambiental           | `?enviromentalBadge=2`   |
+| `province`          | integer | ID de la provincia                    | `?province=8`            |
+| `price[gte]`        | decimal | Precio mínimo                         | `?price[gte]=20000`      |
+| `price[lte]`        | decimal | Precio máximo                         | `?price[lte]=50000`      |
+| `dailyPrice[gte]`   | decimal | Precio diario mínimo                  | `?dailyPrice[gte]=30`    |
+| `dailyPrice[lte]`   | decimal | Precio diario máximo                  | `?dailyPrice[lte]=100`   |
+| `year[gte]`         | integer | Año mínimo                            | `?year[gte]=2020`        |
+| `year[lte]`         | integer | Año máximo                            | `?year[lte]=2024`        |
+| `kilometres[lte]`   | integer | Kilómetros máximos                    | `?kilometres[lte]=50000` |
+| `power[gte]`        | integer | Potencia mínima (CV)                  | `?power[gte]=150`        |
+| `brand.name`        | string  | Búsqueda parcial por nombre de marca  | `?brand.name=Toyota`     |
+| `model.name`        | string  | Búsqueda parcial por nombre de modelo | `?model.name=Corolla`    |
+| `order[price]`      | string  | Ordenar por precio (`asc`/`desc`)     | `?order[price]=asc`      |
+| `order[dailyPrice]` | string  | Ordenar por precio diario             | `?order[dailyPrice]=asc` |
+| `order[year]`       | string  | Ordenar por año                       | `?order[year]=desc`      |
+| `order[kilometres]` | string  | Ordenar por kilómetros                | `?order[kilometres]=asc` |
+| `order[createdAt]`  | string  | Ordenar por fecha de creación         | `?order[createdAt]=desc` |
 
 > Los vehículos con `status=DELETED` están **siempre ocultos** automáticamente (extensión `HideDeletedVehiclesExtension`).
 
 **Ejemplo con múltiples filtros:**
+
 ```
 GET /api/vehicles?type=SALE&status=AVAILABLE&fuelType=39&price[gte]=20000&price[lte]=60000&year[gte]=2019&order[price]=asc&page=1
 ```
 
 **Response 200 OK:**
+
 ```json
 {
     "hydra:member": [
@@ -557,7 +574,10 @@ GET /api/vehicles?type=SALE&status=AVAILABLE&fuelType=39&price[gte]=20000&price[
             "fuelType": { "id": 39, "name": "Gasolina" },
             "transmission": { "name": "Automático" },
             "bodyType": { "name": "Compacto" },
-            "enviromentalBadge": { "name": "ECO", "imageUrl": "/images/enviromentalBadges/eco.png" },
+            "enviromentalBadge": {
+                "name": "ECO",
+                "imageUrl": "/images/enviromentalBadges/eco.png"
+            },
             "color": { "name": "Rojo", "hexCode": "#FE0000" },
             "doors": 5,
             "owners": 1,
@@ -601,6 +621,7 @@ Crea un nuevo vehículo.
 **Autenticación:** Requerida (`ROLE_ADMIN` o `ROLE_SALES`)
 
 **Request Body:**
+
 ```json
 {
     "brand": "/api/brands/1",
@@ -626,27 +647,27 @@ Crea un nuevo vehículo.
 }
 ```
 
-| Campo | Tipo | Obligatorio | Validación |
-|-------|------|-------------|------------|
-| `brand` | IRI | Sí | IRI de marca existente |
-| `model` | IRI | Sí | IRI de modelo existente |
-| `type` | string | Sí | `SALE` o `RENT` |
-| `status` | string | Sí | `AVAILABLE`, `SOLD`, `RESERVED` o `DELETED` |
-| `price` | decimal | No | ≥ 0. Usar para `type=SALE` |
-| `dailyPrice` | decimal | No | ≥ 0. Usar para `type=RENT` |
-| `year` | integer | Sí | > 1900 |
-| `kilometres` | integer | Sí | ≥ 0 |
-| `power` | integer | Sí | > 0 |
-| `displacement` | integer | No | > 0 |
-| `fuelType` | IRI | Sí | IRI de combustible existente |
-| `transmission` | IRI | Sí | IRI de transmisión existente |
-| `bodyType` | IRI | No | IRI de carrocería existente |
-| `enviromentalBadge` | IRI | No | IRI de distintivo existente |
-| `color` | IRI | No | IRI de color existente |
-| `doors` | integer | No | 0–10 |
-| `owners` | integer | Sí | ≥ 0 |
-| `province` | IRI | No | IRI de provincia existente |
-| `visible` | boolean | No | `true` por defecto |
+| Campo               | Tipo    | Obligatorio | Validación                                  |
+| ------------------- | ------- | ----------- | ------------------------------------------- |
+| `brand`             | IRI     | Sí          | IRI de marca existente                      |
+| `model`             | IRI     | Sí          | IRI de modelo existente                     |
+| `type`              | string  | Sí          | `SALE` o `RENT`                             |
+| `status`            | string  | Sí          | `AVAILABLE`, `SOLD`, `RESERVED` o `DELETED` |
+| `price`             | decimal | No          | ≥ 0. Usar para `type=SALE`                  |
+| `dailyPrice`        | decimal | No          | ≥ 0. Usar para `type=RENT`                  |
+| `year`              | integer | Sí          | > 1900                                      |
+| `kilometres`        | integer | Sí          | ≥ 0                                         |
+| `power`             | integer | Sí          | > 0                                         |
+| `displacement`      | integer | No          | > 0                                         |
+| `fuelType`          | IRI     | Sí          | IRI de combustible existente                |
+| `transmission`      | IRI     | Sí          | IRI de transmisión existente                |
+| `bodyType`          | IRI     | No          | IRI de carrocería existente                 |
+| `enviromentalBadge` | IRI     | No          | IRI de distintivo existente                 |
+| `color`             | IRI     | No          | IRI de color existente                      |
+| `doors`             | integer | No          | 0–10                                        |
+| `owners`            | integer | Sí          | ≥ 0                                         |
+| `province`          | IRI     | No          | IRI de provincia existente                  |
+| `visible`           | boolean | No          | `true` por defecto                          |
 
 **Response 201 Created:** devuelve el vehículo completo creado.
 
@@ -669,11 +690,13 @@ Actualiza campos concretos de un vehículo.
 **Autenticación:** Requerida (`ROLE_ADMIN` o `ROLE_SALES`)
 
 **Headers:**
+
 ```
 Content-Type: application/merge-patch+json
 ```
 
 **Request Body** (solo los campos a modificar):
+
 ```json
 {
     "price": "33000",
@@ -707,12 +730,13 @@ Sube una nueva imagen para un vehículo. El endpoint usa `multipart/form-data`.
 
 **Campos del formulario:**
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `file` | File | El archivo de imagen (JPG, PNG, WebP…) |
+| Campo  | Tipo   | Descripción                                  |
+| ------ | ------ | -------------------------------------------- |
+| `file` | File   | El archivo de imagen (JPG, PNG, WebP…)       |
 | `main` | string | `"1"` si es la imagen principal, `"0"` si no |
 
 **Ejemplo con curl:**
+
 ```bash
 curl -X POST http://localhost:8000/api/vehicle_images \
   -H "Authorization: Bearer {token}" \
@@ -721,6 +745,7 @@ curl -X POST http://localhost:8000/api/vehicle_images \
 ```
 
 **Response 201 Created:**
+
 ```json
 {
     "id": 184,
@@ -741,11 +766,13 @@ Actualiza los metadatos de una imagen (por ejemplo, cambiar cuál es la principa
 **Autenticación:** Requerida
 
 **Headers:**
+
 ```
 Content-Type: application/merge-patch+json
 ```
 
 **Request Body:**
+
 ```json
 {
     "vehicle": "/api/vehicles/427",
@@ -775,22 +802,23 @@ Lista reservas. Ordenadas por `id DESC` (la más reciente primero).
 
 **Parámetros de consulta:**
 
-| Parámetro | Descripción | Ejemplo |
-|-----------|-------------|---------|
-| `vehicle.id` | Filtrar por ID de vehículo | `?vehicle.id=425` |
-| `status` | Filtrar por estado | `?status=CONFIRMED` |
-| `user.id` | Filtrar por ID de usuario | `?user.id=3` |
+| Parámetro    | Descripción                | Ejemplo             |
+| ------------ | -------------------------- | ------------------- |
+| `vehicle.id` | Filtrar por ID de vehículo | `?vehicle.id=425`   |
+| `status`     | Filtrar por estado         | `?status=CONFIRMED` |
+| `user.id`    | Filtrar por ID de usuario  | `?user.id=3`        |
 
 **Estados posibles:**
 
-| Estado | Descripción |
-|--------|-------------|
-| `PENDING` | Creada por el usuario, esperando confirmación del admin |
+| Estado      | Descripción                                              |
+| ----------- | -------------------------------------------------------- |
+| `PENDING`   | Creada por el usuario, esperando confirmación del admin  |
 | `CONFIRMED` | Confirmada por el admin. Bloquea las fechas del vehículo |
-| `REJECTED` | Rechazada por el admin |
-| `CANCELLED` | Cancelada por el usuario. Libera las fechas |
+| `REJECTED`  | Rechazada por el admin                                   |
+| `CANCELLED` | Cancelada por el usuario. Libera las fechas              |
 
 **Response 200 OK:**
+
 ```json
 {
     "hydra:member": [
@@ -842,6 +870,7 @@ Crea una nueva reserva. El `totalPrice` se calcula automáticamente (`dailyPrice
 **Autenticación:** Requerida
 
 **Request Body:**
+
 ```json
 {
     "startDate": "2026-05-10",
@@ -852,19 +881,21 @@ Crea una nueva reserva. El `totalPrice` se calcula automáticamente (`dailyPrice
 }
 ```
 
-| Campo | Tipo | Obligatorio | Validación |
-|-------|------|-------------|------------|
-| `startDate` | date `YYYY-MM-DD` | Sí | Debe ser una fecha futura (> hoy) |
-| `endDate` | date `YYYY-MM-DD` | Sí | Debe ser posterior a `startDate`. No puede ser anterior a hoy |
-| `vehicle` | IRI | Sí | IRI de un vehículo de tipo `RENT` existente |
-| `user` | IRI | Sí | IRI del usuario que hace la reserva |
-| `status` | string | Sí | Siempre enviar `"PENDING"` al crear |
+| Campo       | Tipo              | Obligatorio | Validación                                                    |
+| ----------- | ----------------- | ----------- | ------------------------------------------------------------- |
+| `startDate` | date `YYYY-MM-DD` | Sí          | Debe ser una fecha futura (> hoy)                             |
+| `endDate`   | date `YYYY-MM-DD` | Sí          | Debe ser posterior a `startDate`. No puede ser anterior a hoy |
+| `vehicle`   | IRI               | Sí          | IRI de un vehículo de tipo `RENT` existente                   |
+| `user`      | IRI               | Sí          | IRI del usuario que hace la reserva                           |
+| `status`    | string            | Sí          | Siempre enviar `"PENDING"` al crear                           |
 
 **Validaciones de negocio:**
+
 - Las fechas no pueden solaparse con otras reservas en estado `CONFIRMED` del mismo vehículo
 - Las reservas `REJECTED`, `PENDING` y `CANCELLED` existentes **no** bloquean las fechas
 
 **Response 201 Created:**
+
 ```json
 {
     "id": 17,
@@ -878,6 +909,7 @@ Crea una nueva reserva. El `totalPrice` se calcula automáticamente (`dailyPrice
 ```
 
 **Response 422 — Fechas en el pasado:**
+
 ```json
 {
     "violations": [
@@ -890,6 +922,7 @@ Crea una nueva reserva. El `totalPrice` se calcula automáticamente (`dailyPrice
 ```
 
 **Response 422 — Solapamiento de fechas:**
+
 ```json
 {
     "@type": "ConstraintViolationList",
@@ -906,11 +939,13 @@ Cambia el estado de una reserva. Usado por admins para confirmar/rechazar y por 
 **Autenticación:** Requerida
 
 **Headers:**
+
 ```
 Content-Type: application/merge-patch+json
 ```
 
 **Request Body:**
+
 ```json
 {
     "status": "CONFIRMED"
@@ -919,11 +954,11 @@ Content-Type: application/merge-patch+json
 
 **Transiciones de estado permitidas:**
 
-| Desde | Hacia | Quién |
-|-------|-------|-------|
-| `PENDING` | `CONFIRMED` | Admin / Sales |
-| `PENDING` | `REJECTED` | Admin / Sales |
-| `PENDING` | `CANCELLED` | El propio usuario o Admin |
+| Desde       | Hacia       | Quién                     |
+| ----------- | ----------- | ------------------------- |
+| `PENDING`   | `CONFIRMED` | Admin / Sales             |
+| `PENDING`   | `REJECTED`  | Admin / Sales             |
+| `PENDING`   | `CANCELLED` | El propio usuario o Admin |
 | `CONFIRMED` | `CANCELLED` | El propio usuario o Admin |
 
 > No se puede modificar una reserva cuya `endDate` ya pasó (validación de backend).
@@ -952,14 +987,15 @@ Lista todas las conversaciones. Ordenadas por `updatedAt DESC` (las más recient
 
 **Parámetros de consulta:**
 
-| Parámetro | Descripción | Ejemplo |
-|-----------|-------------|---------|
-| `status` | Filtrar por estado | `?status=NEW` |
+| Parámetro      | Descripción                    | Ejemplo                          |
+| -------------- | ------------------------------ | -------------------------------- |
+| `status`       | Filtrar por estado             | `?status=NEW`                    |
 | `contactEmail` | Filtrar por email del contacto | `?contactEmail=juan@example.com` |
 
 **Estados posibles:** `NEW`, `READ`, `ARCHIVED`
 
 **Response 200 OK:**
+
 ```json
 {
     "hydra:member": [
@@ -1020,6 +1056,7 @@ Crea una conversación (formulario de contacto del frontend).
 **Autenticación:** Pública (`PUBLIC_ACCESS`)
 
 **Request Body:**
+
 ```json
 {
     "contactName": "María García",
@@ -1031,14 +1068,14 @@ Crea una conversación (formulario de contacto del frontend).
 }
 ```
 
-| Campo | Obligatorio | Descripción |
-|-------|-------------|-------------|
-| `contactName` | Sí | Nombre del contacto |
-| `contactEmail` | Sí | Email del contacto |
-| `contactPhone` | No | Teléfono de contacto |
-| `vehicle` | Sí | IRI del vehículo al que se refiere |
-| `status` | No | Por defecto `"NEW"` |
-| `user` | No | IRI del usuario autenticado si existe |
+| Campo          | Obligatorio | Descripción                           |
+| -------------- | ----------- | ------------------------------------- |
+| `contactName`  | Sí          | Nombre del contacto                   |
+| `contactEmail` | Sí          | Email del contacto                    |
+| `contactPhone` | No          | Teléfono de contacto                  |
+| `vehicle`      | Sí          | IRI del vehículo al que se refiere    |
+| `status`       | No          | Por defecto `"NEW"`                   |
+| `user`         | No          | IRI del usuario autenticado si existe |
 
 **Response 201 Created:** devuelve la conversación creada.
 
@@ -1051,11 +1088,13 @@ Actualiza el estado de una conversación (marcar como leída, archivar, etc.).
 **Autenticación:** Requerida. Solo el admin, el usuario propietario o quien tenga el mismo email que `contactEmail`.
 
 **Headers:**
+
 ```
 Content-Type: application/merge-patch+json
 ```
 
 **Request Body:**
+
 ```json
 {
     "status": "READ"
@@ -1073,6 +1112,7 @@ Envía un mensaje dentro de una conversación existente.
 **Autenticación:** Requerida
 
 **Request Body:**
+
 ```json
 {
     "content": "Hola, me interesa reservar este vehículo para esas fechas.",
@@ -1081,13 +1121,14 @@ Envía un mensaje dentro de una conversación existente.
 }
 ```
 
-| Campo | Obligatorio | Descripción |
-|-------|-------------|-------------|
-| `content` | Sí | Texto del mensaje |
-| `isAdmin` | Sí | `true` si lo envía un admin/sales, `false` si lo envía un cliente |
-| `conversation` | Sí | IRI de la conversación a la que pertenece |
+| Campo          | Obligatorio | Descripción                                                       |
+| -------------- | ----------- | ----------------------------------------------------------------- |
+| `content`      | Sí          | Texto del mensaje                                                 |
+| `isAdmin`      | Sí          | `true` si lo envía un admin/sales, `false` si lo envía un cliente |
+| `conversation` | Sí          | IRI de la conversación a la que pertenece                         |
 
 **Response 201 Created:**
+
 ```json
 {
     "id": 47,
@@ -1110,12 +1151,13 @@ Lista los favoritos. Ordenados por `createdAt DESC`.
 
 **Parámetros de consulta:**
 
-| Parámetro | Descripción | Ejemplo |
-|-----------|-------------|---------|
-| `user` | Filtrar por IRI del usuario | `?user=/api/users/3` |
+| Parámetro | Descripción                  | Ejemplo                      |
+| --------- | ---------------------------- | ---------------------------- |
+| `user`    | Filtrar por IRI del usuario  | `?user=/api/users/3`         |
 | `vehicle` | Filtrar por IRI del vehículo | `?vehicle=/api/vehicles/425` |
 
 **Response 200 OK:**
+
 ```json
 {
     "hydra:member": [
@@ -1150,6 +1192,7 @@ Añade un vehículo a favoritos.
 **Autenticación:** Requerida
 
 **Request Body:**
+
 ```json
 {
     "user": "/api/users/3",
@@ -1160,6 +1203,7 @@ Añade un vehículo a favoritos.
 > No se puede duplicar la combinación usuario+vehículo. Devuelve `422` si ya existe.
 
 **Response 201 Created:**
+
 ```json
 {
     "id": 9,
@@ -1190,6 +1234,7 @@ Lista todas las marcas.
 **Autenticación:** No requerida
 
 **Response:**
+
 ```json
 {
     "hydra:member": [
@@ -1209,6 +1254,7 @@ Lista todas las marcas.
 **Autenticación:** Requerida (`ROLE_ADMIN`)
 
 **Request Body:**
+
 ```json
 { "name": "Ferrari", "logo": "ferrari.png" }
 ```
@@ -1236,6 +1282,7 @@ Lista todas las marcas.
 **Autenticación:** No requerida
 
 **Response:**
+
 ```json
 {
     "hydra:member": [
@@ -1249,6 +1296,7 @@ Lista todas las marcas.
 Misma estructura que Marcas. POST/PUT/PATCH/DELETE requieren `ROLE_ADMIN`.
 
 **Request Body para POST/PUT:**
+
 ```json
 {
     "name": "A6",
@@ -1265,6 +1313,7 @@ Misma estructura que Marcas. POST/PUT/PATCH/DELETE requieren `ROLE_ADMIN`.
 **Autenticación:** No requerida
 
 **Response:**
+
 ```json
 { "id": 1, "name": "Rojo", "hexCode": "#FE0000" }
 ```
@@ -1274,6 +1323,7 @@ Misma estructura que Marcas. POST/PUT/PATCH/DELETE requieren `ROLE_ADMIN`.
 **Autenticación:** Requerida (`ROLE_ADMIN`)
 
 **Request Body:**
+
 ```json
 { "name": "Azul Marino", "hexCode": "#001F5B" }
 ```
@@ -1291,6 +1341,7 @@ Misma estructura que Marcas. POST/PUT/PATCH/DELETE requieren `ROLE_ADMIN`.
 **Autenticación:** No requerida
 
 **Response:**
+
 ```json
 { "id": 39, "name": "Gasolina" }
 ```
@@ -1300,6 +1351,7 @@ Misma estructura que Marcas. POST/PUT/PATCH/DELETE requieren `ROLE_ADMIN`.
 **Autenticación:** Requerida (`ROLE_ADMIN`)
 
 **Request Body:**
+
 ```json
 { "name": "Hidrógeno" }
 ```
@@ -1317,6 +1369,7 @@ Misma estructura que Marcas. POST/PUT/PATCH/DELETE requieren `ROLE_ADMIN`.
 **Autenticación:** No requerida
 
 **Response:**
+
 ```json
 { "id": 1, "name": "Manual" }
 ```
@@ -1326,6 +1379,7 @@ Misma estructura que Marcas. POST/PUT/PATCH/DELETE requieren `ROLE_ADMIN`.
 **Autenticación:** Requerida (`ROLE_ADMIN`)
 
 **Request Body para POST:**
+
 ```json
 { "name": "CVT" }
 ```
@@ -1339,6 +1393,7 @@ Misma estructura que Marcas. POST/PUT/PATCH/DELETE requieren `ROLE_ADMIN`.
 **Autenticación:** No requerida
 
 **Response:**
+
 ```json
 { "id": 2, "name": "Sedán" }
 ```
@@ -1348,6 +1403,7 @@ Misma estructura que Marcas. POST/PUT/PATCH/DELETE requieren `ROLE_ADMIN`.
 **Autenticación:** Requerida (`ROLE_ADMIN`)
 
 **Request Body para POST:**
+
 ```json
 { "name": "Pickup" }
 ```
@@ -1361,6 +1417,7 @@ Misma estructura que Marcas. POST/PUT/PATCH/DELETE requieren `ROLE_ADMIN`.
 **Autenticación:** No requerida
 
 **Response:**
+
 ```json
 {
     "id": 3,
@@ -1375,6 +1432,7 @@ Misma estructura que Marcas. POST/PUT/PATCH/DELETE requieren `ROLE_ADMIN`.
 **Autenticación:** Requerida (`ROLE_ADMIN`)
 
 **Request Body para POST:**
+
 ```json
 { "name": "CERO", "image": "cero_badge.png" }
 ```
@@ -1388,6 +1446,7 @@ Misma estructura que Marcas. POST/PUT/PATCH/DELETE requieren `ROLE_ADMIN`.
 **Autenticación:** No requerida
 
 **Response:**
+
 ```json
 { "id": 8, "name": "Madrid" }
 ```
@@ -1397,6 +1456,7 @@ Misma estructura que Marcas. POST/PUT/PATCH/DELETE requieren `ROLE_ADMIN`.
 **Autenticación:** Requerida (`ROLE_ADMIN`)
 
 **Request Body para POST:**
+
 ```json
 { "name": "Girona" }
 ```
@@ -1412,6 +1472,7 @@ Devuelve estadísticas globales para el dashboard de administración.
 **Autenticación:** Requerida
 
 **Response 200 OK:**
+
 ```json
 {
     "totalUsers": 52,
@@ -1504,6 +1565,7 @@ Los vehículos con `status=DELETED` están ocultos globalmente mediante la exten
 ## Manejo de errores
 
 ### 401 Unauthorized
+
 ```json
 {
     "code": 401,
@@ -1512,6 +1574,7 @@ Los vehículos con `status=DELETED` están ocultos globalmente mediante la exten
 ```
 
 ### 403 Forbidden
+
 ```json
 {
     "hydra:title": "An error occurred",
@@ -1520,6 +1583,7 @@ Los vehículos con `status=DELETED` están ocultos globalmente mediante la exten
 ```
 
 ### 404 Not Found
+
 ```json
 {
     "@type": "hydra:Error",
@@ -1529,6 +1593,7 @@ Los vehículos con `status=DELETED` están ocultos globalmente mediante la exten
 ```
 
 ### 422 Unprocessable Entity (errores de validación)
+
 ```json
 {
     "@type": "ConstraintViolationList",
