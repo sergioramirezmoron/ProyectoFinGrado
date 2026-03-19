@@ -24,7 +24,7 @@ class ReservationRepository extends ServiceEntityRepository
             ->andWhere('r.startDate < :end')
             ->andWhere('r.endDate > :start')
             ->andWhere('r.status NOT IN (:ignoredStatuses)')
-            ->setParameter('ignoredStatuses', ['REJECTED', 'PENDING'])
+            ->setParameter('ignoredStatuses', ['REJECTED', 'PENDING', 'CANCELLED'])
             ->setParameter('vehicle', $vehicle)
             ->setParameter('start', $start)
             ->setParameter('end', $end)

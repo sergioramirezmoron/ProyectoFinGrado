@@ -69,7 +69,7 @@ const VehicleDetail = () => {
 
         if (response.data.type === "RENT") {
           const resReservations = await getVehicleReservations(id!);
-          const reservations = resReservations.data.member || [];
+          const reservations = resReservations.data["hydra:member"] ?? resReservations.data.member ?? [];
           const newBlockedStrings: string[] = [];
 
           reservations.forEach((res) => {

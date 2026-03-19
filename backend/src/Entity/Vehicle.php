@@ -68,13 +68,13 @@ class Vehicle
 
     #[ORM\ManyToOne(targetEntity: Brand::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['vehicle:read', 'vehicle:write', 'conversation:read'])]
+    #[Groups(['vehicle:read', 'vehicle:write', 'conversation:read', 'reservation:read'])]
     #[Assert\NotNull(message: "La marca es obligatoria")]
     private ?Brand $brand = null;
 
     #[ORM\ManyToOne(targetEntity: Model::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['vehicle:read', 'vehicle:write', 'conversation:read'])]
+    #[Groups(['vehicle:read', 'vehicle:write', 'conversation:read', 'reservation:read'])]
     #[Assert\NotNull(message: "El modelo es obligatorio")]
     private ?Model $model = null;
 
@@ -140,7 +140,7 @@ class Vehicle
     private ?string $description = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['vehicle:read', 'vehicle:write', 'conversation:read'])]
+    #[Groups(['vehicle:read', 'vehicle:write', 'conversation:read', 'reservation:read'])]
     #[Assert\Choice(choices: ['AVAILABLE', 'SOLD', 'RESERVED', 'DELETED'], message: "Estado no válido")]
     private ?string $status = null;
 
@@ -156,7 +156,7 @@ class Vehicle
      * @var Collection<int, VehicleImage>
      */
     #[ORM\OneToMany(targetEntity: VehicleImage::class, mappedBy: 'vehicle', orphanRemoval: true)]
-    #[Groups(['vehicle:read', 'vehicle:write', 'conversation:read'])]
+    #[Groups(['vehicle:read', 'vehicle:write', 'conversation:read', 'reservation:read'])]
     private Collection $vehicleImages;
 
     #[ORM\Column]
@@ -168,12 +168,12 @@ class Vehicle
     private ?Province $province = null;
 
     #[ORM\Column(length: 10)]
-    #[Groups(['vehicle:read', 'vehicle:write'])]
+    #[Groups(['vehicle:read', 'vehicle:write', 'reservation:read'])]
     #[Assert\Choice(choices: ['SALE', 'RENT'], message: "El tipo debe ser SALE o RENT")]
     private ?string $type = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 6, scale: 2, nullable: true)]
-    #[Groups(['vehicle:read', 'vehicle:write'])]
+    #[Groups(['vehicle:read', 'vehicle:write', 'reservation:read'])]
     #[Assert\PositiveOrZero(message: "El precio diario no puede ser negativo")]
     private ?string $dailyPrice = null;
 

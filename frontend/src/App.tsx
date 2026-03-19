@@ -17,6 +17,8 @@ import ColorManagement from "./pages/admin/ColorManagement";
 import ProvinceManagement from "./pages/admin/ProvinceManagement";
 import ModelManagement from "./pages/admin/ModelManagement";
 import BrandManagement from "./pages/admin/BrandManagement";
+import MyReservations from "./pages/public/MyReservations";
+import AdminReservations from "./pages/admin/AdminReservations";
 
 function App() {
   return (
@@ -29,6 +31,7 @@ function App() {
 
         <Route path="/vehiculo/:id" element={<VehicleDetail />} />
         <Route path="mis-chats" element={<Chat />} />
+        <Route path="/mis-reservas" element={<MyReservations />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Route>
@@ -51,6 +54,7 @@ function App() {
         <Route path="/admin/ciudades" element={<ProvinceManagement />} />
         <Route path="/admin/marcas" element={<BrandManagement />} />
         <Route path="/admin/modelos" element={<ModelManagement />} />
+        <Route path="/admin/reservas" element={<AdminReservations />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" />} />

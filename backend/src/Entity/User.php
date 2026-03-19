@@ -37,11 +37,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['user:read', 'favorite:read'])]
+    #[Groups(['user:read', 'favorite:read', 'reservation:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['user:read', 'user:write', 'reservation:read'])]
     #[Assert\NotBlank(message: "El email es obligatorio")]
     #[Assert\Email(message: "El formato del email no es válido")]
     private ?string $email = null;
@@ -68,12 +68,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     // --- DATOS DE PERFIL ---
 
     #[ORM\Column(length: 255)]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['user:read', 'user:write', 'reservation:read'])]
     #[Assert\NotBlank(message: "El nombre es obligatorio")]
     private ?string $name = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['user:read', 'user:write', 'reservation:read'])]
     private ?string $surname = null;
 
     #[ORM\Column(length: 20, nullable: true)]

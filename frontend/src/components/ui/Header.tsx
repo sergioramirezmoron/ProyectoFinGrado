@@ -13,6 +13,7 @@ import {
   MapPin,
   Tag,
   Layers,
+  CalendarDays,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { useChatNotification } from "../../hooks/useChatNotification";
@@ -83,6 +84,10 @@ const Header = () => {
                   <Car size={17} />
                 </NavLink>
 
+                <NavLink to="/admin/reservas" className={adminLinkClass("blue")} title="Reservas">
+                  <CalendarDays size={17} />
+                </NavLink>
+
                 {isAdmin && (
                   <>
                     <NavLink to="/admin/usuarios" className={adminLinkClass("purple")} title="Usuarios">
@@ -125,6 +130,20 @@ const Header = () => {
                     </span>
                   )}
                 </Link>
+
+                {!isStaff && !isAdmin && (
+                  <Link
+                    to="/mis-reservas"
+                    className={`p-2 rounded-full hover:bg-white/10 transition-colors ${
+                      location.pathname === "/mis-reservas"
+                        ? "text-blue-500"
+                        : "text-slate-300"
+                    }`}
+                    title="Mis reservas"
+                  >
+                    <CalendarDays size={20} />
+                  </Link>
+                )}
 
                 <button
                   onClick={() => setIsPanelOpen(true)}
@@ -236,6 +255,9 @@ const Header = () => {
                       </span>
                     )}
                   </Link>
+                  <Link to="/admin/reservas" onClick={closeMobileMenu} className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors text-sm">
+                    <CalendarDays size={18} className="text-blue-400" /> Reservas
+                  </Link>
                   {isAdmin && (
                     <>
                       <Link to="/admin/usuarios" onClick={closeMobileMenu} className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors text-sm">
@@ -256,6 +278,21 @@ const Header = () => {
                     </>
                   )}
                 </div>
+              </div>
+            )}
+
+            {isAuthenticated && !isStaff && !isAdmin && (
+              <div className="pt-4 mt-2">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 block px-2">
+                  Mi cuenta
+                </span>
+                <Link
+                  to="/mis-reservas"
+                  onClick={closeMobileMenu}
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors text-sm"
+                >
+                  <CalendarDays size={18} className="text-blue-400" /> Mis reservas
+                </Link>
               </div>
             )}
 

@@ -37,7 +37,7 @@ class VehicleImage
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['vehicleImage:read', 'vehicleImage:write', 'vehicle:read', 'conversation:read'])]
+    #[Groups(['vehicleImage:read', 'vehicleImage:write', 'vehicle:read', 'conversation:read', 'reservation:read'])]
     private ?string $filename = null;
 
     #[ORM\Column]
@@ -64,7 +64,7 @@ class VehicleImage
         return $this;
     }
 
-    #[Groups(['vehicleImage:read', 'vehicle:read', 'conversation:read'])]
+    #[Groups(['vehicleImage:read', 'vehicle:read', 'conversation:read', 'reservation:read'])]
     #[SerializedName("main")]
     public function isMain(): ?bool
     {
@@ -89,7 +89,7 @@ class VehicleImage
         return $this;
     }
 
-    #[Groups(['vehicleImage:read', 'vehicle:read', 'conversation:read'])]
+    #[Groups(['vehicleImage:read', 'vehicle:read', 'conversation:read', 'reservation:read'])]
     public function getImageUrl(): string
     {
         return '/images/vehicles/' . $this->filename;

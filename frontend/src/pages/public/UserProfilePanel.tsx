@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useContext } from "react";
+import { Link } from "react-router-dom";
 import {
   X,
   Pencil,
@@ -13,6 +14,7 @@ import {
   Loader2,
   ShieldCheck,
   Info,
+  CalendarDays,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { FavoriteContext } from "../../context/FavoriteContext";
@@ -327,6 +329,26 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
               </div>
             )}
           </div>
+
+          {!isAdmin && !isSales && (
+            <div className="px-6 py-4 border-b border-slate-100">
+              <Link
+                to="/mis-reservas"
+                onClick={onClose}
+                className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+              >
+                <CalendarDays size={16} className="text-slate-400 group-hover:text-blue-500 shrink-0" />
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wide text-slate-400 group-hover:text-blue-500">
+                    Mis reservas
+                  </p>
+                  <p className="text-sm font-medium text-slate-700 group-hover:text-blue-600">
+                    Ver historial de alquileres
+                  </p>
+                </div>
+              </Link>
+            </div>
+          )}
 
           <div className="px-6 py-5">
             <div className="flex items-center gap-2 mb-4">
