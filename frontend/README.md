@@ -21,6 +21,7 @@ Aplicación web SPA (Single Page Application) desarrollada con **React 19**, **T
   - [Hooks Personalizados](#hooks-personalizados)
   - [Sistema de Chat](#sistema-de-chat)
   - [Sistema de Reservas](#sistema-de-reservas)
+- [Tests](#tests)
 - [Despliegue](#despliegue)
 - [Troubleshooting](#troubleshooting)
 
@@ -281,6 +282,9 @@ VITE_BACKEND_URL=https://api.luxurycars.example.com
 | `npm run build` | Compila TypeScript y genera el build de producción en `/dist` |
 | `npm run preview` | Sirve localmente el build de `/dist` para verificar antes de desplegar |
 | `npm run lint` | Ejecuta ESLint sobre el código fuente |
+| `npm run test` | Ejecuta los tests en modo watch (se re-ejecutan al guardar) |
+| `npm run test:run` | Ejecuta todos los tests una vez y muestra el resultado |
+| `npm run test:coverage` | Ejecuta los tests y genera el informe de cobertura de código |
 
 ---
 
@@ -509,6 +513,60 @@ Sólo disponible para vehículos de tipo `RENT`. Accesible desde la página de d
 4. Al confirmar, se crea la reserva con estado `PENDING`.
 5. El administrador aprueba o rechaza desde `/admin/reservas`.
 6. Los posibles estados son: `PENDING → CONFIRMED | REJECTED | CANCELLED`.
+
+---
+
+## Tests
+
+El proyecto incluye una suite de **264 tests unitarios** con **[Vitest](https://vitest.dev/)** y **Testing Library**.
+
+### Ejecutar los tests
+
+```bash
+npm run test:run      # Ejecuta todos los tests una vez
+npm run test          # Modo watch (se re-ejecutan al guardar)
+npm run test:coverage # Genera informe de cobertura en /coverage
+```
+
+### Stack de testing
+
+| Herramienta | Propósito |
+|---|---|
+| **Vitest** | Test runner integrado con Vite. Misma configuración de módulos que la app |
+| **@testing-library/react** | Render de componentes y hooks en entorno jsdom |
+| **@testing-library/jest-dom** | Matchers adicionales (`toBeInTheDocument`, `toHaveClass`…) |
+| **@testing-library/user-event** | Simulación de interacciones de usuario (clicks, tipado) |
+| **jsdom** | Entorno DOM para Node.js |
+
+### Cobertura
+
+Los tests cubren las siguientes capas:
+
+| Capa | Archivos de test | Qué se verifica |
+|---|---|---|
+| **Utils** | `formatters`, `vehicleImages` | Formateo de precios, fechas, construcción de URLs de imágenes |
+| **Constants** | `reservationStatus` | Configuración de estados, opciones de filtro, lógica `isReservationActiveToday` |
+| **API** | `axios` | baseURL, interceptor JWT (con y sin token en localStorage) |
+| **Services** | `authService`, `vehicleService`, `reservationService`, `favoriteService`, `conversationService`, `brandService`, `colorService`, `provinceService`, `userService` | Que cada función llama al endpoint correcto con los parámetros y headers adecuados |
+| **Contexts** | `AuthContext`, `FavoriteContext`, `ChatContext` | Estado inicial, login/logout, carga de favoritos, polling de mensajes, isAdmin |
+| **Hooks** | `useAuth`, `useFavorite`, `useCatalog`, `useMyReservations`, `useAdminReservations` | Filtrado, ordenación, paginación, cancelación de reservas, búsqueda |
+| **Components** | `Toast`, `ConfirmModal`, `ProtectedRoute`, `StatCard` | Render condicional, callbacks, redirecciones de acceso |
+
+### Estructura de los tests
+
+```
+src/
+├── test/
+│   └── setup.ts                  # Importa @testing-library/jest-dom
+└── __tests__/
+    ├── api/
+    ├── constants/
+    ├── context/
+    ├── hooks/
+    ├── services/
+    ├── utils/
+    └── components/
+```
 
 ---
 
