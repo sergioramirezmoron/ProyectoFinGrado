@@ -27,7 +27,7 @@ use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
     ],
     normalizationContext: ['groups' => ['reservation:read']],
     denormalizationContext: ['groups' => ['reservation:write']],
-    order: ['startDate' => 'ASC']
+    order: ['id' => 'DESC']
 )]
 #[NoOverlappingReservation]
 #[ApiFilter(SearchFilter::class, properties: ['vehicle' => 'exact', 'vehicle.id' => 'exact', 'status' => 'exact', 'user.id' => 'exact'])]

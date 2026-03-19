@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   Car,
   Users,
@@ -7,17 +8,25 @@ import {
   TrendingUp,
   CheckCircle2,
   Clock,
+  CalendarDays,
+  ChevronRight,
 } from "lucide-react";
 import api from "../../api/axios";
 import StatCard from "../../components/ui/StatCard";
 import type { DashboardStats } from "../../types/dashboard";
+import { getAllReservations } from "../../services/reservation";
+import type { Reservation } from "../../types/reservation";
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [reservations, setReservations] = useState<Reservation[]>([]);
 
   useEffect(() => {
     fetchStats();
+    getAllReservations()
+      .then((res) => setReservations(res.data["hydra:member"] ?? res.data.member ?? []))
+      .catch(console.error);
   }, []);
 
   const fetchStats = async () => {
@@ -118,6 +127,49 @@ const Dashboard = () => {
           />
         ))}
       </div>
+
+      {/* Reservations Panel */}
+      {(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const pending = reservations.filter((r) => r.status === "PENDING").length;
+        const confirmed = reservations.filter((r) => r.status === "CONFIRMED").length;
+        const activeNow = reservations.filter((r) => {
+          if (r.status !== "CONFIRMED") return false;
+          return new Date(r.startDate) <= today && today <= new Date(r.endDate);
+        }).length;
+
+        return (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-slate-800 flex items-center gap-2 text-sm sm:text-base">
+                <CalendarDays size={18} className="text-blue-500" />
+                Reservas de Alquiler
+              </h3>
+              <Link
+                to="/admin/reservas"
+                className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+              >
+                Ver todas <ChevronRight size={14} />
+              </Link>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-3 text-center">
+                <p className="text-2xl font-black text-yellow-700">{pending}</p>
+                <p className="text-xs text-yellow-600 font-bold uppercase tracking-wide mt-0.5">Pendientes</p>
+              </div>
+              <div className="bg-green-50 border border-green-100 rounded-xl p-3 text-center">
+                <p className="text-2xl font-black text-green-700">{confirmed}</p>
+                <p className="text-xs text-green-600 font-bold uppercase tracking-wide mt-0.5">Confirmadas</p>
+              </div>
+              <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-center">
+                <p className="text-2xl font-black text-blue-700">{activeNow}</p>
+                <p className="text-xs text-blue-600 font-bold uppercase tracking-wide mt-0.5">Activas hoy</p>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
