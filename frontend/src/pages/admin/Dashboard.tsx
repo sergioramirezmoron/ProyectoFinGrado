@@ -14,7 +14,7 @@ import {
 import api from "../../api/axios";
 import StatCard from "../../components/ui/StatCard";
 import type { DashboardStats } from "../../types/dashboard";
-import { getAllReservations } from "../../services/reservation";
+import { getAllReservations } from "../../services/reservationService";
 import type { Reservation } from "../../types/reservation";
 
 const Dashboard = () => {
@@ -237,7 +237,8 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Recent Activity */}
+          {/* Recent Acti
+          vity */}
           <div className="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-gray-100 flex-1 flex flex-col">
             <h3 className="font-bold text-slate-800 mb-3 sm:mb-4 flex items-center gap-2 text-sm">
               <Clock size={14} className="text-blue-500" />

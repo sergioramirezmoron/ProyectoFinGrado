@@ -1,146 +1,42 @@
-import { useEffect, useState, useMemo } from "react";
 import {
   CalendarDays,
   Car,
   Loader2,
   ChevronLeft,
   ChevronRight,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  Ban,
   Search,
   Filter,
   User,
   BadgeCheck,
+  CheckCircle2,
+  XCircle,
+  Ban,
 } from "lucide-react";
-import { getAllReservations, updateReservationStatus } from "../../services/reservation";
-import type { Reservation, ReservationVehicle, ReservationUser } from "../../types/reservation";
-
-const ITEMS_PER_PAGE = 10;
-
-const STATUS_OPTIONS = [
-  { value: "", label: "Todos" },
-  { value: "PENDING", label: "Pendiente" },
-  { value: "CONFIRMED", label: "Confirmada" },
-  { value: "REJECTED", label: "Rechazada" },
-  { value: "CANCELLED", label: "Cancelada" },
-];
-
-const STATUS_CONFIG: Record<
-  string,
-  { label: string; color: string; bg: string; icon: React.ReactNode }
-> = {
-  PENDING: {
-    label: "Pendiente",
-    color: "text-yellow-700",
-    bg: "bg-yellow-100",
-    icon: <Clock size={13} />,
-  },
-  CONFIRMED: {
-    label: "Confirmada",
-    color: "text-green-700",
-    bg: "bg-green-100",
-    icon: <CheckCircle2 size={13} />,
-  },
-  REJECTED: {
-    label: "Rechazada",
-    color: "text-red-700",
-    bg: "bg-red-100",
-    icon: <XCircle size={13} />,
-  },
-  CANCELLED: {
-    label: "Cancelada",
-    color: "text-slate-500",
-    bg: "bg-slate-100",
-    icon: <Ban size={13} />,
-  },
-};
-
-const formatDate = (d: string) =>
-  new Date(d).toLocaleDateString("es-ES", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-
-const formatPrice = (n: number) =>
-  new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(n);
-
-const isActiveNow = (r: Reservation): boolean => {
-  if (r.status !== "CONFIRMED") return false;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const start = new Date(r.startDate);
-  const end = new Date(r.endDate);
-  return start <= today && today <= end;
-};
+import type { ReservationVehicle, ReservationUser } from "../../types/reservation";
+import { useAdminReservations } from "../../hooks/useAdminReservations";
+import {
+  RESERVATION_STATUS_CONFIG,
+  RESERVATION_STATUS_OPTIONS,
+  isReservationActiveToday,
+} from "../../constants/reservationStatus";
+import { formatDate, formatCurrency } from "../../utils/formatters";
 
 const AdminReservations = () => {
-  const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState("");
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const [updatingId, setUpdatingId] = useState<number | null>(null);
-
-  const fetchReservations = async () => {
-    setLoading(true);
-    try {
-      const res = await getAllReservations();
-      const members = res.data["hydra:member"] ?? res.data.member ?? [];
-      setReservations(members);
-    } catch (e) {
-      console.error("Error cargando reservas", e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchReservations();
-  }, []);
-
-  useEffect(() => {
-    setPage(1);
-  }, [statusFilter, search]);
-
-  const filtered = useMemo(() => {
-    const term = search.toLowerCase();
-    return reservations.filter((r) => {
-      if (statusFilter && r.status !== statusFilter) return false;
-      if (term) {
-        const vehicle = typeof r.vehicle === "object" ? (r.vehicle as ReservationVehicle) : null;
-        const user = typeof r.user === "object" ? (r.user as ReservationUser) : null;
-        const vehicleName = vehicle
-          ? `${vehicle.brand?.name ?? ""} ${vehicle.model?.name ?? ""}`.toLowerCase()
-          : "";
-        const userName = user
-          ? `${user.name ?? ""} ${user.surname ?? ""} ${user.email ?? ""}`.toLowerCase()
-          : "";
-        return vehicleName.includes(term) || userName.includes(term) || String(r.id).includes(term);
-      }
-      return true;
-    });
-  }, [reservations, statusFilter, search]);
-
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
-  const displayed = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
-  const activeNowCount = reservations.filter(isActiveNow).length;
-
-  const handleStatus = async (id: number, newStatus: string) => {
-    setUpdatingId(id);
-    try {
-      await updateReservationStatus(id, newStatus);
-      setReservations((prev) =>
-        prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r))
-      );
-    } catch (e) {
-      console.error("Error actualizando estado", e);
-    } finally {
-      setUpdatingId(null);
-    }
-  };
+  const {
+    loading,
+    statusFilter,
+    setStatusFilter,
+    search,
+    setSearch,
+    page,
+    setPage,
+    updatingId,
+    filtered,
+    totalPages,
+    displayed,
+    activeNowCount,
+    handleStatus,
+  } = useAdminReservations();
 
   return (
     <div className="p-4 sm:p-6 space-y-6">
@@ -188,7 +84,7 @@ const AdminReservations = () => {
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
-            {STATUS_OPTIONS.map((opt) => (
+            {RESERVATION_STATUS_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
               </option>
@@ -212,13 +108,22 @@ const AdminReservations = () => {
             {/* Mobile cards */}
             <div className="divide-y divide-slate-100 md:hidden">
               {displayed.map((r) => {
-                const vehicle = typeof r.vehicle === "object" ? (r.vehicle as ReservationVehicle) : null;
-                const user = typeof r.user === "object" ? (r.user as ReservationUser) : null;
-                const cfg = STATUS_CONFIG[r.status] ?? STATUS_CONFIG["PENDING"];
-                const active = isActiveNow(r);
+                const vehicle =
+                  typeof r.vehicle === "object"
+                    ? (r.vehicle as ReservationVehicle)
+                    : null;
+                const user =
+                  typeof r.user === "object" ? (r.user as ReservationUser) : null;
+                const cfg =
+                  RESERVATION_STATUS_CONFIG[r.status] ??
+                  RESERVATION_STATUS_CONFIG["PENDING"];
+                const active = isReservationActiveToday(r);
 
                 return (
-                  <div key={r.id} className={`p-4 space-y-3 ${active ? "bg-green-50/50" : ""}`}>
+                  <div
+                    key={r.id}
+                    className={`p-4 space-y-3 ${active ? "bg-green-50/50" : ""}`}
+                  >
                     <div className="flex justify-between items-start gap-2">
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
@@ -243,14 +148,20 @@ const AdminReservations = () => {
                           </div>
                         )}
                       </div>
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold ${cfg.bg} ${cfg.color} shrink-0`}>
+                      <span
+                        className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold ${cfg.combined} shrink-0`}
+                      >
                         {cfg.icon} {cfg.label}
                       </span>
                     </div>
 
                     <div className="flex flex-wrap gap-3 text-xs text-slate-600">
-                      <span>{formatDate(r.startDate)} → {formatDate(r.endDate)}</span>
-                      <span className="font-bold text-blue-600">{formatPrice(r.totalPrice)}</span>
+                      <span>
+                        {formatDate(r.startDate)} → {formatDate(r.endDate)}
+                      </span>
+                      <span className="font-bold text-blue-600">
+                        {formatCurrency(r.totalPrice)}
+                      </span>
                     </div>
 
                     <div className="flex gap-2 flex-wrap">
@@ -261,7 +172,11 @@ const AdminReservations = () => {
                             disabled={updatingId === r.id}
                             className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-xl bg-green-50 text-green-700 text-xs font-bold hover:bg-green-100 transition-all disabled:opacity-40"
                           >
-                            {updatingId === r.id ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle2 size={12} />}
+                            {updatingId === r.id ? (
+                              <Loader2 size={12} className="animate-spin" />
+                            ) : (
+                              <CheckCircle2 size={12} />
+                            )}
                             Confirmar
                           </button>
                           <button
@@ -269,7 +184,11 @@ const AdminReservations = () => {
                             disabled={updatingId === r.id}
                             className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-xl bg-red-50 text-red-600 text-xs font-bold hover:bg-red-100 transition-all disabled:opacity-40"
                           >
-                            {updatingId === r.id ? <Loader2 size={12} className="animate-spin" /> : <XCircle size={12} />}
+                            {updatingId === r.id ? (
+                              <Loader2 size={12} className="animate-spin" />
+                            ) : (
+                              <XCircle size={12} />
+                            )}
                             Rechazar
                           </button>
                         </>
@@ -280,7 +199,11 @@ const AdminReservations = () => {
                           disabled={updatingId === r.id}
                           className="flex items-center gap-1 py-1.5 px-3 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold hover:bg-slate-200 transition-all disabled:opacity-40"
                         >
-                          {updatingId === r.id ? <Loader2 size={12} className="animate-spin" /> : <Ban size={12} />}
+                          {updatingId === r.id ? (
+                            <Loader2 size={12} className="animate-spin" />
+                          ) : (
+                            <Ban size={12} />
+                          )}
                           Cancelar
                         </button>
                       )}
@@ -306,14 +229,27 @@ const AdminReservations = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-50">
                   {displayed.map((r) => {
-                    const vehicle = typeof r.vehicle === "object" ? (r.vehicle as ReservationVehicle) : null;
-                    const user = typeof r.user === "object" ? (r.user as ReservationUser) : null;
-                    const cfg = STATUS_CONFIG[r.status] ?? STATUS_CONFIG["PENDING"];
-                    const active = isActiveNow(r);
+                    const vehicle =
+                      typeof r.vehicle === "object"
+                        ? (r.vehicle as ReservationVehicle)
+                        : null;
+                    const user =
+                      typeof r.user === "object"
+                        ? (r.user as ReservationUser)
+                        : null;
+                    const cfg =
+                      RESERVATION_STATUS_CONFIG[r.status] ??
+                      RESERVATION_STATUS_CONFIG["PENDING"];
+                    const active = isReservationActiveToday(r);
 
                     return (
-                      <tr key={r.id} className={`transition-colors ${active ? "bg-green-50/40 hover:bg-green-50/60" : "hover:bg-slate-50/50"}`}>
-                        <td className="px-5 py-4 text-slate-400 font-mono text-xs">{r.id}</td>
+                      <tr
+                        key={r.id}
+                        className={`transition-colors ${active ? "bg-green-50/40 hover:bg-green-50/60" : "hover:bg-slate-50/50"}`}
+                      >
+                        <td className="px-5 py-4 text-slate-400 font-mono text-xs">
+                          {r.id}
+                        </td>
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-slate-800">
@@ -331,7 +267,9 @@ const AdminReservations = () => {
                         <td className="px-5 py-4">
                           {user ? (
                             <div>
-                              <p className="font-medium text-slate-800">{user.name} {user.surname}</p>
+                              <p className="font-medium text-slate-800">
+                                {user.name} {user.surname}
+                              </p>
                               <p className="text-xs text-slate-400">{user.email}</p>
                             </div>
                           ) : (
@@ -345,10 +283,12 @@ const AdminReservations = () => {
                           </div>
                         </td>
                         <td className="px-5 py-4 font-bold text-blue-600">
-                          {formatPrice(r.totalPrice)}
+                          {formatCurrency(r.totalPrice)}
                         </td>
                         <td className="px-5 py-4">
-                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${cfg.bg} ${cfg.color}`}>
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${cfg.combined}`}
+                          >
                             {cfg.icon} {cfg.label}
                           </span>
                         </td>
@@ -361,7 +301,11 @@ const AdminReservations = () => {
                                   disabled={updatingId === r.id}
                                   className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-green-50 text-green-700 text-xs font-bold hover:bg-green-100 transition-all disabled:opacity-40"
                                 >
-                                  {updatingId === r.id ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle2 size={12} />}
+                                  {updatingId === r.id ? (
+                                    <Loader2 size={12} className="animate-spin" />
+                                  ) : (
+                                    <CheckCircle2 size={12} />
+                                  )}
                                   Confirmar
                                 </button>
                                 <button
@@ -369,7 +313,11 @@ const AdminReservations = () => {
                                   disabled={updatingId === r.id}
                                   className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-red-50 text-red-600 text-xs font-bold hover:bg-red-100 transition-all disabled:opacity-40"
                                 >
-                                  {updatingId === r.id ? <Loader2 size={12} className="animate-spin" /> : <XCircle size={12} />}
+                                  {updatingId === r.id ? (
+                                    <Loader2 size={12} className="animate-spin" />
+                                  ) : (
+                                    <XCircle size={12} />
+                                  )}
                                   Rechazar
                                 </button>
                               </>
@@ -380,7 +328,11 @@ const AdminReservations = () => {
                                 disabled={updatingId === r.id}
                                 className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold hover:bg-slate-200 transition-all disabled:opacity-40"
                               >
-                                {updatingId === r.id ? <Loader2 size={12} className="animate-spin" /> : <Ban size={12} />}
+                                {updatingId === r.id ? (
+                                  <Loader2 size={12} className="animate-spin" />
+                                ) : (
+                                  <Ban size={12} />
+                                )}
                                 Cancelar
                               </button>
                             )}

@@ -1,6 +1,3 @@
-import type { Reservation } from "./reservation";
-import type { Vehicle } from "./vehicle";
-
 export interface MessagePayload {
   contactName: string;
   contactEmail: string;
@@ -25,19 +22,6 @@ export interface Message {
 export interface ApiResource {
   id?: number;
   "@id"?: string;
-}
-
-export interface Conversation {
-  id: number;
-  "@id": string;
-  contactName: string;
-  contactEmail: string;
-  contactPhone: string;
-  vehicle?: Vehicle;
-  reservation?: Reservation;
-  updatedAt: string;
-  status: string;
-  messages: Message[];
 }
 
 export interface ContactModalProps {

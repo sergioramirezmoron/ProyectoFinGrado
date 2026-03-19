@@ -1,99 +1,25 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   CalendarDays,
   Car,
   Loader2,
   ChevronRight,
-  Clock,
-  CheckCircle2,
-  XCircle,
   Ban,
   AlertCircle,
   Info,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
-import { getUserReservations, updateReservationStatus } from "../../services/reservation";
-import type { Reservation, ReservationVehicle } from "../../types/reservation";
+import { useMyReservations } from "../../hooks/useMyReservations";
+import type { ReservationVehicle } from "../../types/reservation";
 import ConfirmModal from "../../helpers/ConfirmModal";
-
-const STATUS_CONFIG: Record<
-  string,
-  { label: string; color: string; icon: React.ReactNode }
-> = {
-  PENDING: {
-    label: "Pendiente de confirmación",
-    color: "bg-yellow-100 text-yellow-700",
-    icon: <Clock size={14} />,
-  },
-  CONFIRMED: {
-    label: "Confirmada",
-    color: "bg-green-100 text-green-700",
-    icon: <CheckCircle2 size={14} />,
-  },
-  REJECTED: {
-    label: "Rechazada",
-    color: "bg-red-100 text-red-700",
-    icon: <XCircle size={14} />,
-  },
-  CANCELLED: {
-    label: "Cancelada",
-    color: "bg-slate-100 text-slate-500",
-    icon: <Ban size={14} />,
-  },
-};
-
-const formatDate = (d: string) =>
-  new Date(d).toLocaleDateString("es-ES", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-
-const formatPrice = (n: number) =>
-  new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(n);
-
-const getVehicleImage = (vehicle: ReservationVehicle): string => {
-  const img = vehicle.vehicleImages?.find((i) => i.main) ?? vehicle.vehicleImages?.[0];
-  if (!img) return "https://placehold.co/120x80?text=Sin+foto";
-  if (img.imageUrl.includes("http")) return img.imageUrl;
-  return `${import.meta.env.VITE_BACKEND_URL}${img.imageUrl}`;
-};
+import { RESERVATION_STATUS_CONFIG } from "../../constants/reservationStatus";
+import { formatDate, formatCurrency } from "../../utils/formatters";
+import { getMainImageOrNull } from "../../utils/vehicleImages";
 
 const MyReservations = () => {
-  const { user, isAuthenticated } = useAuth();
-  const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [cancellingId, setCancellingId] = useState<number | null>(null);
-  const [confirmId, setConfirmId] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (!user?.id) return;
-    getUserReservations(user.id)
-      .then((res) => {
-        const members = res.data["hydra:member"] ?? res.data.member ?? [];
-        setReservations(members);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [user?.id]);
-
-  const handleCancel = async () => {
-    if (confirmId === null) return;
-    const id = confirmId;
-    setConfirmId(null);
-    setCancellingId(id);
-    try {
-      await updateReservationStatus(id, "CANCELLED");
-      setReservations((prev) =>
-        prev.map((r) => (r.id === id ? { ...r, status: "CANCELLED" } : r))
-      );
-    } catch (e) {
-      console.error("Error cancelando reserva", e);
-    } finally {
-      setCancellingId(null);
-    }
-  };
+  const { isAuthenticated } = useAuth();
+  const { reservations, loading, cancellingId, confirmId, setConfirmId, handleCancel } =
+    useMyReservations();
 
   if (!isAuthenticated) {
     return (
@@ -164,15 +90,22 @@ const MyReservations = () => {
                 typeof reservation.vehicle === "object"
                   ? (reservation.vehicle as ReservationVehicle)
                   : null;
-              const statusCfg =
-                STATUS_CONFIG[reservation.status] ?? STATUS_CONFIG["PENDING"];
+              const cfg =
+                RESERVATION_STATUS_CONFIG[reservation.status] ??
+                RESERVATION_STATUS_CONFIG["PENDING"];
               const today = new Date();
               today.setHours(0, 0, 0, 0);
               const hasEnded = new Date(reservation.endDate) < today;
               const canCancel =
-                (reservation.status === "PENDING" || reservation.status === "CONFIRMED") &&
+                (reservation.status === "PENDING" ||
+                  reservation.status === "CONFIRMED") &&
                 !hasEnded;
               const isCancelling = cancellingId === reservation.id;
+
+              const imageUrl = vehicle
+                ? getMainImageOrNull(vehicle.vehicleImages) ??
+                  "https://placehold.co/120x80?text=Sin+foto"
+                : null;
 
               return (
                 <div
@@ -181,10 +114,14 @@ const MyReservations = () => {
                 >
                   {/* Imagen del vehículo */}
                   <div className="sm:w-44 shrink-0 relative">
-                    {vehicle ? (
+                    {imageUrl ? (
                       <img
-                        src={getVehicleImage(vehicle)}
-                        alt={`${vehicle.brand?.name} ${vehicle.model?.name}`}
+                        src={imageUrl}
+                        alt={
+                          vehicle
+                            ? `${vehicle.brand?.name} ${vehicle.model?.name}`
+                            : "Vehículo"
+                        }
                         className="w-full h-40 sm:h-full object-cover"
                       />
                     ) : (
@@ -208,7 +145,8 @@ const MyReservations = () => {
                           </Link>
                         ) : (
                           <p className="font-bold text-white text-lg">
-                            Vehículo #{String(reservation.vehicle).split("/").pop()}
+                            Vehículo #
+                            {String(reservation.vehicle).split("/").pop()}
                           </p>
                         )}
                         <p className="text-slate-500 text-xs mt-0.5">
@@ -217,10 +155,10 @@ const MyReservations = () => {
                       </div>
 
                       <span
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shrink-0 ${statusCfg.color}`}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shrink-0 ${cfg.combined}`}
                       >
-                        {statusCfg.icon}
-                        {statusCfg.label}
+                        {cfg.icon}
+                        {cfg.longLabel}
                       </span>
                     </div>
 
@@ -246,12 +184,11 @@ const MyReservations = () => {
                           Total
                         </p>
                         <p className="text-blue-400 font-bold text-base">
-                          {formatPrice(reservation.totalPrice)}
+                          {formatCurrency(reservation.totalPrice)}
                         </p>
                       </div>
                     </div>
 
-                    {/* Aviso + botón cancelar */}
                     {canCancel && (
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 border-t border-white/5">
                         <p className="text-slate-500 text-xs flex items-center gap-1.5">

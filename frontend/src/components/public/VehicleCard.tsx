@@ -13,25 +13,14 @@ import {
 import { useFavorite } from "../../hooks/useFavorite";
 import { useAuth } from "../../hooks/useAuth";
 import type { VehicleCardProps } from "../../types/vehicle";
+import { formatPrice } from "../../utils/formatters";
+import { getMainVehicleImage } from "../../utils/vehicleImages";
 
 const VehicleCard = ({ vehicle }: VehicleCardProps) => {
   const { isAuthenticated } = useAuth();
   const { isFavorite, loading, toggleFavorite } = useFavorite(vehicle["@id"]);
 
-  const mainImage =
-    vehicle.vehicleImages.find((img) => img.main) || vehicle.vehicleImages[0];
-  const imageUrl = mainImage
-    ? `${import.meta.env.VITE_BACKEND_URL}${mainImage.imageUrl}`
-    : "https://via.placeholder.com/600x400?text=Sin+Foto";
-
-  const formatPrice = (amount: number | string | undefined | null) => {
-    if (!amount) return "Consultar";
-    return new Intl.NumberFormat("es-ES", {
-      style: "currency",
-      currency: "EUR",
-      maximumFractionDigits: 0,
-    }).format(Number(amount));
-  };
+  const imageUrl = getMainVehicleImage(vehicle.vehicleImages);
 
   return (
     <Link

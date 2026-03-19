@@ -1,4 +1,3 @@
-import { useState, useEffect, useRef, useMemo } from "react";
 import {
   Search,
   Send,
@@ -17,306 +16,43 @@ import {
   Menu,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
-import { useChatNotification } from "../../hooks/useChatNotification";
 import Toast from "../../helpers/Toast";
 import ConfirmModal from "../../helpers/ConfirmModal";
-
-import type { ApiResource, Message } from "../../types/message";
-import type { Conversation } from "../../types/reservation";
-import {
-  getConversation,
-  getConversations,
-  markConversationAsRead,
-  sendMessage,
-  updateReservationStatus,
-  updateVehicleStatus,
-} from "../../services/conversationService";
+import { useChat } from "../../hooks/useChat";
+import { formatDateTime, formatCurrency } from "../../utils/formatters";
 
 const Chat = () => {
-  const { user } = useAuth();
-  const { refreshUnreadCount } = useChatNotification();
-  const isAdmin =
-    user?.roles?.includes("ROLE_ADMIN") ||
-    user?.roles?.includes("ROLE_SALES") ||
-    false;
-
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [selectedChat, setSelectedChat] = useState<Conversation | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [sending, setSending] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"SALE" | "RENT">("RENT");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  const [updatingStatus, setUpdatingStatus] = useState(false);
-  const [confirmAction, setConfirmAction] = useState<{
-    status: "CONFIRMED" | "REJECTED";
-  } | null>(null);
-  const [toast, setToast] = useState<{
-    msg: string;
-    type: "success" | "error";
-  } | null>(null);
-
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (user) {
-      fetchConversations();
-      const interval = setInterval(() => fetchConversations(true), 10000);
-      return () => clearInterval(interval);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (selectedChat) {
-      fetchMessages(selectedChat.id);
-      if (hasUnreadMessages(selectedChat)) {
-        markAsRead(selectedChat);
-      }
-      const interval = setInterval(() => fetchMessages(selectedChat.id), 3000);
-      return () => clearInterval(interval);
-    }
-  }, [selectedChat]);
-
-  useEffect(() => {
-    if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTo({
-        top: messagesContainerRef.current.scrollHeight,
-        behavior: "smooth",
-      });
-    }
-  }, [messages]);
-
-  const getUniqueId = (
-    obj: ApiResource | null | undefined,
-  ): string | number | null => {
-    if (!obj) return null;
-
-    if (obj.id) return obj.id;
-
-    if (obj["@id"]) {
-      const parts = obj["@id"].split("/");
-      return parts[parts.length - 1];
-    }
-
-    return null;
-  };
-
-  const fetchConversations = async (isPolling = false) => {
-    try {
-      if (!isPolling) setLoading(true);
-      const email = user?.email || user?.name;
-      const response = await getConversations(isAdmin, email);
-      setConversations(response.data.member || []);
-    } catch (error) {
-      console.error("Error cargando chats", error);
-    } finally {
-      if (!isPolling) setLoading(false);
-    }
-  };
-
-  const fetchMessages = async (id: number) => {
-    try {
-      const response = await getConversation(id);
-      setMessages(response.data.messages || []);
-      if (isAdmin && selectedChat) {
-        const updatedReservation = response.data.reservation;
-        if (
-          JSON.stringify(selectedChat.reservation) !==
-          JSON.stringify(updatedReservation)
-        ) {
-          setSelectedChat((prev) =>
-            prev ? { ...prev, reservation: updatedReservation } : null,
-          );
-        }
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const hasUnreadMessages = (chat: Conversation) => {
-    if (!chat.messages || chat.messages.length === 0) return false;
-    const lastMsg = chat.messages[chat.messages.length - 1];
-    const isSenderOther = isAdmin ? !lastMsg.isAdmin : lastMsg.isAdmin;
-    return isSenderOther && chat.status !== "READ";
-  };
-
-  const markAsRead = async (chat: Conversation) => {
-    setConversations((prev) =>
-      prev.map((c) => (c.id === chat.id ? { ...c, status: "READ" } : c)),
-    );
-    try {
-      await markConversationAsRead(chat.id);
-      refreshUnreadCount();
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleSendMessage = async (
-    e?: React.FormEvent,
-    forcedContent?: string,
-  ) => {
-    if (e) e.preventDefault();
-    const content = forcedContent || newMessage;
-    if (!content.trim() || !selectedChat) return;
-
-    setSending(true);
-    try {
-      const conversationIri =
-        selectedChat["@id"] || `/api/conversations/${selectedChat.id}`;
-      await sendMessage(content, isAdmin, conversationIri);
-      setNewMessage("");
-      fetchMessages(selectedChat.id);
-      fetchConversations(true);
-    } catch (error) {
-      if (isAdmin) setToast({ msg: "Error al enviar", type: "error" });
-      console.log(error);
-    } finally {
-      setSending(false);
-    }
-  };
-
-  const filteredConversations = useMemo(() => {
-    let filtered = conversations;
-
-    if (activeTab === "RENT") {
-      filtered = filtered.filter(
-        (c) => c.vehicle?.type === "RENT" || c.reservation,
-      );
-    } else {
-      filtered = filtered.filter(
-        (c) => !c.reservation && c.vehicle?.type !== "RENT",
-      );
-    }
-
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (c) =>
-          (c.contactName && c.contactName.toLowerCase().includes(q)) ||
-          (c.vehicle?.model?.name &&
-            c.vehicle.model.name.toLowerCase().includes(q)) ||
-          (c.vehicle?.brand?.name &&
-            c.vehicle.brand.name.toLowerCase().includes(q)),
-      );
-    }
-
-    return filtered.sort(
-      (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-    );
-  }, [conversations, activeTab, searchQuery]);
-
-  const handleAdminAction_StatusChange = async (newStatus: string) => {
-    if (!isAdmin || !selectedChat?.vehicle) return;
-    const vehicleId = getUniqueId(selectedChat.vehicle);
-    if (!vehicleId) {
-      setToast({
-        msg: "Error: No se encuentra ID del vehículo",
-        type: "error",
-      });
-      return;
-    }
-    setUpdatingStatus(true);
-    try {
-      await updateVehicleStatus(vehicleId, newStatus);
-      setSelectedChat((prev) =>
-        prev
-          ? { ...prev, vehicle: { ...prev.vehicle!, status: newStatus } }
-          : null,
-      );
-      setConversations((prev) =>
-        prev.map((c) => {
-          const cVehicleId = getUniqueId(c.vehicle);
-          if (
-            cVehicleId &&
-            String(cVehicleId) === String(vehicleId) &&
-            c.vehicle
-          ) {
-            return { ...c, vehicle: { ...c.vehicle, status: newStatus } };
-          }
-          return c;
-        }),
-      );
-      setToast({ msg: "Estado actualizado", type: "success" });
-    } catch (e) {
-      setToast({ msg: "Error al actualizar estado", type: "error" });
-      console.error(e);
-    } finally {
-      setUpdatingStatus(false);
-    }
-  };
-
-  const handleAdminAction_Reservation = async () => {
-    if (!isAdmin || !selectedChat?.reservation || !confirmAction) return;
-    const { status } = confirmAction;
-    const reservationId = getUniqueId(selectedChat.reservation);
-    setConfirmAction(null);
-    setUpdatingStatus(true);
-    try {
-      await updateReservationStatus(reservationId!, status);
-      setSelectedChat((prev) =>
-        prev
-          ? { ...prev, reservation: { ...prev.reservation!, status } }
-          : null,
-      );
-      setConversations((prev) =>
-        prev.map((c) =>
-          c.id === selectedChat.id && c.reservation
-            ? { ...c, reservation: { ...c.reservation, status } }
-            : c,
-        ),
-      );
-      const reply =
-        status === "CONFIRMED"
-          ? "✅ Hemos aceptado tu solicitud. El vehículo está reservado para ti."
-          : "❌ Lo siento, no hemos podido aceptar la reserva.";
-      await handleSendMessage(undefined, reply);
-      setToast({
-        msg: `Reserva ${status === "CONFIRMED" ? "aceptada" : "rechazada"}`,
-        type: "success",
-      });
-    } catch (e) {
-      setToast({
-        msg: "Error procesando reserva. Es posible que el vehiculo ya esté reservado en esta fecha.",
-        type: "error",
-      });
-      console.error(e);
-    } finally {
-      setUpdatingStatus(false);
-    }
-  };
-
-  const getImageUrl = (chat: Conversation) => {
-    if (chat.vehicle?.vehicleImages?.length) {
-      const main =
-        chat.vehicle.vehicleImages.find((img) => img.main) ||
-        chat.vehicle.vehicleImages[0];
-      return `${import.meta.env.VITE_BACKEND_URL}${main.imageUrl}`;
-    }
-    return null;
-  };
-
-  const formatDate = (d: string) =>
-    d
-      ? new Date(d).toLocaleDateString("es-ES", {
-          day: "2-digit",
-          month: "short",
-          hour: "2-digit",
-          minute: "2-digit",
-        })
-      : "";
-
-  const formatPrice = (a: number) =>
-    new Intl.NumberFormat("es-ES", {
-      style: "currency",
-      currency: "EUR",
-    }).format(a);
+  const {
+    selectedChat,
+    messages,
+    newMessage,
+    loading,
+    sending,
+    searchQuery,
+    activeTab,
+    isSidebarOpen,
+    updatingStatus,
+    confirmAction,
+    toast,
+    messagesContainerRef,
+    isAdmin,
+    isChatLocked,
+    filteredConversations,
+    unreadSales,
+    unreadRents,
+    user,
+    setNewMessage,
+    setSearchQuery,
+    setActiveTab,
+    setIsSidebarOpen,
+    setConfirmAction,
+    setToast,
+    handleSelectChat,
+    handleSendMessage,
+    handleAdminAction_StatusChange,
+    handleAdminAction_Reservation,
+    getChatImageUrl,
+  } = useChat();
 
   const getStatusColor = (s: string) => {
     switch (s) {
@@ -329,21 +65,6 @@ const Chat = () => {
       default:
         return "bg-gray-100 text-gray-700 border-gray-200";
     }
-  };
-
-  const isChatLocked = selectedChat?.vehicle?.status === "SOLD";
-
-  const unreadSales = conversations.filter(
-    (c) => !c.reservation && c.vehicle?.type !== "RENT" && hasUnreadMessages(c),
-  ).length;
-  const unreadRents = conversations.filter(
-    (c) =>
-      (c.reservation || c.vehicle?.type === "RENT") && hasUnreadMessages(c),
-  ).length;
-
-  const handleSelectChat = (chat: Conversation) => {
-    setSelectedChat(chat);
-    setIsSidebarOpen(false);
   };
 
   if (!user)
@@ -359,7 +80,7 @@ const Chat = () => {
         isAdmin
           ? "h-[calc(100vh-100px)] rounded-none sm:rounded-2xl border-0 sm:border sm:border-gray-200"
           : "h-[calc(100vh-80px)] rounded-none sm:rounded-xl border-0 sm:border-x sm:border-gray-200"
-      } ${!selectedChat || isSidebarOpen ? "bg-white" : "bg-white"}`}
+      }`}
     >
       {toast && (
         <Toast
@@ -466,7 +187,17 @@ const Chat = () => {
             </div>
           ) : (
             filteredConversations.map((chat) => {
-              const isUnread = hasUnreadMessages(chat);
+              const imageUrl = getChatImageUrl(chat);
+              const isUnread =
+                chat.messages?.length > 0 &&
+                (() => {
+                  const lastMsg = chat.messages[chat.messages.length - 1];
+                  const isSenderOther = isAdmin
+                    ? !lastMsg.isAdmin
+                    : lastMsg.isAdmin;
+                  return isSenderOther && chat.status !== "READ";
+                })();
+
               return (
                 <button
                   key={chat.id}
@@ -481,9 +212,9 @@ const Chat = () => {
                     <div className="absolute top-3 sm:top-4 right-3 sm:right-4 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-red-500 rounded-full animate-pulse z-10" />
                   )}
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-slate-200 overflow-hidden shrink-0">
-                    {getImageUrl(chat) ? (
+                    {imageUrl ? (
                       <img
-                        src={getImageUrl(chat)!}
+                        src={imageUrl}
                         className={`w-full h-full object-cover ${chat.vehicle?.status === "SOLD" ? "grayscale opacity-70" : ""}`}
                         alt="car"
                       />
@@ -499,7 +230,7 @@ const Chat = () => {
                           : `${chat.vehicle?.brand?.name} ${chat.vehicle?.model?.name}`}
                       </h4>
                       <span className="text-[9px] sm:text-[10px] text-gray-400 shrink-0">
-                        {formatDate(chat.updatedAt)}
+                        {formatDateTime(chat.updatedAt)}
                       </span>
                     </div>
                     <p className={`text-[10px] sm:text-xs truncate ${isUnread ? "font-bold text-blue-600" : "text-gray-500"}`}>
@@ -522,7 +253,7 @@ const Chat = () => {
         </div>
       </div>
 
-      {/* Área de chat — oculta en móvil cuando no hay chat o sidebar está abierto */}
+      {/* Área de chat */}
       <div className={`flex-1 flex flex-col bg-[#eef1f6] min-w-0 ${!selectedChat || isSidebarOpen ? "hidden lg:flex" : "flex"}`}>
         {selectedChat ? (
           <>
@@ -575,7 +306,9 @@ const Chat = () => {
                     <div className="relative">
                       <select
                         value={selectedChat.vehicle.status}
-                        onChange={(e) => handleAdminAction_StatusChange(e.target.value)}
+                        onChange={(e) =>
+                          handleAdminAction_StatusChange(e.target.value)
+                        }
                         disabled={updatingStatus}
                         className={`cursor-pointer pl-1.5 sm:pl-2 pr-4 sm:pr-6 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs font-bold border outline-none ${getStatusColor(selectedChat.vehicle.status)} shadow-sm hover:shadow-md ${updatingStatus ? "bg-gray-200" : ""}`}
                       >
@@ -586,20 +319,24 @@ const Chat = () => {
                     </div>
                   )
                 ) : (
-                  <div className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold border flex items-center gap-1 sm:gap-1.5 ${
-                    selectedChat.vehicle?.status === "SOLD"
-                      ? "bg-red-50 text-red-600 border-red-200"
-                      : selectedChat.vehicle?.status === "RESERVED"
-                        ? "bg-yellow-50 text-yellow-700 border-yellow-200"
-                        : "bg-green-50 text-green-700 border-green-200"
-                  }`}>
+                  <div
+                    className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold border flex items-center gap-1 sm:gap-1.5 ${
+                      selectedChat.vehicle?.status === "SOLD"
+                        ? "bg-red-50 text-red-600 border-red-200"
+                        : selectedChat.vehicle?.status === "RESERVED"
+                          ? "bg-yellow-50 text-yellow-700 border-yellow-200"
+                          : "bg-green-50 text-green-700 border-green-200"
+                    }`}
+                  >
                     {selectedChat.vehicle?.status === "SOLD" ? (
                       <Lock size={10} className="sm:w-3 sm:h-3" />
                     ) : (
                       <Tag size={10} className="sm:w-3 sm:h-3" />
                     )}
                     <span className="hidden sm:inline">
-                      {selectedChat.vehicle?.status === "AVAILABLE" ? "DISPONIBLE" : selectedChat.vehicle?.status}
+                      {selectedChat.vehicle?.status === "AVAILABLE"
+                        ? "DISPONIBLE"
+                        : selectedChat.vehicle?.status}
                     </span>
                   </div>
                 )}
@@ -607,44 +344,48 @@ const Chat = () => {
             </div>
 
             {/* Banner reserva pendiente */}
-            {selectedChat.reservation && selectedChat.reservation.status === "PENDING" && (
-              <div className="mx-3 sm:mx-6 mt-3 sm:mt-6 p-3 sm:p-4 bg-white border border-orange-200 rounded-xl flex flex-col gap-3 sm:gap-0 sm:flex-row justify-between items-start sm:items-center shadow-sm relative overflow-hidden">
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-orange-400" />
-                <div className="w-full sm:w-auto">
-                  <h4 className="font-bold text-slate-800 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
-                    <CalendarClock size={14} className="text-orange-500" />
-                    Solicitud de Reserva
-                  </h4>
-                  <p className="text-[10px] sm:text-xs text-slate-500 mt-1 ml-0 sm:ml-6">
-                    {formatDate(selectedChat.reservation.startDate)} -{" "}
-                    {formatDate(selectedChat.reservation.endDate)}
-                    <span className="block font-bold text-slate-700 mt-1">
-                      Total: {formatPrice(selectedChat.reservation.totalPrice)}
-                    </span>
-                  </p>
+            {selectedChat.reservation &&
+              selectedChat.reservation.status === "PENDING" && (
+                <div className="mx-3 sm:mx-6 mt-3 sm:mt-6 p-3 sm:p-4 bg-white border border-orange-200 rounded-xl flex flex-col gap-3 sm:gap-0 sm:flex-row justify-between items-start sm:items-center shadow-sm relative overflow-hidden">
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-orange-400" />
+                  <div className="w-full sm:w-auto">
+                    <h4 className="font-bold text-slate-800 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
+                      <CalendarClock size={14} className="text-orange-500" />
+                      Solicitud de Reserva
+                    </h4>
+                    <p className="text-[10px] sm:text-xs text-slate-500 mt-1 ml-0 sm:ml-6">
+                      {formatDateTime(selectedChat.reservation.startDate)} -{" "}
+                      {formatDateTime(selectedChat.reservation.endDate)}
+                      <span className="block font-bold text-slate-700 mt-1">
+                        Total:{" "}
+                        {formatCurrency(selectedChat.reservation.totalPrice)}
+                      </span>
+                    </p>
+                  </div>
+                  {isAdmin ? (
+                    <div className="flex gap-2 w-full sm:w-auto">
+                      <button
+                        onClick={() => setConfirmAction({ status: "REJECTED" })}
+                        className="flex-1 sm:flex-none px-2.5 sm:px-3 py-1 sm:py-1.5 bg-white text-red-600 border border-red-200 hover:bg-red-50 rounded-lg text-[10px] sm:text-xs font-bold flex items-center justify-center gap-1"
+                      >
+                        <XCircle size={12} className="sm:w-3.5 sm:h-3.5" />{" "}
+                        Rechazar
+                      </button>
+                      <button
+                        onClick={() => setConfirmAction({ status: "CONFIRMED" })}
+                        className="flex-1 sm:flex-none px-2.5 sm:px-3 py-1 sm:py-1.5 bg-slate-900 text-white hover:bg-slate-800 rounded-lg text-[10px] sm:text-xs font-bold flex items-center justify-center gap-1 shadow-md"
+                      >
+                        <CheckCircle2 size={12} className="sm:w-3.5 sm:h-3.5" />{" "}
+                        Aceptar
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-full sm:w-auto text-center sm:text-left px-2 sm:px-3 py-1 bg-orange-100 text-orange-700 text-[10px] sm:text-xs font-bold rounded-lg animate-pulse">
+                      Pendiente de confirmación
+                    </div>
+                  )}
                 </div>
-                {isAdmin ? (
-                  <div className="flex gap-2 w-full sm:w-auto">
-                    <button
-                      onClick={() => setConfirmAction({ status: "REJECTED" })}
-                      className="flex-1 sm:flex-none px-2.5 sm:px-3 py-1 sm:py-1.5 bg-white text-red-600 border border-red-200 hover:bg-red-50 rounded-lg text-[10px] sm:text-xs font-bold flex items-center justify-center gap-1"
-                    >
-                      <XCircle size={12} className="sm:w-3.5 sm:h-3.5" /> Rechazar
-                    </button>
-                    <button
-                      onClick={() => setConfirmAction({ status: "CONFIRMED" })}
-                      className="flex-1 sm:flex-none px-2.5 sm:px-3 py-1 sm:py-1.5 bg-slate-900 text-white hover:bg-slate-800 rounded-lg text-[10px] sm:text-xs font-bold flex items-center justify-center gap-1 shadow-md"
-                    >
-                      <CheckCircle2 size={12} className="sm:w-3.5 sm:h-3.5" /> Aceptar
-                    </button>
-                  </div>
-                ) : (
-                  <div className="w-full sm:w-auto text-center sm:text-left px-2 sm:px-3 py-1 bg-orange-100 text-orange-700 text-[10px] sm:text-xs font-bold rounded-lg animate-pulse">
-                    Pendiente de confirmación
-                  </div>
-                )}
-              </div>
-            )}
+              )}
 
             {/* Mensajes */}
             <div
@@ -654,11 +395,20 @@ const Chat = () => {
               {messages.map((msg) => {
                 const isMe = isAdmin ? msg.isAdmin : !msg.isAdmin;
                 return (
-                  <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[85%] sm:max-w-[75%] rounded-2xl p-3 sm:p-4 shadow-sm text-xs sm:text-sm relative ${isMe ? "bg-blue-600 text-white rounded-tr-none" : "bg-white text-slate-800 rounded-tl-none border border-gray-200"}`}>
-                      <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
-                      <div className={`text-[9px] sm:text-[10px] mt-1.5 sm:mt-2 flex items-center justify-end gap-1 ${isMe ? "text-blue-100" : "text-gray-400"}`}>
-                        {formatDate(msg.createdAt)}
+                  <div
+                    key={msg.id}
+                    className={`flex ${isMe ? "justify-end" : "justify-start"}`}
+                  >
+                    <div
+                      className={`max-w-[85%] sm:max-w-[75%] rounded-2xl p-3 sm:p-4 shadow-sm text-xs sm:text-sm relative ${isMe ? "bg-blue-600 text-white rounded-tr-none" : "bg-white text-slate-800 rounded-tl-none border border-gray-200"}`}
+                    >
+                      <p className="whitespace-pre-wrap leading-relaxed">
+                        {msg.content}
+                      </p>
+                      <div
+                        className={`text-[9px] sm:text-[10px] mt-1.5 sm:mt-2 flex items-center justify-end gap-1 ${isMe ? "text-blue-100" : "text-gray-400"}`}
+                      >
+                        {formatDateTime(msg.createdAt)}
                         {isMe && <CheckCheck size={10} className="sm:w-3 sm:h-3" />}
                       </div>
                     </div>
@@ -706,7 +456,9 @@ const Chat = () => {
             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-full flex items-center justify-center mb-3 sm:mb-4 shadow-sm border border-gray-100">
               <MessageSquare size={32} className="sm:w-10 sm:h-10 text-blue-200" />
             </div>
-            <p className="text-xs sm:text-base text-center">Selecciona una conversación</p>
+            <p className="text-xs sm:text-base text-center">
+              Selecciona una conversación
+            </p>
           </div>
         )}
       </div>

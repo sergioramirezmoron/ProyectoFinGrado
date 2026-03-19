@@ -36,18 +36,6 @@ export const updateVehicleStatus = (
     },
   );
 
-export const updateReservationStatus = (
-  reservationId: string | number,
-  status: string,
-) =>
-  api.patch(
-    `/reservations/${reservationId}`,
-    { status },
-    {
-      headers: { "Content-Type": "application/merge-patch+json" },
-    },
-  );
-
 export const createConversation = (payload: ConversationPayloadInterface) =>
   api.post("/conversations", payload);
 

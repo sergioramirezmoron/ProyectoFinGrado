@@ -23,6 +23,8 @@ import FavCard from "../../components/public/FavCard";
 import type { EditField, UserProfilePanelProps } from "../../types/auth";
 import { updateUserProfile } from "../../services/userService";
 import { getFavoriteVehicles } from "../../services/favoriteService";
+import { formatPrice } from "../../utils/formatters";
+import { getMainVehicleImage } from "../../utils/vehicleImages";
 
 const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
   const { user, logout, updateUser } = useAuth();
@@ -117,22 +119,12 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
     }
   };
 
-  const formatPrice = (v: Vehicle) => {
+  const getVehiclePrice = (v: Vehicle) => {
     const amount = v.type === "SALE" ? v.price : v.dailyPrice;
-    if (!amount) return "Consultar";
-    const formatted = new Intl.NumberFormat("es-ES", {
-      style: "currency",
-      currency: "EUR",
-      maximumFractionDigits: 0,
-    }).format(Number(amount));
-    return v.type === "RENT" ? `${formatted}/día` : formatted;
-  };
-
-  const getImageUrl = (v: Vehicle) => {
-    const main = v.vehicleImages?.find((i) => i.main) ?? v.vehicleImages?.[0];
-    if (!main) return "https://placehold.co/120x80?text=Sin+foto";
-    if (main.imageUrl.includes("http")) return main.imageUrl;
-    return `${import.meta.env.VITE_BACKEND_URL}${main.imageUrl}`;
+    const formatted = formatPrice(amount);
+    return v.type === "RENT" && formatted !== "Consultar"
+      ? `${formatted}/día`
+      : formatted;
   };
 
   const initials = (localUser.name || user?.email || "?")
@@ -388,8 +380,8 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
                         <FavCard
                           key={v.id}
                           vehicle={v}
-                          price={formatPrice(v)}
-                          image={getImageUrl(v)}
+                          price={getVehiclePrice(v)}
+                          image={getMainVehicleImage(v.vehicleImages)}
                           onClose={onClose}
                         />
                       ))}
@@ -413,8 +405,8 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
                         <FavCard
                           key={v.id}
                           vehicle={v}
-                          price={formatPrice(v)}
-                          image={getImageUrl(v)}
+                          price={getVehiclePrice(v)}
+                          image={getMainVehicleImage(v.vehicleImages)}
                           onClose={onClose}
                         />
                       ))}

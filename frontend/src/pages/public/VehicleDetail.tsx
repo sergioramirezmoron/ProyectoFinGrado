@@ -33,7 +33,9 @@ import { getVehicleDetail } from "../../services/vehicleService";
 import {
   createReservation,
   getVehicleReservations,
-} from "../../services/reservation";
+} from "../../services/reservationService";
+import { formatPrice } from "../../utils/formatters";
+import { buildImageUrl } from "../../utils/vehicleImages";
 
 registerLocale("es", es);
 
@@ -64,7 +66,7 @@ const VehicleDetail = () => {
           const main =
             response.data.vehicleImages.find((img) => img.main) ||
             response.data.vehicleImages[0];
-          setActiveImage(`${import.meta.env.VITE_BACKEND_URL}${main.imageUrl}`);
+          setActiveImage(buildImageUrl(main.imageUrl));
         }
 
         if (response.data.type === "RENT") {
@@ -160,15 +162,6 @@ const VehicleDetail = () => {
     }
   };
 
-  const formatPrice = (amount: number | string | undefined | null) => {
-    if (!amount) return "Consultar";
-    return new Intl.NumberFormat("es-ES", {
-      style: "currency",
-      currency: "EUR",
-      maximumFractionDigits: 0,
-    }).format(Number(amount));
-  };
-
   const isDateBlocked = (date: Date) => {
     const dateString = format(date, "yyyy-MM-dd");
     return blockedDatesStrings.includes(dateString);
@@ -225,13 +218,13 @@ const VehicleDetail = () => {
                       key={img.id}
                       onClick={() =>
                         setActiveImage(
-                          `${import.meta.env.VITE_BACKEND_URL}${img.imageUrl}`,
+                          buildImageUrl(img.imageUrl),
                         )
                       }
                       className={`shrink-0 w-24 h-24 rounded-xl overflow-hidden border-2 transition-all ${activeImage.includes(img.imageUrl) ? "border-blue-600 ring-2 ring-blue-100" : "border-transparent opacity-70 hover:opacity-100"}`}
                     >
                       <img
-                        src={`${import.meta.env.VITE_BACKEND_URL}${img.imageUrl}`}
+                        src={buildImageUrl(img.imageUrl)}
                         className="w-full h-full object-cover"
                         alt="thumbnail"
                       />
