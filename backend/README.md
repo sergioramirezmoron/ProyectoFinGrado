@@ -266,7 +266,7 @@ El token expira en **24 horas** por defecto (configurable en `config/packages/le
 | ------------ | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
 | `ROLE_USER`  | Usuario registrado (asignado automáticamente al registrarse) | Crear y cancelar sus propias reservas, enviar mensajes, gestionar favoritos, actualizar su perfil                              |
 | `ROLE_SALES` | Responsable de ventas                                        | Todo lo de `ROLE_USER` + crear/editar vehículos, ver todas las conversaciones y reservas, acceder al dashboard de estadísticas |
-| `ROLE_ADMIN` | Administrador total                                          | Acceso completo: usuarios, vehículos, reservas, conversaciones, catálogos, dashboard y tablas de referencia                   |
+| `ROLE_ADMIN` | Administrador total                                          | Acceso completo: usuarios, vehículos, reservas, conversaciones, catálogos, dashboard y tablas de referencia                    |
 
 > En el `AuthContext` del frontend, `isAdmin` es `true` tanto para `ROLE_ADMIN` como para `ROLE_SALES`, lo que les da acceso al panel de administración (incluyendo el dashboard de estadísticas).
 
@@ -343,10 +343,30 @@ Genera un token JWT a partir de email y contraseña.
 
 ```json
 {
-    "email": "admin@example.com",
-    "password": "admin123"
+    "email": "admin@concesionario.com",
+    "password": "admin"
 }
 ```
+
+> Admin
+
+```json
+{
+    "email": "ventas1@concesionario.com",
+    "password": "123456"
+}
+```
+
+> Responsable de ventas
+
+```json
+{
+    "email": "salma.ruelas@ybarra.es",
+    "password": "123456"
+}
+```
+
+> Usuario normal
 
 **Response 200 OK:**
 
@@ -1573,7 +1593,7 @@ El firewall de login está protegido con `login_throttling`. Por defecto se perm
 ```yaml
 login_throttling:
     max_attempts: 5
-    interval: '1 minute'
+    interval: "1 minute"
 ```
 
 Requiere el paquete `symfony/rate-limiter`.
@@ -1586,11 +1606,11 @@ El endpoint `POST /api/messages` exige `IS_AUTHENTICATED_FULLY` (no `PUBLIC_ACCE
 
 La entidad `Vehicle` incluye índices compuestos y simples para acelerar las consultas más frecuentes del catálogo:
 
-| Índice | Columnas | Uso principal |
-|---|---|---|
-| `idx_vehicle_status` | `status` | Filtro por estado (AVAILABLE, SOLD…) |
-| `idx_vehicle_type` | `type` | Filtro por tipo (SALE / RENT) |
-| `idx_vehicle_created_at` | `created_at` | Ordenación por fecha de alta |
+| Índice                    | Columnas       | Uso principal                                  |
+| ------------------------- | -------------- | ---------------------------------------------- |
+| `idx_vehicle_status`      | `status`       | Filtro por estado (AVAILABLE, SOLD…)           |
+| `idx_vehicle_type`        | `type`         | Filtro por tipo (SALE / RENT)                  |
+| `idx_vehicle_created_at`  | `created_at`   | Ordenación por fecha de alta                   |
 | `idx_vehicle_status_type` | `status, type` | Filtro combinado (el más usado en el catálogo) |
 
 Aplicar con: `php bin/console doctrine:migrations:migrate`
@@ -1606,12 +1626,12 @@ El endpoint de estadísticas ha sido optimizado de ~13 consultas a 5:
 
 La entidad `Vehicle` tenía un bug donde dos atributos `#[ApiFilter(SearchFilter::class)]` convivían y el segundo sobreescribía al primero, dejando inoperativos los filtros `type`, `status`, `brand`, `model`, `province`, etc. Ahora se consolidan en un único atributo con todas las propiedades. Los filtros disponibles son:
 
-| Tipo | Propiedades |
-|---|---|
-| Exacto (`SearchFilter`) | `brand`, `model`, `province`, `fuelType`, `transmission`, `enviromentalBadge`, `bodyType`, `color`, `status`, `type` |
-| Parcial (`SearchFilter`) | `brand.name`, `model.name` |
-| Rango (`RangeFilter`) | `price`, `dailyPrice`, `kilometres`, `year`, `power` |
-| Ordenación (`OrderFilter`) | `price`, `dailyPrice`, `year`, `kilometres`, `createdAt` |
+| Tipo                       | Propiedades                                                                                                          |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Exacto (`SearchFilter`)    | `brand`, `model`, `province`, `fuelType`, `transmission`, `enviromentalBadge`, `bodyType`, `color`, `status`, `type` |
+| Parcial (`SearchFilter`)   | `brand.name`, `model.name`                                                                                           |
+| Rango (`RangeFilter`)      | `price`, `dailyPrice`, `kilometres`, `year`, `power`                                                                 |
+| Ordenación (`OrderFilter`) | `price`, `dailyPrice`, `year`, `kilometres`, `createdAt`                                                             |
 
 ---
 
@@ -1633,15 +1653,15 @@ php bin/phpunit
 
 ### Archivos de test
 
-| Archivo | Tests | Qué cubre |
-|---|---|---|
-| `tests/AuthTest.php` | 11 | Login correcto/incorrecto, estructura del JWT (3 partes, payload con `username`, `roles`, `id`), acceso con token inválido, endpoints protegidos |
-| `tests/RoleAccessTest.php` | 12 | RBAC completo: acceso anónimo, ROLE_USER, ROLE_SALES y ROLE_ADMIN; estructura y coherencia del endpoint `/api/stats` |
-| `tests/ReservationTest.php` | 7 | Validaciones de fechas (pasado, fin < inicio, mismo día), bloqueo por reserva CONFIRMED, cancelación, liberación de fechas al cancelar, creación automática de conversación |
-| `tests/FiltersTest.php` | 9 | Filtros `type=SALE/RENT`, `status=AVAILABLE`, ocultación de DELETED, paginación máx. 20, `totalItems`, ordenación por precio ASC/DESC, filtros combinados |
-| `tests/SecurityAndValidationTest.php` | 3 | Vendedor no puede borrar, precio negativo devuelve 422, recurso inexistente devuelve 404 |
-| `tests/SimpleFlowTest.php` | 1 | Flujo completo: login → buscar alquiler → crear reserva CONFIRMED → bloqueo por solapamiento |
-| `tests/RegistrationTest.php` | 3 | Registro de usuario, duplicado devuelve 422, email inválido devuelve 422 |
+| Archivo                               | Tests | Qué cubre                                                                                                                                                                   |
+| ------------------------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tests/AuthTest.php`                  | 11    | Login correcto/incorrecto, estructura del JWT (3 partes, payload con `username`, `roles`, `id`), acceso con token inválido, endpoints protegidos                            |
+| `tests/RoleAccessTest.php`            | 12    | RBAC completo: acceso anónimo, ROLE_USER, ROLE_SALES y ROLE_ADMIN; estructura y coherencia del endpoint `/api/stats`                                                        |
+| `tests/ReservationTest.php`           | 7     | Validaciones de fechas (pasado, fin < inicio, mismo día), bloqueo por reserva CONFIRMED, cancelación, liberación de fechas al cancelar, creación automática de conversación |
+| `tests/FiltersTest.php`               | 9     | Filtros `type=SALE/RENT`, `status=AVAILABLE`, ocultación de DELETED, paginación máx. 20, `totalItems`, ordenación por precio ASC/DESC, filtros combinados                   |
+| `tests/SecurityAndValidationTest.php` | 3     | Vendedor no puede borrar, precio negativo devuelve 422, recurso inexistente devuelve 404                                                                                    |
+| `tests/SimpleFlowTest.php`            | 1     | Flujo completo: login → buscar alquiler → crear reserva CONFIRMED → bloqueo por solapamiento                                                                                |
+| `tests/RegistrationTest.php`          | 3     | Registro de usuario, duplicado devuelve 422, email inválido devuelve 422                                                                                                    |
 
 ### Configuración de entorno de test (`.env.test`)
 

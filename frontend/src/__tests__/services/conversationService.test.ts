@@ -150,8 +150,8 @@ describe("createConversation", () => {
     const payload: ConversationPayloadInterface = {
       contactName: "Juan",
       contactEmail: "juan@example.com",
+      contactPhone: "600000000",
       vehicle: "/api/vehicles/1",
-      status: "NEW",
     };
     vi.mocked(api.post).mockResolvedValueOnce({ data: { id: 12 } });
 

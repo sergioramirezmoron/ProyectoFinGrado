@@ -1,12 +1,13 @@
 #!/bin/bash
 set -e
 
-echo "⚙️  Configurando variables de entorno locales..."
-cat > /var/www/html/.env.local << 'ENVEOF'
-DATABASE_URL=mysql://pfg_user:pfg_password@db:3306/pfg?serverVersion=8.0&charset=utf8mb4
-JWT_PASSPHRASE=mi_secreto_tfg
-APP_SECRET=cambia_esto_por_un_secreto_seguro
-APP_ENV=prod
+echo "⚙️  Configurando variables de entorno..."
+cat > /var/www/html/.env.local << ENVEOF
+DATABASE_URL=${DATABASE_URL}
+JWT_PASSPHRASE=${JWT_PASSPHRASE}
+APP_SECRET=${APP_SECRET}
+APP_ENV=${APP_ENV:-prod}
+CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN:-'^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$'}
 ENVEOF
 
 echo "⏳ Esperando a que MySQL esté listo..."

@@ -229,7 +229,7 @@ export const useChat = () => {
     setConfirmAction(null);
     setUpdatingStatus(true);
     try {
-      await updateReservationStatus(reservationId!, status);
+      await updateReservationStatus(Number(reservationId!), status);
       setSelectedChat((prev) =>
         prev
           ? { ...prev, reservation: { ...prev.reservation!, status } }

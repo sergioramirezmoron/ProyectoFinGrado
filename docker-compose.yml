@@ -37,6 +37,14 @@ services:
       JWT_PASSPHRASE: mi_secreto_tfg
     ports:
       - "8000:80"
+    volumes:
+      - ./backend/public/images:/var/www/html/public/images
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/api"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     depends_on:
       db:
         condition: service_healthy
@@ -54,7 +62,8 @@ services:
     ports:
       - "3000:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
 
   # ─── Backup automático ─────────────────────────────────────────────────────
   backup:
