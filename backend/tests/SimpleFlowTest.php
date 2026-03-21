@@ -47,19 +47,22 @@ class SimpleFlowTest extends ApiTestCase
         $userKey = isset($userData['hydra:member']) ? 'hydra:member' : 'member';
         $userIri = $userData[$userKey][0]['@id'];
 
-        // 4. CREAR PRIMERA RESERVA (OK) - Año 2030
-        $client->request('POST', '/api/reservations', [
+        // 4. CREAR PRIMERA RESERVA CONFIRMADA (OK) - Año 2030
+        $firstReservationResponse = $client->request('POST', '/api/reservations', [
             'auth_bearer' => $token,
             'json' => [
                 'startDate' => '2030-01-01',
                 'endDate' => '2030-01-10',
                 'vehicle' => $rentVehicleIri,
-                'user' => $userIri
+                'user' => $userIri,
+                'status' => 'CONFIRMED',
             ]
         ]);
         $this->assertResponseStatusCodeSame(201);
+        $firstReservationIri = $firstReservationResponse->toArray()['@id'];
 
-        // 5. INTENTAR RESERVAR ENCIMA (FAIL)
+        // 5. INTENTAR RESERVAR ENCIMA DE UNA RESERVA CONFIRMADA (FAIL)
+        // Las reservas CONFIRMED bloquean las fechas; debe devolver 422
         $client->request('POST', '/api/reservations', [
             'auth_bearer' => $token,
             'json' => [
@@ -69,7 +72,7 @@ class SimpleFlowTest extends ApiTestCase
                 'user' => $userIri
             ]
         ]);
-        
+
         $this->assertResponseStatusCodeSame(422);
     }
 }

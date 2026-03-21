@@ -29,9 +29,13 @@ use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: VehicleRepository::class)]
+#[ORM\Index(columns: ['status'], name: 'idx_vehicle_status')]
+#[ORM\Index(columns: ['type'], name: 'idx_vehicle_type')]
+#[ORM\Index(columns: ['created_at'], name: 'idx_vehicle_created_at')]
+#[ORM\Index(columns: ['status', 'type'], name: 'idx_vehicle_status_type')]
 #[ApiFilter(SearchFilter::class, properties: [
-    'brand' => 'exact', 
-    'model' => 'exact', 
+    'brand' => 'exact',
+    'model' => 'exact',
     'province' => 'exact',
     'fuelType' => 'exact',
     'transmission' => 'exact',
@@ -39,7 +43,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
     'bodyType' => 'exact',
     'color' => 'exact',
     'status' => 'exact',
-    'type' => 'exact'
+    'type' => 'exact',
+    'brand.name' => 'partial',
+    'model.name' => 'partial',
 ])]
 #[ApiFilter(RangeFilter::class, properties: ['price', 'dailyPrice', 'kilometres', 'year', 'power'])]
 #[ApiFilter(OrderFilter::class, properties: ['price', 'dailyPrice', 'year', 'kilometres', 'createdAt'], arguments: ['orderParameterName' => 'order'])]
@@ -57,7 +63,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
     paginationItemsPerPage: 20,
     order: ['createdAt' => 'DESC']
 )]
-#[ApiFilter(SearchFilter::class, properties: ['brand.name' => 'partial', 'model.name' => 'partial'])]
 class Vehicle
 {
     #[ORM\Id]

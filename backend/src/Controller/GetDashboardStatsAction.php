@@ -22,16 +22,14 @@ class GetDashboardStatsAction extends AbstractController
         BrandRepository $brandRepo
     ): JsonResponse {
 
-        $latestMessages = $messageRepo->findBy(
-            ['isAdmin' => false],
-            ['createdAt' => 'DESC'],
-            5
-        );
+        // Una sola query con GROUP BY en lugar de 4 COUNT separados
+        $vehicleCounts = $vehicleRepo->countByStatus();
+
+        // JOIN FETCH para evitar N+1 al acceder a getConversation()
+        $latestMessages = $messageRepo->findRecentClientMessages(5);
 
         $activities = [];
-
         foreach ($latestMessages as $msg) {
-
             $content = $msg->getContent();
             if (strlen($content) > 40) {
                 $content = substr($content, 0, 40) . '...';
@@ -44,13 +42,12 @@ class GetDashboardStatsAction extends AbstractController
             ];
         }
 
-        // 2. DEVOLVER RESPUESTA COMPLETA
         return new JsonResponse([
             'totalUsers' => $userRepo->count([]),
-            'totalVehicles' => $vehicleRepo->count([]),
-            'vehiclesAvailable' => $vehicleRepo->count(['status' => 'AVAILABLE']),
-            'vehiclesSold' => $vehicleRepo->count(['status' => 'SOLD']),
-            'vehiclesReserved' => $vehicleRepo->count(['status' => 'RESERVED']),
+            'totalVehicles' => $vehicleCounts['total'],
+            'vehiclesAvailable' => $vehicleCounts['AVAILABLE'] ?? 0,
+            'vehiclesSold' => $vehicleCounts['SOLD'] ?? 0,
+            'vehiclesReserved' => $vehicleCounts['RESERVED'] ?? 0,
             'totalMessages' => $messageRepo->count([]),
             'totalBrands' => $brandRepo->count([]),
             'recentActivity' => $activities,

@@ -14,7 +14,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
     operations: [
         // Enviar mensaje (Puede ser el Admin respondiendo o el Cliente escribiendo más)
         new Post(
-            security: "is_granted('PUBLIC_ACCESS')",
+            security: "is_granted('IS_AUTHENTICATED_FULLY')",
             denormalizationContext: ['groups' => ['message:write']]
         )
     ]

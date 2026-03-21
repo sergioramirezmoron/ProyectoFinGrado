@@ -27,6 +27,9 @@ security:
                 password_path: password
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
+            login_throttling:
+                max_attempts: 5       # máximo 5 intentos fallidos
+                interval: '1 minute'  # por ventana de 1 minuto por IP+usuario
 
         # 2. FIREWALL DE LA API (Valida el Token) 🛡️
         # Protege todas las demás rutas de /api

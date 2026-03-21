@@ -74,11 +74,9 @@ const Header = () => {
                   {isAdmin ? "Admin" : "Staff"}
                 </span>
 
-                {isAdmin && (
-                  <NavLink to="/admin" end className={adminLinkClass("blue")} title="Dashboard">
-                    <LayoutDashboard size={17} />
-                  </NavLink>
-                )}
+                <NavLink to="/admin" end className={adminLinkClass("blue")} title="Dashboard">
+                  <LayoutDashboard size={17} />
+                </NavLink>
 
                 <NavLink to="/admin/coches" className={adminLinkClass("blue")} title="Flota">
                   <Car size={17} />
@@ -243,11 +241,9 @@ const Header = () => {
                   {isAdmin ? "Panel Admin" : "Panel Staff"}
                 </span>
                 <div className="grid grid-cols-1 gap-1">
-                  {isAdmin && (
-                    <Link to="/admin" onClick={closeMobileMenu} className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors text-sm">
-                      <LayoutDashboard size={18} className="text-blue-400" /> Dashboard
-                    </Link>
-                  )}
+                  <Link to="/admin" onClick={closeMobileMenu} className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors text-sm">
+                    <LayoutDashboard size={18} className="text-blue-400" /> Dashboard
+                  </Link>
                   <Link to="/admin/coches" onClick={closeMobileMenu} className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors text-sm">
                     <Car size={18} className="text-blue-400" /> Flota
                   </Link>

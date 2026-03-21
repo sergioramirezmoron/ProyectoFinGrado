@@ -6,7 +6,6 @@ use App\Entity\Brand;
 use App\Entity\Model;
 use App\Entity\Vehicle;
 use App\Entity\User;
-use App\Entity\Message;
 use App\Entity\Reservation;
 use App\Entity\Fuel;
 use App\Entity\Transmission;
@@ -186,17 +185,7 @@ class AppFixtures extends Fixture
             }
         }
 
-        // 6. MENSAJES
-        for ($i = 0; $i < 20; $i++) {
-            $message = new Message();
-            $message->setContent($faker->sentence(10));
-            $message->setSender($faker->randomElement($users));
-            $message->setReceiver(null); 
-            $message->setVehicle($faker->randomElement($vehicles));
-            $manager->persist($message);
-        }
-
-        // 7. RESERVAS DE PRUEBA
+        // 6. RESERVAS DE PRUEBA
         foreach ($rentalVehicles as $key => $rentCar) {
             if ($key % 3 === 0) {
                 $reservation = new Reservation();

@@ -71,7 +71,7 @@ class SecurityAndValidationTest extends ApiTestCase
                 'brand' => $brandIri,
                 'model' => $modelIri,
                 'year' => 2025,
-                'price' => -5000,     // <--- EL ERROR QUE QUEREMOS PROBAR
+                'price' => '-5000',   // <--- EL ERROR QUE QUEREMOS PROBAR (string, como espera la entidad)
                 'kilometres' => 0,
                 'status' => 'AVAILABLE',
                 'province' => '/api/provinces/1',

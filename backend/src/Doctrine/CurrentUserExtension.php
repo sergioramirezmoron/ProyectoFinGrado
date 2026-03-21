@@ -47,9 +47,10 @@ final class CurrentUserExtension implements QueryCollectionExtensionInterface, Q
             return; 
         }
 
-        // 4. SI ERES UN CLIENTE NORMAL -> Solo ves lo tuyo
+        // 4. SI ERES UN CLIENTE NORMAL -> Solo ves mensajes de tus conversaciones
         $rootAlias = $queryBuilder->getRootAliases()[0];
-        $queryBuilder->andWhere(sprintf('%s.sender = :current_user OR %s.receiver = :current_user', $rootAlias, $rootAlias));
-        $queryBuilder->setParameter('current_user', $user);
+        $queryBuilder->innerJoin(sprintf('%s.conversation', $rootAlias), 'msg_conv')
+            ->andWhere('msg_conv.user = :current_user')
+            ->setParameter('current_user', $user);
     }
 }

@@ -16,28 +16,24 @@ class VehicleRepository extends ServiceEntityRepository
         parent::__construct($registry, Vehicle::class);
     }
 
-    //    /**
-    //     * @return Vehicle[] Returns an array of Vehicle objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('v')
-    //            ->andWhere('v.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('v.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * Devuelve el total de vehículos y los conteos por status en una sola query (evita múltiples COUNT separados).
+     * Retorna: ['total' => int, 'AVAILABLE' => int, 'SOLD' => int, 'RESERVED' => int, ...]
+     */
+    public function countByStatus(): array
+    {
+        $rows = $this->createQueryBuilder('v')
+            ->select('v.status, COUNT(v.id) AS cnt')
+            ->groupBy('v.status')
+            ->getQuery()
+            ->getResult();
 
-    //    public function findOneBySomeField($value): ?Vehicle
-    //    {
-    //        return $this->createQueryBuilder('v')
-    //            ->andWhere('v.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        $counts = ['total' => 0];
+        foreach ($rows as $row) {
+            $counts[$row['status']] = (int) $row['cnt'];
+            $counts['total'] += (int) $row['cnt'];
+        }
+
+        return $counts;
+    }
 }
