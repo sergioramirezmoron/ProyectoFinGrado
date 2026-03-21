@@ -158,9 +158,10 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
         <div className="relative bg-slate-950 px-6 pt-10 pb-8 shrink-0">
           <button
             onClick={onClose}
+            aria-label="Cerrar panel de perfil"
             className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-all cursor-pointer"
           >
-            <X size={20} />
+            <X size={20} aria-hidden="true" />
           </button>
 
           <div className="flex items-center gap-4">
@@ -186,7 +187,7 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
 
         <div className="flex-1 overflow-y-auto">
           <div className="px-6 py-5 border-b border-slate-100">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">
               Mis datos
             </h3>
 
@@ -194,7 +195,7 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
               <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
                 <Mail size={16} className="text-slate-400 shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] text-slate-400 font-semibold uppercase">
+                  <p className="text-[10px] text-slate-500 font-semibold uppercase">
                     Email
                   </p>
                   <p className="text-sm font-medium text-slate-700 truncate">
@@ -217,38 +218,41 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
                     <button
                       onClick={saveEdit}
                       disabled={isSaving}
+                      aria-label="Guardar nombre"
                       className="p-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 cursor-pointer"
                     >
                       {isSaving ? (
-                        <Loader2 size={14} className="animate-spin" />
+                        <Loader2 size={14} className="animate-spin" aria-hidden="true" />
                       ) : (
-                        <Check size={14} />
+                        <Check size={14} aria-hidden="true" />
                       )}
                     </button>
                     <button
                       onClick={cancelEdit}
+                      aria-label="Cancelar edición"
                       className="p-1.5 bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300 transition-all cursor-pointer"
                     >
-                      <X size={14} />
+                      <X size={14} aria-hidden="true" />
                     </button>
                   </div>
                 ) : (
                   <div className="flex-1 flex items-center justify-between min-w-0">
                     <div className="min-w-0">
-                      <p className="text-[10px] text-slate-400 font-semibold uppercase">
+                      <p className="text-[10px] text-slate-500 font-semibold uppercase">
                         Nombre
                       </p>
                       <p className="text-sm font-medium text-slate-700 truncate">
                         {localUser.name || (
-                          <span className="text-slate-400 italic">Sin nombre</span>
+                          <span className="text-slate-500 italic">Sin nombre</span>
                         )}
                       </p>
                     </div>
                     <button
                       onClick={() => startEdit("name")}
-                      className="p-1.5 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all cursor-pointer shrink-0"
+                      aria-label="Editar nombre"
+                      className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all cursor-pointer shrink-0"
                     >
-                      <Pencil size={14} />
+                      <Pencil size={14} aria-hidden="true" />
                     </button>
                   </div>
                 )}
@@ -275,38 +279,41 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
                     <button
                       onClick={saveEdit}
                       disabled={isSaving}
+                      aria-label="Guardar teléfono"
                       className="p-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 cursor-pointer"
                     >
                       {isSaving ? (
-                        <Loader2 size={14} className="animate-spin" />
+                        <Loader2 size={14} className="animate-spin" aria-hidden="true" />
                       ) : (
-                        <Check size={14} />
+                        <Check size={14} aria-hidden="true" />
                       )}
                     </button>
                     <button
                       onClick={cancelEdit}
+                      aria-label="Cancelar edición"
                       className="p-1.5 bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300 transition-all cursor-pointer"
                     >
-                      <X size={14} />
+                      <X size={14} aria-hidden="true" />
                     </button>
                   </div>
                 ) : (
                   <div className="flex-1 flex items-center justify-between min-w-0">
                     <div className="min-w-0">
-                      <p className="text-[10px] text-slate-400 font-semibold uppercase">
+                      <p className="text-[10px] text-slate-500 font-semibold uppercase">
                         Teléfono
                       </p>
                       <p className="text-sm font-medium text-slate-700 truncate">
                         {localUser.phone || (
-                          <span className="text-slate-400 italic">Sin teléfono</span>
+                          <span className="text-slate-500 italic">Sin teléfono</span>
                         )}
                       </p>
                     </div>
                     <button
                       onClick={() => startEdit("phone")}
-                      className="p-1.5 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all cursor-pointer shrink-0"
+                      aria-label="Editar teléfono"
+                      className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all cursor-pointer shrink-0"
                     >
-                      <Pencil size={14} />
+                      <Pencil size={14} aria-hidden="true" />
                     </button>
                   </div>
                 )}
@@ -331,7 +338,7 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
               >
                 <CalendarDays size={16} className="text-slate-400 group-hover:text-blue-500 shrink-0" />
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-wide text-slate-400 group-hover:text-blue-500">
+                  <p className="text-xs font-bold uppercase tracking-wide text-slate-500 group-hover:text-blue-500">
                     Mis reservas
                   </p>
                   <p className="text-sm font-medium text-slate-700 group-hover:text-blue-600">
@@ -345,10 +352,10 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
           <div className="px-6 py-5">
             <div className="flex items-center gap-2 mb-4">
               <Heart size={14} className="text-red-500 fill-red-500" />
-              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500">
                 Mis favoritos
               </h3>
-              <span className="ml-auto text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+              <span className="ml-auto text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
                 {favorites.length}
               </span>
             </div>
@@ -360,7 +367,7 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
             ) : favorites.length === 0 ? (
               <div className="text-center py-8">
                 <Heart size={32} className="mx-auto text-slate-200 mb-2" />
-                <p className="text-sm text-slate-400">No tienes favoritos todavía</p>
+                <p className="text-sm text-slate-500">No tienes favoritos todavía</p>
               </div>
             ) : (
               <div className="space-y-6">
@@ -421,7 +428,7 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
         <div className="px-6 py-4 border-t border-slate-100 shrink-0">
           <button
             onClick={() => { logout(); onClose(); }}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-red-500 hover:bg-red-50 font-semibold text-sm transition-all cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-red-600 hover:bg-red-50 font-semibold text-sm transition-all cursor-pointer"
           >
             <LogOut size={18} />
             Cerrar sesión

@@ -22,14 +22,14 @@ const Footer = () => {
               vehículos exclusivos para clientes exigentes.
             </p>
             <div className="flex space-x-4 pt-1">
-              <a href="#" className="hover:text-blue-400 transition-colors">
-                <Facebook size={19} />
+              <a href="#" aria-label="Síguenos en Facebook" className="hover:text-blue-400 transition-colors">
+                <Facebook size={19} aria-hidden="true" />
               </a>
-              <a href="#" className="hover:text-purple-400 transition-colors">
-                <Instagram size={19} />
+              <a href="#" aria-label="Síguenos en Instagram" className="hover:text-purple-400 transition-colors">
+                <Instagram size={19} aria-hidden="true" />
               </a>
-              <a href="#" className="hover:text-sky-400 transition-colors">
-                <Twitter size={19} />
+              <a href="#" aria-label="Síguenos en Twitter / X" className="hover:text-sky-400 transition-colors">
+                <Twitter size={19} aria-hidden="true" />
               </a>
             </div>
           </div>
@@ -72,18 +72,18 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-white/5 pt-6 space-y-3">
-          <div className="flex flex-wrap justify-center sm:justify-start gap-x-5 gap-y-1 text-xs text-slate-500">
-            <Link to="/aviso-legal" className="hover:text-slate-300 transition-colors">
+          <div className="flex flex-wrap justify-center sm:justify-start gap-x-5 gap-y-1 text-xs text-slate-400">
+            <Link to="/aviso-legal" className="hover:text-slate-200 transition-colors">
               Aviso legal
             </Link>
-            <Link to="/politica-privacidad" className="hover:text-slate-300 transition-colors">
+            <Link to="/politica-privacidad" className="hover:text-slate-200 transition-colors">
               Política de privacidad
             </Link>
-            <Link to="/politica-cookies" className="hover:text-slate-300 transition-colors">
+            <Link to="/politica-cookies" className="hover:text-slate-200 transition-colors">
               Política de cookies
             </Link>
           </div>
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-slate-500">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-slate-400">
             <p>&copy; {currentYear} LuxuryCars, S.L. · NIF B-12345678 · Todos los derechos reservados.</p>
             <p>Diseñado para amantes del motor.</p>
           </div>

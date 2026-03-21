@@ -39,7 +39,7 @@ const Home = () => {
         vehicle.vehicleImages[0];
       return `${import.meta.env.VITE_BACKEND_URL}${mainImg.imageUrl}`;
     }
-    return "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=2672&auto=format&fit=crop";
+    return "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=70&w=800&fm=webp&fit=crop";
   };
 
   const carouselItems = loading
@@ -64,8 +64,9 @@ const Home = () => {
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img
-            src="https://images.unsplash.com/photo-1503376763036-066120622c74?q=80&w=2940&auto=format&fit=crop"
+            src="https://images.unsplash.com/photo-1503376763036-066120622c74?q=75&w=1920&fm=webp&fit=crop"
             alt="Luxury Car Background"
+            fetchPriority="high"
             className="w-full h-full object-cover scale-105 animate-[pulse_10s_ease-in-out_infinite]"
           />
           <div className="absolute inset-0 bg-linear-to-r from-slate-950 via-slate-900/80 to-transparent"></div>
@@ -156,7 +157,7 @@ const Home = () => {
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     onError={(e) => {
                       (e.target as HTMLImageElement).src =
-                        "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=2672";
+                        "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=70&w=800&fm=webp";
                     }}
                   />
                   <div className="absolute inset-0 bg-linear-to-t from-black via-black/40 to-transparent opacity-90 group-hover:opacity-80 transition-opacity"></div>
@@ -205,8 +206,9 @@ const Home = () => {
           <div className="order-2 lg:order-1 relative">
             <div className="absolute -inset-4 bg-linear-to-br from-blue-600 to-purple-600 rounded-3xl opacity-20 blur-2xl"></div>
             <img
-              src="https://images.unsplash.com/photo-1563720223185-11003d516935?q=80&w=2400&auto=format&fit=crop"
-              alt="Interior Luxury"
+              src="https://images.unsplash.com/photo-1563720223185-11003d516935?q=70&w=1200&fm=webp&fit=crop"
+              alt="Interior de vehículo de lujo"
+              loading="lazy"
               className="relative rounded-3xl shadow-2xl border border-white/10 w-full object-cover h-150"
             />
           </div>
@@ -310,7 +312,10 @@ const Home = () => {
         <section className="py-40 relative overflow-hidden flex items-center justify-center bg-fixed">
           <div className="absolute inset-0">
             <img
-              src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=2800&auto=format&fit=crop"
+              src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=50&w=1200&fm=webp&fit=crop"
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
               className="w-full h-full object-cover opacity-20 grayscale scale-110"
             />
             <div className="absolute inset-0 bg-slate-950/90"></div>

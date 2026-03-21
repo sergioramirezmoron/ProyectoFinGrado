@@ -183,6 +183,9 @@ const Header = () => {
             )}
 
             <button
+              aria-label={isMobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-menu"
               className="lg:hidden p-2 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
@@ -192,6 +195,7 @@ const Header = () => {
         </div>
 
         <div
+          id="mobile-menu"
           className={`lg:hidden absolute w-full bg-slate-900/98 backdrop-blur-xl border-b border-white/10 transition-all duration-300 ease-in-out ${
             isMobileMenuOpen
               ? "max-h-[calc(100vh-4rem)] opacity-100 overflow-y-auto"
