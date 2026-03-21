@@ -40,6 +40,8 @@ API REST desarrollada con **Symfony 7.3** y **API Platform 4.2** para la platafo
     - [Estadísticas del panel](#estadísticas-del-panel)
 - [Filtros y paginación](#filtros-y-paginación)
 - [Lógica de negocio importante](#lógica-de-negocio-importante)
+- [Seguridad y rendimiento](#seguridad-y-rendimiento)
+- [Tests](#tests)
 - [Manejo de errores](#manejo-de-errores)
 
 ---
@@ -260,13 +262,13 @@ El token expira en **24 horas** por defecto (configurable en `config/packages/le
 
 ## Roles de usuario
 
-| Rol          | Descripción                                                  | Permisos principales                                                                              |
-| ------------ | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
-| `ROLE_USER`  | Usuario registrado (asignado automáticamente al registrarse) | Crear y cancelar sus propias reservas, enviar mensajes, gestionar favoritos, actualizar su perfil |
-| `ROLE_SALES` | Responsable de ventas                                        | Todo lo de `ROLE_USER` + crear/editar vehículos, ver todas las conversaciones y reservas          |
-| `ROLE_ADMIN` | Administrador total                                          | Acceso completo: usuarios, vehículos, reservas, conversaciones, catálogos                         |
+| Rol          | Descripción                                                  | Permisos principales                                                                                                           |
+| ------------ | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| `ROLE_USER`  | Usuario registrado (asignado automáticamente al registrarse) | Crear y cancelar sus propias reservas, enviar mensajes, gestionar favoritos, actualizar su perfil                              |
+| `ROLE_SALES` | Responsable de ventas                                        | Todo lo de `ROLE_USER` + crear/editar vehículos, ver todas las conversaciones y reservas, acceder al dashboard de estadísticas |
+| `ROLE_ADMIN` | Administrador total                                          | Acceso completo: usuarios, vehículos, reservas, conversaciones, catálogos, dashboard y tablas de referencia                   |
 
-> En el `AuthContext` del frontend, `isAdmin` es `true` tanto para `ROLE_ADMIN` como para `ROLE_SALES`, lo que les da acceso al panel de administración.
+> En el `AuthContext` del frontend, `isAdmin` es `true` tanto para `ROLE_ADMIN` como para `ROLE_SALES`, lo que les da acceso al panel de administración (incluyendo el dashboard de estadísticas).
 
 ---
 
@@ -1559,6 +1561,98 @@ Las fechas se bloquean **únicamente** para reservas con estado `CONFIRMED`. Las
 ### Ocultación de vehículos eliminados
 
 Los vehículos con `status=DELETED` están ocultos globalmente mediante la extensión `HideDeletedVehiclesExtension`. Nunca aparecen en ninguna consulta, independientemente de los filtros aplicados.
+
+---
+
+## Seguridad y rendimiento
+
+### Protección contra fuerza bruta (login throttling)
+
+El firewall de login está protegido con `login_throttling`. Por defecto se permiten **5 intentos fallidos por minuto** desde la misma IP antes de que el sistema devuelva `429 Too Many Requests`. Configurable en `config/packages/security.yaml`:
+
+```yaml
+login_throttling:
+    max_attempts: 5
+    interval: '1 minute'
+```
+
+Requiere el paquete `symfony/rate-limiter`.
+
+### Control de acceso a mensajes
+
+El endpoint `POST /api/messages` exige `IS_AUTHENTICATED_FULLY` (no `PUBLIC_ACCESS`). Los visitantes anónimos no pueden enviar mensajes directamente; deben autenticarse primero.
+
+### Índices de base de datos en vehículos
+
+La entidad `Vehicle` incluye índices compuestos y simples para acelerar las consultas más frecuentes del catálogo:
+
+| Índice | Columnas | Uso principal |
+|---|---|---|
+| `idx_vehicle_status` | `status` | Filtro por estado (AVAILABLE, SOLD…) |
+| `idx_vehicle_type` | `type` | Filtro por tipo (SALE / RENT) |
+| `idx_vehicle_created_at` | `created_at` | Ordenación por fecha de alta |
+| `idx_vehicle_status_type` | `status, type` | Filtro combinado (el más usado en el catálogo) |
+
+Aplicar con: `php bin/console doctrine:migrations:migrate`
+
+### Optimización del dashboard (`/api/stats`)
+
+El endpoint de estadísticas ha sido optimizado de ~13 consultas a 5:
+
+- **`VehicleRepository::countByStatus()`**: sustituye 4 COUNT separados por un único `GROUP BY status`.
+- **`MessageRepository::findRecentClientMessages()`**: carga las últimas conversaciones con un JOIN eagerly, evitando N+1 al acceder a los datos de la conversación.
+
+### Filtros de catálogo (Vehicle)
+
+La entidad `Vehicle` tenía un bug donde dos atributos `#[ApiFilter(SearchFilter::class)]` convivían y el segundo sobreescribía al primero, dejando inoperativos los filtros `type`, `status`, `brand`, `model`, `province`, etc. Ahora se consolidan en un único atributo con todas las propiedades. Los filtros disponibles son:
+
+| Tipo | Propiedades |
+|---|---|
+| Exacto (`SearchFilter`) | `brand`, `model`, `province`, `fuelType`, `transmission`, `enviromentalBadge`, `bodyType`, `color`, `status`, `type` |
+| Parcial (`SearchFilter`) | `brand.name`, `model.name` |
+| Rango (`RangeFilter`) | `price`, `dailyPrice`, `kilometres`, `year`, `power` |
+| Ordenación (`OrderFilter`) | `price`, `dailyPrice`, `year`, `kilometres`, `createdAt` |
+
+---
+
+## Tests
+
+El backend incluye una suite de **46 tests de integración** con PHPUnit y ApiTestCase de API Platform. Los tests usan `dama/doctrine-test-bundle` para envolver cada test en una transacción que se revierte al finalizar, garantizando aislamiento entre pruebas sin necesidad de recargar fixtures.
+
+### Ejecutar los tests
+
+```bash
+# Crear la base de datos de test (solo la primera vez)
+php bin/console doctrine:database:create --env=test
+php bin/console doctrine:migrations:migrate --env=test
+php bin/console doctrine:fixtures:load --env=test --no-interaction
+
+# Ejecutar la suite completa
+php bin/phpunit
+```
+
+### Archivos de test
+
+| Archivo | Tests | Qué cubre |
+|---|---|---|
+| `tests/AuthTest.php` | 11 | Login correcto/incorrecto, estructura del JWT (3 partes, payload con `username`, `roles`, `id`), acceso con token inválido, endpoints protegidos |
+| `tests/RoleAccessTest.php` | 12 | RBAC completo: acceso anónimo, ROLE_USER, ROLE_SALES y ROLE_ADMIN; estructura y coherencia del endpoint `/api/stats` |
+| `tests/ReservationTest.php` | 7 | Validaciones de fechas (pasado, fin < inicio, mismo día), bloqueo por reserva CONFIRMED, cancelación, liberación de fechas al cancelar, creación automática de conversación |
+| `tests/FiltersTest.php` | 9 | Filtros `type=SALE/RENT`, `status=AVAILABLE`, ocultación de DELETED, paginación máx. 20, `totalItems`, ordenación por precio ASC/DESC, filtros combinados |
+| `tests/SecurityAndValidationTest.php` | 3 | Vendedor no puede borrar, precio negativo devuelve 422, recurso inexistente devuelve 404 |
+| `tests/SimpleFlowTest.php` | 1 | Flujo completo: login → buscar alquiler → crear reserva CONFIRMED → bloqueo por solapamiento |
+| `tests/RegistrationTest.php` | 3 | Registro de usuario, duplicado devuelve 422, email inválido devuelve 422 |
+
+### Configuración de entorno de test (`.env.test`)
+
+```dotenv
+KERNEL_CLASS='App\Kernel'
+APP_SECRET='$ecretf0rt3st'
+JWT_PASSPHRASE=mi_secreto_tfg
+DATABASE_URL=mysql://root:@127.0.0.1:3306/automocion_test?serverVersion=8.0.32&charset=utf8mb4
+```
+
+> Doctrine añade automáticamente el sufijo `_test` al nombre de la base de datos en el entorno `test` (configurable en `config/packages/doctrine.yaml` con `dbname_suffix`).
 
 ---
 

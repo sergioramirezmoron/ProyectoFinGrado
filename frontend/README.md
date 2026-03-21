@@ -308,19 +308,19 @@ VITE_BACKEND_URL=https://api.luxurycars.example.com
 
 Requieren autenticación activa con rol `ROLE_ADMIN` o `ROLE_SALES`.
 
-| Ruta | Componente | Descripción |
-|---|---|---|
-| `/admin` | `Dashboard` | Panel de control: estadísticas, estado de flota y actividad reciente |
-| `/admin/coches` | `VehicleList` | Inventario completo de vehículos con búsqueda, edición y baja |
-| `/admin/coches/nuevo` | `VehicleForm` | Formulario para añadir un nuevo vehículo con imágenes |
-| `/admin/coches/editar/:id` | `VehicleForm` | Formulario de edición de vehículo existente |
-| `/admin/mensajes` | `Chat` | Gestión de todas las conversaciones con clientes |
-| `/admin/reservas` | `AdminReservations` | Gestión de reservas: aprobar, rechazar o cancelar |
-| `/admin/usuarios` | `UserManagement` | CRUD de usuarios y asignación de roles |
-| `/admin/marcas` | `BrandManagement` | CRUD de marcas de vehículos |
-| `/admin/modelos` | `ModelManagement` | CRUD de modelos vinculados a marcas |
-| `/admin/colores` | `ColorManagement` | CRUD de colores con selector hexadecimal |
-| `/admin/ciudades` | `ProvinceManagement` | CRUD de provincias/ciudades disponibles |
+| Ruta | Componente | Roles con acceso | Descripción |
+|---|---|---|---|
+| `/admin` | `Dashboard` | Admin, Ventas | Panel de control: estadísticas, estado de flota y actividad reciente |
+| `/admin/coches` | `VehicleList` | Admin, Ventas | Inventario completo de vehículos con búsqueda, edición y baja |
+| `/admin/coches/nuevo` | `VehicleForm` | Admin, Ventas | Formulario para añadir un nuevo vehículo con imágenes |
+| `/admin/coches/editar/:id` | `VehicleForm` | Admin, Ventas | Formulario de edición de vehículo existente |
+| `/admin/mensajes` | `Chat` | Admin, Ventas | Gestión de todas las conversaciones con clientes |
+| `/admin/reservas` | `AdminReservations` | Admin, Ventas | Gestión de reservas: aprobar, rechazar o cancelar |
+| `/admin/usuarios` | `UserManagement` | Solo Admin | CRUD de usuarios y asignación de roles |
+| `/admin/marcas` | `BrandManagement` | Solo Admin | CRUD de marcas de vehículos |
+| `/admin/modelos` | `ModelManagement` | Solo Admin | CRUD de modelos vinculados a marcas |
+| `/admin/colores` | `ColorManagement` | Solo Admin | CRUD de colores con selector hexadecimal |
+| `/admin/ciudades` | `ProvinceManagement` | Solo Admin | CRUD de provincias/ciudades disponibles |
 
 ---
 
@@ -359,7 +359,19 @@ Todas las peticiones HTTP pasan por un interceptor de Axios que añade la cabece
 
 **Control de acceso por roles:**
 
-El componente `ProtectedRoute` envuelve todas las rutas de `/admin`. Si el usuario no está autenticado o no tiene rol de administrador, es redirigido automáticamente.
+El componente `ProtectedRoute` envuelve todas las rutas de `/admin`. Si el usuario no está autenticado o no tiene rol de administrador o ventas, es redirigido automáticamente.
+
+**Navegación por rol en el `Header`:**
+
+| Icono / Enlace | Visible para |
+|---|---|
+| Dashboard (`/admin`) | `ROLE_ADMIN` y `ROLE_SALES` |
+| Flota (`/admin/coches`) | `ROLE_ADMIN` y `ROLE_SALES` |
+| Reservas (`/admin/reservas`) | `ROLE_ADMIN` y `ROLE_SALES` |
+| Mensajes (`/admin/mensajes`) | `ROLE_ADMIN` y `ROLE_SALES` |
+| Usuarios, Colores, Ciudades, Marcas, Modelos | Solo `ROLE_ADMIN` |
+
+Los iconos de gestión de tablas maestras (en morado) son exclusivos del administrador. El icono del dashboard y los de operativa diaria (en azul) son visibles para todo el personal.
 
 ---
 
