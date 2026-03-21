@@ -26,6 +26,7 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [selectedProvince, setSelectedProvince] = useState("");
   const [provinces, setProvinces] = useState<Province[]>([]);
+  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -211,9 +212,44 @@ const Register = () => {
             </div>
           </div>
 
+          {/* Aceptación de política de privacidad — obligatoria por RGPD Art. 7 */}
+          <div className="flex items-start gap-3 pt-1">
+            <input
+              id="accept-privacy"
+              type="checkbox"
+              checked={acceptedPrivacy}
+              onChange={(e) => setAcceptedPrivacy(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 accent-blue-500 cursor-pointer"
+              required
+            />
+            <label htmlFor="accept-privacy" className="text-slate-400 text-xs leading-relaxed cursor-pointer">
+              He leído y acepto la{" "}
+              <a
+                href="/politica-privacidad"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-400 hover:underline"
+              >
+                Política de Privacidad
+              </a>{" "}
+              y la{" "}
+              <a
+                href="/politica-cookies"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-400 hover:underline"
+              >
+                Política de Cookies
+              </a>
+              . Consiento el tratamiento de mis datos personales con las finalidades
+              descritas en dichas políticas.{" "}
+              <span className="text-red-400">*</span>
+            </label>
+          </div>
+
           <button
             type="submit"
-            disabled={loading || !selectedProvince}
+            disabled={loading || !selectedProvince || !acceptedPrivacy}
             className="auth-btn-primary mt-2"
           >
             {loading ? (

@@ -71,9 +71,22 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-white/5 pt-6 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-slate-500">
-          <p>&copy; {currentYear} LuxuryCars. Todos los derechos reservados.</p>
-          <p>Diseñado para amantes del motor.</p>
+        <div className="border-t border-white/5 pt-6 space-y-3">
+          <div className="flex flex-wrap justify-center sm:justify-start gap-x-5 gap-y-1 text-xs text-slate-500">
+            <Link to="/aviso-legal" className="hover:text-slate-300 transition-colors">
+              Aviso legal
+            </Link>
+            <Link to="/politica-privacidad" className="hover:text-slate-300 transition-colors">
+              Política de privacidad
+            </Link>
+            <Link to="/politica-cookies" className="hover:text-slate-300 transition-colors">
+              Política de cookies
+            </Link>
+          </div>
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-slate-500">
+            <p>&copy; {currentYear} LuxuryCars, S.L. · NIF B-12345678 · Todos los derechos reservados.</p>
+            <p>Diseñado para amantes del motor.</p>
+          </div>
         </div>
       </div>
     </footer>

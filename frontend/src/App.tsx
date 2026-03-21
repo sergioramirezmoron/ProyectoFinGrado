@@ -19,6 +19,9 @@ import ModelManagement from "./pages/admin/ModelManagement";
 import BrandManagement from "./pages/admin/BrandManagement";
 import MyReservations from "./pages/public/MyReservations";
 import AdminReservations from "./pages/admin/AdminReservations";
+import LegalNotice from "./pages/public/LegalNotice";
+import PrivacyPolicy from "./pages/public/PrivacyPolicy";
+import CookiePolicy from "./pages/public/CookiePolicy";
 
 function App() {
   return (
@@ -34,6 +37,9 @@ function App() {
         <Route path="/mis-reservas" element={<MyReservations />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/aviso-legal" element={<LegalNotice />} />
+        <Route path="/politica-privacidad" element={<PrivacyPolicy />} />
+        <Route path="/politica-cookies" element={<CookiePolicy />} />
       </Route>
 
       <Route
