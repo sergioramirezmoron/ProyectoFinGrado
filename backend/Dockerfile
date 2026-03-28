@@ -16,8 +16,8 @@ RUN apt-get update && apt-get install -y \
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Configurar Apache: habilitar mod_rewrite y apuntar al public/ de Symfony
-RUN a2enmod rewrite
+# Configurar Apache: un solo MPM (prefork) + mod_rewrite
+RUN a2dismod mpm_event mpm_worker 2>/dev/null || true && a2enmod mpm_prefork rewrite
 
 COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
 
