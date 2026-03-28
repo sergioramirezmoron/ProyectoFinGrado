@@ -95,15 +95,7 @@ const ContactModal = ({
               ¡Mensaje Enviado!
             </h3>
             <p className="text-gray-500 text-sm">
-              El vendedor ha recibido tu solicitud.
-              {user ? (
-                " Verás la respuesta en tu panel de mensajes."
-              ) : (
-                <span>
-                  {" "}
-                  Te contactarán pronto a <strong>{formData.email}</strong>.
-                </span>
-              )}
+              El vendedor ha recibido tu solicitud. Verás la respuesta en tu panel de mensajes.
             </p>
             <button
               onClick={onClose}
@@ -127,95 +119,45 @@ const ContactModal = ({
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {user ? (
-                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex flex-col gap-2">
-                  <div>
-                    <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider block mb-1">
-                      Tus datos
-                    </span>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-bold text-slate-900 text-sm">
-                          {formData.name}
-                        </p>
-                        <p className="text-xs text-slate-600">
-                          {formData.email}
-                        </p>
-                      </div>
-                      {hasUserPhone && (
-                        <span className="bg-white text-blue-700 text-[10px] font-bold px-2 py-1 rounded border border-blue-100 flex items-center gap-1 shadow-sm">
-                          <Phone size={10} /> {formData.phone}
-                        </span>
-                      )}
+              <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex flex-col gap-2">
+                <div>
+                  <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider block mb-1">
+                    Tus datos
+                  </span>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-bold text-slate-900 text-sm">
+                        {formData.name}
+                      </p>
+                      <p className="text-xs text-slate-600">
+                        {formData.email}
+                      </p>
                     </div>
+                    {hasUserPhone && (
+                      <span className="bg-white text-blue-700 text-[10px] font-bold px-2 py-1 rounded border border-blue-100 flex items-center gap-1 shadow-sm">
+                        <Phone size={10} /> {formData.phone}
+                      </span>
+                    )}
                   </div>
-
-                  {!hasUserPhone && (
-                    <div className="pt-2 border-t border-blue-200 mt-1">
-                      <label className="block text-xs font-bold text-blue-600 mb-1">
-                        Falta tu teléfono *
-                      </label>
-                      <input
-                        type="tel"
-                        name="phone"
-                        required
-                        value={formData.phone}
-                        onChange={handleChange}
-                        className="w-full p-2 bg-white border border-blue-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none placeholder:text-gray-400"
-                        placeholder="Ej: 600 123 456"
-                      />
-                    </div>
-                  )}
                 </div>
-              ) : (
-                <>
-                  <div>
-                    <label className="field-label">
-                      Nombre
+
+                {!hasUserPhone && (
+                  <div className="pt-2 border-t border-blue-200 mt-1">
+                    <label className="block text-xs font-bold text-blue-600 mb-1">
+                      Falta tu teléfono *
                     </label>
                     <input
-                      type="text"
-                      name="name"
+                      type="tel"
+                      name="phone"
                       required
-                      placeholder="Tu nombre completo"
-                      value={formData.name}
+                      value={formData.phone}
                       onChange={handleChange}
-                      className="field-input"
+                      className="w-full p-2 bg-white border border-blue-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none placeholder:text-gray-400"
+                      placeholder="Ej: 600 123 456"
                     />
                   </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="field-label">
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        name="email"
-                        required
-                        placeholder="tu@email.com"
-                        value={formData.email}
-                        onChange={handleChange}
-                        className="field-input"
-                      />
-                    </div>
-                    <div>
-                      <label className="field-label">
-                        Teléfono
-                      </label>
-                      <input
-                        type="tel"
-                        name="phone"
-                        required
-                        placeholder="600 000 000"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        className="field-input"
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
+                )}
+              </div>
 
               <div>
                 <label className="field-label">

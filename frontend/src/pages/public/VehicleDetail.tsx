@@ -451,7 +451,13 @@ const VehicleDetail = () => {
                 ) : (
                   <div className="space-y-3">
                     <button
-                      onClick={() => setIsContactModalOpen(true)}
+                      onClick={() => {
+                        if (!isAuthenticated || !user) {
+                          navigate("/login", { state: { from: `/vehiculo/${id}` } });
+                          return;
+                        }
+                        setIsContactModalOpen(true);
+                      }}
                       className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold text-lg hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 active:scale-[0.98]"
                     >
                       Contactar Vendedor

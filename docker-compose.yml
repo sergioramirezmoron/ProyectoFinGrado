@@ -9,7 +9,7 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: pfg
       MYSQL_USER: pfg_user
-      MYSQL_PASSWORD: pfg_password
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     volumes:
       - db_data:/var/lib/mysql
       - ./backups:/backups
@@ -31,10 +31,11 @@ services:
     container_name: pfg_backend
     restart: unless-stopped
     environment:
-      DATABASE_URL: "mysql://pfg_user:pfg_password@db:3306/pfg?serverVersion=8.0&charset=utf8mb4"
+      DATABASE_URL: "mysql://pfg_user:${DB_PASSWORD}@db:3306/pfg?serverVersion=8.0&charset=utf8mb4"
       APP_ENV: prod
-      APP_SECRET: ${APP_SECRET:-cambia_esto_por_un_secreto_seguro}
-      JWT_PASSPHRASE: mi_secreto_tfg
+      APP_SECRET: ${APP_SECRET}
+      JWT_PASSPHRASE: ${JWT_PASSPHRASE}
+      CORS_ALLOW_ORIGIN: ${CORS_ALLOW_ORIGIN}
     ports:
       - "8000:80"
     volumes:
@@ -55,8 +56,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: http://localhost:8000
-        VITE_BACKEND_URL: http://localhost:8000
+        VITE_API_URL: ${SERVER_URL}:8000
+        VITE_BACKEND_URL: ${SERVER_URL}:8000
     container_name: pfg_frontend
     restart: unless-stopped
     ports:
