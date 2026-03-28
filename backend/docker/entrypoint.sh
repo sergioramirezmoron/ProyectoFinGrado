@@ -21,4 +21,6 @@ php bin/console doctrine:migrations:version --add --all --no-interaction 2>/dev/
 php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
 
 echo "🚀 Arrancando Apache..."
+rm -f /etc/apache2/mods-enabled/mpm_event.* /etc/apache2/mods-enabled/mpm_worker.* 2>/dev/null || true
+a2enmod mpm_prefork 2>/dev/null || true
 exec apache2-foreground
