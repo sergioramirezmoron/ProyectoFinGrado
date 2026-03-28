@@ -53,3 +53,11 @@ export const isReservationActiveToday = (r: Reservation): boolean => {
   today.setHours(0, 0, 0, 0);
   return new Date(r.startDate) <= today && today <= new Date(r.endDate);
 };
+
+/** Returns true if the reservation can still be cancelled (confirmed and end date not yet passed). */
+export const isReservationCancellable = (r: Reservation): boolean => {
+  if (r.status !== "CONFIRMED") return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return new Date(r.endDate) >= today;
+};

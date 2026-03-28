@@ -8,8 +8,6 @@ import {
   Filter,
   User,
   BadgeCheck,
-  CheckCircle2,
-  XCircle,
   Ban,
 } from "lucide-react";
 import type { ReservationVehicle, ReservationUser } from "../../types/reservation";
@@ -18,6 +16,7 @@ import {
   RESERVATION_STATUS_CONFIG,
   RESERVATION_STATUS_OPTIONS,
   isReservationActiveToday,
+  isReservationCancellable,
 } from "../../constants/reservationStatus";
 import { formatDate, formatCurrency } from "../../utils/formatters";
 
@@ -165,35 +164,7 @@ const AdminReservations = () => {
                     </div>
 
                     <div className="flex gap-2 flex-wrap">
-                      {r.status === "PENDING" && (
-                        <>
-                          <button
-                            onClick={() => handleStatus(r.id, "CONFIRMED")}
-                            disabled={updatingId === r.id}
-                            className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-xl bg-green-50 text-green-700 text-xs font-bold hover:bg-green-100 transition-all disabled:opacity-40"
-                          >
-                            {updatingId === r.id ? (
-                              <Loader2 size={12} className="animate-spin" />
-                            ) : (
-                              <CheckCircle2 size={12} />
-                            )}
-                            Confirmar
-                          </button>
-                          <button
-                            onClick={() => handleStatus(r.id, "REJECTED")}
-                            disabled={updatingId === r.id}
-                            className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-xl bg-red-50 text-red-600 text-xs font-bold hover:bg-red-100 transition-all disabled:opacity-40"
-                          >
-                            {updatingId === r.id ? (
-                              <Loader2 size={12} className="animate-spin" />
-                            ) : (
-                              <XCircle size={12} />
-                            )}
-                            Rechazar
-                          </button>
-                        </>
-                      )}
-                      {r.status === "CONFIRMED" && (
+                      {isReservationCancellable(r) && (
                         <button
                           onClick={() => handleStatus(r.id, "CANCELLED")}
                           disabled={updatingId === r.id}
@@ -294,35 +265,7 @@ const AdminReservations = () => {
                         </td>
                         <td className="px-5 py-4 text-right">
                           <div className="flex items-center justify-end gap-2">
-                            {r.status === "PENDING" && (
-                              <>
-                                <button
-                                  onClick={() => handleStatus(r.id, "CONFIRMED")}
-                                  disabled={updatingId === r.id}
-                                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-green-50 text-green-700 text-xs font-bold hover:bg-green-100 transition-all disabled:opacity-40"
-                                >
-                                  {updatingId === r.id ? (
-                                    <Loader2 size={12} className="animate-spin" />
-                                  ) : (
-                                    <CheckCircle2 size={12} />
-                                  )}
-                                  Confirmar
-                                </button>
-                                <button
-                                  onClick={() => handleStatus(r.id, "REJECTED")}
-                                  disabled={updatingId === r.id}
-                                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-red-50 text-red-600 text-xs font-bold hover:bg-red-100 transition-all disabled:opacity-40"
-                                >
-                                  {updatingId === r.id ? (
-                                    <Loader2 size={12} className="animate-spin" />
-                                  ) : (
-                                    <XCircle size={12} />
-                                  )}
-                                  Rechazar
-                                </button>
-                              </>
-                            )}
-                            {r.status === "CONFIRMED" && (
+                            {isReservationCancellable(r) && (
                               <button
                                 onClick={() => handleStatus(r.id, "CANCELLED")}
                                 disabled={updatingId === r.id}
@@ -336,7 +279,7 @@ const AdminReservations = () => {
                                 Cancelar
                               </button>
                             )}
-                            {(r.status === "REJECTED" || r.status === "CANCELLED") && (
+                            {!isReservationCancellable(r) && (
                               <span className="text-xs text-slate-300">—</span>
                             )}
                           </div>

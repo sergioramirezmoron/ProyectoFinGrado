@@ -83,8 +83,7 @@ export const useChat = () => {
   const fetchConversations = async (isPolling = false) => {
     try {
       if (!isPolling) setLoading(true);
-      const email = user?.email || user?.name;
-      const response = await getConversations(isAdmin, email);
+      const response = await getConversations(isAdmin, user?.email);
       setConversations(response.data.member || []);
     } catch (error) {
       console.error("Error cargando chats", error);
@@ -149,7 +148,7 @@ export const useChat = () => {
       fetchMessages(selectedChat.id);
       fetchConversations(true);
     } catch (error) {
-      if (isAdmin) setToast({ msg: "Error al enviar", type: "error" });
+      setToast({ msg: "Error al enviar el mensaje", type: "error" });
       console.log(error);
     } finally {
       setSending(false);

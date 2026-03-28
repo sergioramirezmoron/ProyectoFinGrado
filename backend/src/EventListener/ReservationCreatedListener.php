@@ -9,12 +9,15 @@ use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
 use Doctrine\ORM\Event\PostPersistEventArgs;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 
 #[AsEntityListener(event: Events::postPersist, method: 'postPersist', entity: Reservation::class)]
 class ReservationCreatedListener
 {
-    public function __construct(private EntityManagerInterface $entityManager)
-    {}
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private LoggerInterface $logger,
+    ) {}
 
     public function postPersist(Reservation $reservation, PostPersistEventArgs $event): void
     {
@@ -43,8 +46,15 @@ class ReservationCreatedListener
         $message->setIsAdmin(false);
         $message->setConversation($conversation);
 
-        $this->entityManager->persist($conversation);
-        $this->entityManager->persist($message);
-        $this->entityManager->flush();
+        try {
+            $this->entityManager->persist($conversation);
+            $this->entityManager->persist($message);
+            $this->entityManager->flush();
+        } catch (\Throwable $e) {
+            $this->logger->error('Error al crear la conversación para la reserva #{id}: {message}', [
+                'id' => $reservation->getId(),
+                'message' => $e->getMessage(),
+            ]);
+        }
     }
 }
