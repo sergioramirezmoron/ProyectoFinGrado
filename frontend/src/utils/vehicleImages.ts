@@ -1,14 +1,11 @@
 import type { VehicleImage } from "../types/vehicle";
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL as string;
-
 /**
  * Build a full URL from a relative image path.
- * Returns the path unchanged if it already includes "http".
+ * Returns the path unchanged — nginx proxies /images/ to the backend.
  */
 export const buildImageUrl = (path: string): string => {
-  if (path.includes("http")) return path;
-  return `${BACKEND_URL}${path}`;
+  return path;
 };
 
 /**
