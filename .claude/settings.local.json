@@ -7,7 +7,9 @@
       "Bash(true grep:*)",
       "Bash(grep \"INSERT INTO \\\\`vehicle_image\\\\`\" /c/Users/Usuario/Documents/PERSONAL/ProyectoFinGrado/backups/backup_20260225_171732.sql -A 5)",
       "Bash(grep \"INSERT INTO \\\\`vehicle_image\\\\`\" /c/Users/Usuario/Documents/PERSONAL/ProyectoFinGrado/backups/backup_20260225_171732.sql -A 2)",
-      "Bash(find /c/Users/Usuario/Documents/PERSONAL/ProyectoFinGrado/backend -name php.ini -o -name *.ini)"
+      "Bash(find /c/Users/Usuario/Documents/PERSONAL/ProyectoFinGrado/backend -name php.ini -o -name *.ini)",
+      "Bash(find C:UsersUsuarioDocumentsPERSONALProyectoFinGrado -name *[Vv]ehicle* -o -name *[Ii]mage*)",
+      "Bash(grep -E \"\\\\.\\(php|tsx|jsx\\)$\")"
     ]
   }
 }

@@ -161,6 +161,7 @@ class Vehicle
      * @var Collection<int, VehicleImage>
      */
     #[ORM\OneToMany(targetEntity: VehicleImage::class, mappedBy: 'vehicle', orphanRemoval: true)]
+    #[ORM\OrderBy(['id' => 'ASC'])]
     #[Groups(['vehicle:read', 'vehicle:write', 'conversation:read', 'reservation:read'])]
     private Collection $vehicleImages;
 

@@ -215,11 +215,11 @@ const VehicleForm = () => {
       }
 
       // 2. Subir nuevas imágenes de forma secuencial (garantiza orden correcto para isMain)
-      // Solo la primera imagen de un vehículo SIN ninguna imagen previa se marca como portada
-      const noExistingImages = existingImages.length === 0;
+      // La primera nueva imagen se marca como portada si ninguna imagen existente ya lo es
+      const noPortadaInExisting = !existingImages.some((img) => img.main);
       const newUploadedImageIRIs: string[] = [];
       for (let i = 0; i < selectedFiles.length; i++) {
-        const res = await uploadVehicleImage(selectedFiles[i], noExistingImages && i === 0);
+        const res = await uploadVehicleImage(selectedFiles[i], noPortadaInExisting && i === 0);
         const iri = res.data["@id"] ?? `/api/vehicle_images/${res.data.id}`;
         if (!iri) throw new Error("ID de imagen no devuelto por el servidor.");
         newUploadedImageIRIs.push(iri);
@@ -230,12 +230,10 @@ const VehicleForm = () => {
       const cleanValue = (val: string) =>
         val && val.trim() !== "" ? val : undefined;
 
-      // Solo incluir vehicleImages en el PATCH si hay imágenes que vincular.
-      // Si se borraron todas (explicit DELETE ya hecho), no incluir el campo
-      // para evitar que orphanRemoval intente borrar entidades ya eliminadas.
-      const imagesPatchField = allImageIRIs.length > 0
-        ? { vehicleImages: allImageIRIs }
-        : {};
+      // Siempre incluir vehicleImages en el PATCH, incluso si es [].
+      // Si se borraron todas, enviar [] garantiza que el servidor limpie la colección
+      // aunque algún DELETE individual no se haya reflejado aún.
+      const imagesPatchField = { vehicleImages: allImageIRIs };
 
       const vehiclePayload = {
         brand: formData.brand,
