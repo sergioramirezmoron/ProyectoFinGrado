@@ -30,6 +30,11 @@ php bin/console doctrine:migrations:sync-metadata-storage --no-interaction || tr
 php bin/console doctrine:migrations:version --add --all --no-interaction 2>/dev/null || true
 php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
 
+echo "📁 Asegurando directorio de imágenes..."
+mkdir -p /var/www/html/public/images/vehicles
+chown -R www-data:www-data /var/www/html/public/images
+chmod -R 775 /var/www/html/public/images
+
 echo "🚀 Arrancando Apache..."
 rm -f /etc/apache2/mods-enabled/mpm_event.* /etc/apache2/mods-enabled/mpm_worker.* 2>/dev/null || true
 a2enmod mpm_prefork 2>/dev/null || true
