@@ -177,7 +177,7 @@ const VehicleDetail = () => {
     return <div className="text-center py-20">Vehículo no encontrado</div>;
 
   const currentImage =
-    activeImage || "https://via.placeholder.com/800x600?text=Sin+Foto";
+    activeImage || "https://placehold.co/800x600?text=Sin+Foto";
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">

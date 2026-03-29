@@ -6,7 +6,7 @@ import type { VehicleImage } from "../types/vehicle";
  * and where it's a real file served via nginx proxy to the backend.
  */
 export const buildImageUrl = (path: string): string => {
-  if (!path) return "https://via.placeholder.com/600x400?text=Sin+Foto";
+  if (!path) return "https://placehold.co/600x400?text=Sin+Foto";
   // Already a full URL
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
   // Relative path — nginx proxies /images/ to the backend
@@ -19,7 +19,7 @@ export const buildImageUrl = (path: string): string => {
 export const getMainVehicleImage = (
   images: VehicleImage[] | undefined | null,
 ): string => {
-  if (!images?.length) return "https://via.placeholder.com/600x400?text=Sin+Foto";
+  if (!images?.length) return "https://placehold.co/600x400?text=Sin+Foto";
   const main = images.find((img) => img.main) ?? images[0];
   return buildImageUrl(main.imageUrl);
 };

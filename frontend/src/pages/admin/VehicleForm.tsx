@@ -19,6 +19,7 @@ import {
   updateVehicle,
   uploadVehicleImage,
 } from "../../services/vehicleService";
+import { buildImageUrl } from "../../utils/vehicleImages";
 import type {
   VehicleModel as Model,
   FormOptions,
@@ -134,7 +135,7 @@ const VehicleForm = () => {
           if (vehicle.vehicleImages?.length > 0) {
             setPreviews(
               vehicle.vehicleImages.map(
-                (img) => `${import.meta.env.VITE_BACKEND_URL}${img.imageUrl}`,
+                (img) => buildImageUrl(img.imageUrl),
               ),
             );
           }

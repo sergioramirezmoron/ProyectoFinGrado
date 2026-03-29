@@ -92,7 +92,7 @@ const VehicleList = () => {
       vehicle.vehicleImages?.[0];
     return mainImage
       ? buildImageUrl(mainImage.imageUrl)
-      : "https://via.placeholder.com/150?text=Sin+Foto";
+      : "https://placehold.co/150?text=Sin+Foto";
   };
 
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);

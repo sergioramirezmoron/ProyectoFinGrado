@@ -11,6 +11,7 @@ import {
 import type { Vehicle } from "../../types/vehicle";
 import { useAuth } from "../../hooks/useAuth";
 import { getFeaturedVehicles } from "../../services/vehicleService";
+import { buildImageUrl } from "../../utils/vehicleImages";
 
 const Home = () => {
   const [featuredVehicles, setFeaturedVehicles] = useState<Vehicle[]>([]);
@@ -37,7 +38,7 @@ const Home = () => {
       const mainImg =
         vehicle.vehicleImages.find((img) => img.main) ||
         vehicle.vehicleImages[0];
-      return `${import.meta.env.VITE_BACKEND_URL}${mainImg.imageUrl}`;
+      return buildImageUrl(mainImg.imageUrl);
     }
     return "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=70&w=800&fm=webp&fit=crop";
   };
