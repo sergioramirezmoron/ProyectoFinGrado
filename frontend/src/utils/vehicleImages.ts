@@ -2,9 +2,14 @@ import type { VehicleImage } from "../types/vehicle";
 
 /**
  * Build a full URL from a relative image path.
- * Returns the path unchanged — nginx proxies /images/ to the backend.
+ * Handles cases where the DB filename is already a full URL (placehold.co, etc.)
+ * and where it's a real file served via nginx proxy to the backend.
  */
 export const buildImageUrl = (path: string): string => {
+  if (!path) return "https://via.placeholder.com/600x400?text=Sin+Foto";
+  // Already a full URL
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  // Relative path — nginx proxies /images/ to the backend
   return path;
 };
 

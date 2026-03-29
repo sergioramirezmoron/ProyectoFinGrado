@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mysql:*)"
+      "Bash(mysql:*)",
+      "Bash(ls:*)",
+      "Bash(grep -n \"INSERT INTO \\\\`vehicle_image\\\\`\" /c/Users/Usuario/Documents/PERSONAL/ProyectoFinGrado/automocion.sql -A 5)",
+      "Bash(true grep:*)",
+      "Bash(grep \"INSERT INTO \\\\`vehicle_image\\\\`\" /c/Users/Usuario/Documents/PERSONAL/ProyectoFinGrado/backups/backup_20260225_171732.sql -A 5)"
     ]
   }
 }

@@ -92,6 +92,9 @@ class VehicleImage
     #[Groups(['vehicleImage:read', 'vehicle:read', 'conversation:read', 'reservation:read'])]
     public function getImageUrl(): string
     {
+        if (str_starts_with($this->filename, 'http://') || str_starts_with($this->filename, 'https://')) {
+            return $this->filename;
+        }
         return '/images/vehicles/' . $this->filename;
     }
 }
