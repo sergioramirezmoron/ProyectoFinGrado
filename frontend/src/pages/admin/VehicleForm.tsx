@@ -72,7 +72,9 @@ const VehicleForm = () => {
     owners: 1,
   });
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [previews, setPreviews] = useState<string[]>([]);
+  const [existingImageIRIs, setExistingImageIRIs] = useState<string[]>([]);
+  const [existingPreviews, setExistingPreviews] = useState<string[]>([]);
+  const [newPreviews, setNewPreviews] = useState<string[]>([]);
 
   useEffect(() => {
     const initData = async () => {
@@ -133,11 +135,8 @@ const VehicleForm = () => {
           });
 
           if (vehicle.vehicleImages?.length > 0) {
-            setPreviews(
-              vehicle.vehicleImages.map(
-                (img) => buildImageUrl(img.imageUrl),
-              ),
-            );
+            setExistingImageIRIs(vehicle.vehicleImages.map((img) => img["@id"]));
+            setExistingPreviews(vehicle.vehicleImages.map((img) => buildImageUrl(img.imageUrl)));
           }
         }
       } catch (error) {
@@ -182,7 +181,7 @@ const VehicleForm = () => {
     if (e.target.files) {
       const filesArray = Array.from(e.target.files);
       setSelectedFiles((prev) => [...prev, ...filesArray]);
-      setPreviews((prev) => [
+      setNewPreviews((prev) => [
         ...prev,
         ...filesArray.map((f) => URL.createObjectURL(f)),
       ]);
@@ -190,8 +189,15 @@ const VehicleForm = () => {
   };
 
   const removeImage = (index: number) => {
-    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
-    setPreviews((prev) => prev.filter((_, i) => i !== index));
+    const existingCount = existingImageIRIs.length;
+    if (index < existingCount) {
+      setExistingImageIRIs((prev) => prev.filter((_, i) => i !== index));
+      setExistingPreviews((prev) => prev.filter((_, i) => i !== index));
+    } else {
+      const newIndex = index - existingCount;
+      setSelectedFiles((prev) => prev.filter((_, i) => i !== newIndex));
+      setNewPreviews((prev) => prev.filter((_, i) => i !== newIndex));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -201,7 +207,7 @@ const VehicleForm = () => {
     try {
       const newUploadedImageIRIs = await Promise.all(
         selectedFiles.map((file, index) =>
-          uploadVehicleImage(file, index === 0 && previews.length === 0).then(
+          uploadVehicleImage(file, index === 0 && existingImageIRIs.length === 0).then(
             (res) => {
               if (res.data["@id"]) return res.data["@id"];
               if (res.data.id) return `/api/vehicle_images/${res.data.id}`;
@@ -210,6 +216,8 @@ const VehicleForm = () => {
           ),
         ),
       );
+
+      const allImageIRIs = [...existingImageIRIs, ...newUploadedImageIRIs];
 
       const cleanValue = (val: string) =>
         val && val.trim() !== "" ? val : undefined;
@@ -234,8 +242,8 @@ const VehicleForm = () => {
         displacement: formData.displacement
           ? parseInt(formData.displacement.toString())
           : null,
-        ...(newUploadedImageIRIs.length > 0 && {
-          vehicleImages: newUploadedImageIRIs,
+        ...(allImageIRIs.length > 0 && {
+          vehicleImages: allImageIRIs,
         }),
         dailyPrice:
           formData.type === "RENT" && formData.dailyPrice
@@ -645,9 +653,9 @@ const VehicleForm = () => {
               </p>
             </label>
 
-            {previews.length > 0 && (
+            {(existingPreviews.length > 0 || newPreviews.length > 0) && (
               <div className="grid grid-cols-3 gap-3">
-                {previews.map((url, index) => (
+                {[...existingPreviews, ...newPreviews].map((url, index) => (
                   <div
                     key={index}
                     className="relative aspect-square rounded-xl overflow-hidden group border border-gray-200 shadow-sm"
