@@ -6,7 +6,8 @@
       "Bash(grep -n \"INSERT INTO \\\\`vehicle_image\\\\`\" /c/Users/Usuario/Documents/PERSONAL/ProyectoFinGrado/automocion.sql -A 5)",
       "Bash(true grep:*)",
       "Bash(grep \"INSERT INTO \\\\`vehicle_image\\\\`\" /c/Users/Usuario/Documents/PERSONAL/ProyectoFinGrado/backups/backup_20260225_171732.sql -A 5)",
-      "Bash(grep \"INSERT INTO \\\\`vehicle_image\\\\`\" /c/Users/Usuario/Documents/PERSONAL/ProyectoFinGrado/backups/backup_20260225_171732.sql -A 2)"
+      "Bash(grep \"INSERT INTO \\\\`vehicle_image\\\\`\" /c/Users/Usuario/Documents/PERSONAL/ProyectoFinGrado/backups/backup_20260225_171732.sql -A 2)",
+      "Bash(find /c/Users/Usuario/Documents/PERSONAL/ProyectoFinGrado/backend -name php.ini -o -name *.ini)"
     ]
   }
 }
