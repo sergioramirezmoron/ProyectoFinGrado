@@ -30,6 +30,11 @@ export const uploadVehicleImage = (file: File, isMain: boolean) => {
   return api.post("/vehicle_images", formData);
 };
 
+export const deleteVehicleImage = (iri: string) => {
+  const id = iri.split("/").pop();
+  return api.delete(`/vehicle_images/${id}`);
+};
+
 export const getVehicles = (page: number, searchTerm?: string) => {
   const params = new URLSearchParams();
   params.append("page", page.toString());

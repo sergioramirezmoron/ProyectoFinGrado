@@ -18,6 +18,7 @@ import {
   createVehicle,
   updateVehicle,
   uploadVehicleImage,
+  deleteVehicleImage,
 } from "../../services/vehicleService";
 import { buildImageUrl } from "../../utils/vehicleImages";
 import type {
@@ -73,6 +74,7 @@ const VehicleForm = () => {
   });
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<{ iri: string; url: string; main: boolean }[]>([]);
+  const [removedIRIs, setRemovedIRIs] = useState<string[]>([]);
   const [newPreviews, setNewPreviews] = useState<string[]>([]);
 
   useEffect(() => {
@@ -193,6 +195,7 @@ const VehicleForm = () => {
   const removeImage = (index: number) => {
     const existingCount = existingImages.length;
     if (index < existingCount) {
+      setRemovedIRIs((prev) => [...prev, existingImages[index].iri]);
       setExistingImages((prev) => prev.filter((_, i) => i !== index));
     } else {
       const newIndex = index - existingCount;
@@ -206,18 +209,20 @@ const VehicleForm = () => {
     setLoading(true);
 
     try {
+      // 1. Eliminar explícitamente las imágenes borradas por el usuario
+      for (const iri of removedIRIs) {
+        await deleteVehicleImage(iri);
+      }
+
+      // 2. Subir nuevas imágenes de forma secuencial (garantiza orden correcto para isMain)
       const hasExistingMain = existingImages.some((img) => img.main);
-      const newUploadedImageIRIs = await Promise.all(
-        selectedFiles.map((file, index) =>
-          uploadVehicleImage(file, !hasExistingMain && index === 0).then(
-            (res) => {
-              if (res.data["@id"]) return res.data["@id"];
-              if (res.data.id) return `/api/vehicle_images/${res.data.id}`;
-              throw new Error("ID de imagen no devuelto por el servidor.");
-            },
-          ),
-        ),
-      );
+      const newUploadedImageIRIs: string[] = [];
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const res = await uploadVehicleImage(selectedFiles[i], !hasExistingMain && i === 0);
+        const iri = res.data["@id"] ?? `/api/vehicle_images/${res.data.id}`;
+        if (!iri) throw new Error("ID de imagen no devuelto por el servidor.");
+        newUploadedImageIRIs.push(iri);
+      }
 
       const allImageIRIs = [...existingImages.map((img) => img.iri), ...newUploadedImageIRIs];
 
