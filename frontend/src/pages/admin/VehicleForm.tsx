@@ -72,8 +72,7 @@ const VehicleForm = () => {
     owners: 1,
   });
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [existingImageIRIs, setExistingImageIRIs] = useState<string[]>([]);
-  const [existingPreviews, setExistingPreviews] = useState<string[]>([]);
+  const [existingImages, setExistingImages] = useState<{ iri: string; url: string; main: boolean }[]>([]);
   const [newPreviews, setNewPreviews] = useState<string[]>([]);
 
   useEffect(() => {
@@ -135,8 +134,11 @@ const VehicleForm = () => {
           });
 
           if (vehicle.vehicleImages?.length > 0) {
-            setExistingImageIRIs(vehicle.vehicleImages.map((img) => img["@id"]));
-            setExistingPreviews(vehicle.vehicleImages.map((img) => buildImageUrl(img.imageUrl)));
+            setExistingImages(vehicle.vehicleImages.map((img) => ({
+              iri: img["@id"],
+              url: buildImageUrl(img.imageUrl),
+              main: img.main,
+            })));
           }
         }
       } catch (error) {
@@ -189,10 +191,9 @@ const VehicleForm = () => {
   };
 
   const removeImage = (index: number) => {
-    const existingCount = existingImageIRIs.length;
+    const existingCount = existingImages.length;
     if (index < existingCount) {
-      setExistingImageIRIs((prev) => prev.filter((_, i) => i !== index));
-      setExistingPreviews((prev) => prev.filter((_, i) => i !== index));
+      setExistingImages((prev) => prev.filter((_, i) => i !== index));
     } else {
       const newIndex = index - existingCount;
       setSelectedFiles((prev) => prev.filter((_, i) => i !== newIndex));
@@ -205,9 +206,10 @@ const VehicleForm = () => {
     setLoading(true);
 
     try {
+      const hasExistingMain = existingImages.some((img) => img.main);
       const newUploadedImageIRIs = await Promise.all(
         selectedFiles.map((file, index) =>
-          uploadVehicleImage(file, index === 0 && existingImageIRIs.length === 0).then(
+          uploadVehicleImage(file, !hasExistingMain && index === 0).then(
             (res) => {
               if (res.data["@id"]) return res.data["@id"];
               if (res.data.id) return `/api/vehicle_images/${res.data.id}`;
@@ -217,7 +219,7 @@ const VehicleForm = () => {
         ),
       );
 
-      const allImageIRIs = [...existingImageIRIs, ...newUploadedImageIRIs];
+      const allImageIRIs = [...existingImages.map((img) => img.iri), ...newUploadedImageIRIs];
 
       const cleanValue = (val: string) =>
         val && val.trim() !== "" ? val : undefined;
@@ -242,9 +244,7 @@ const VehicleForm = () => {
         displacement: formData.displacement
           ? parseInt(formData.displacement.toString())
           : null,
-        ...(allImageIRIs.length > 0 && {
-          vehicleImages: allImageIRIs,
-        }),
+        vehicleImages: allImageIRIs,
         dailyPrice:
           formData.type === "RENT" && formData.dailyPrice
             ? formData.dailyPrice.toString()
@@ -653,9 +653,15 @@ const VehicleForm = () => {
               </p>
             </label>
 
-            {(existingPreviews.length > 0 || newPreviews.length > 0) && (
+            {(existingImages.length > 0 || newPreviews.length > 0) && (
               <div className="grid grid-cols-3 gap-3">
-                {[...existingPreviews, ...newPreviews].map((url, index) => (
+                {[
+                  ...existingImages.map((img) => ({ url: img.url, main: img.main })),
+                  ...newPreviews.map((url, i) => ({
+                    url,
+                    main: !existingImages.some((img) => img.main) && i === 0,
+                  })),
+                ].map(({ url, main }, index) => (
                   <div
                     key={index}
                     className="relative aspect-square rounded-xl overflow-hidden group border border-gray-200 shadow-sm"
@@ -665,7 +671,7 @@ const VehicleForm = () => {
                       alt="Preview"
                       className="w-full h-full object-cover"
                     />
-                    {index === 0 && (
+                    {main && (
                       <span className="absolute top-0 left-0 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded-br-lg shadow-sm z-10">
                         PORTADA
                       </span>
