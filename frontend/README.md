@@ -116,6 +116,7 @@ frontend/
 │   │   └── ui/
 │   │       ├── Header.tsx            # Cabecera de navegación principal
 │   │       ├── Footer.tsx            # Pie de página
+│   │       ├── CookieBanner.tsx      # Banner de consentimiento de cookies (persiste en localStorage)
 │   │       └── StatCard.tsx          # Tarjeta de estadística para el dashboard
 │   │
 │   ├── constants/
@@ -153,7 +154,10 @@ frontend/
 │   │   │   ├── VehicleDetail.tsx     # Detalle de vehículo + reserva
 │   │   │   ├── Chat.tsx              # Interfaz de mensajería para el usuario
 │   │   │   ├── MyReservations.tsx    # Mis reservas (usuario autenticado)
-│   │   │   └── UserProfilePanel.tsx  # Perfil y ajustes del usuario
+│   │   │   ├── UserProfilePanel.tsx  # Perfil y ajustes del usuario
+│   │   │   ├── LegalNotice.tsx       # Aviso legal (LSSI-CE)
+│   │   │   ├── PrivacyPolicy.tsx     # Política de privacidad (RGPD + LOPDGDD)
+│   │   │   └── CookiePolicy.tsx      # Política de cookies (ePrivacy)
 │   │   └── admin/
 │   │       ├── Dashboard.tsx         # Panel de control con estadísticas
 │   │       ├── VehicleList.tsx       # Inventario de vehículos
@@ -302,6 +306,9 @@ VITE_BACKEND_URL=https://api.luxurycars.example.com
 | `/mis-reservas` | `MyReservations` | Reservas activas e historial del usuario autenticado |
 | `/login` | `Login` | Formulario de inicio de sesión |
 | `/register` | `Register` | Formulario de registro de nueva cuenta |
+| `/aviso-legal` | `LegalNotice` | Aviso legal (LSSI-CE) |
+| `/politica-privacidad` | `PrivacyPolicy` | Política de privacidad (RGPD + LOPDGDD) |
+| `/politica-cookies` | `CookiePolicy` | Política de cookies (ePrivacy) |
 | `*` | — | Redirige a `/` (catch-all) |
 
 ### Rutas de administración (`AdminLayout` + `ProtectedRoute`)

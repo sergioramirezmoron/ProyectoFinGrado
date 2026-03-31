@@ -195,7 +195,7 @@ docker exec pfg_db mysqldump -u root -proot pfg > backups/backup_manual.sql
 
 | Recurso | Descripción |
 |---|---|
-| [`backend/README.md`](./backend/README.md) | Instalación manual, variables de entorno, autenticación JWT, roles, endpoints REST con ejemplos, filtros, lógica de negocio, seguridad (login throttling), optimizaciones de rendimiento y suite de 46 tests PHPUnit |
+| [`backend/README.md`](./backend/README.md) | Instalación manual, variables de entorno, autenticación JWT, roles, endpoints REST con ejemplos, filtros, lógica de negocio, seguridad (login throttling), optimizaciones de rendimiento y suite de 47 tests PHPUnit |
 | [`frontend/README.md`](./frontend/README.md) | Instalación manual, arquitectura MVC, rutas por rol, módulos principales (auth, chat, reservas), navegación por rol en la cabecera, suite de 264 tests Vitest, despliegue y troubleshooting |
 | `http://localhost:8000/api/docs` | Documentación interactiva OpenAPI generada automáticamente por API Platform (disponible con el entorno levantado) |
 

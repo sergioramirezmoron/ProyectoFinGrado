@@ -1637,7 +1637,7 @@ La entidad `Vehicle` tenía un bug donde dos atributos `#[ApiFilter(SearchFilter
 
 ## Tests
 
-El backend incluye una suite de **46 tests de integración** con PHPUnit y ApiTestCase de API Platform. Los tests usan `dama/doctrine-test-bundle` para envolver cada test en una transacción que se revierte al finalizar, garantizando aislamiento entre pruebas sin necesidad de recargar fixtures.
+El backend incluye una suite de **47 tests de integración** con PHPUnit y ApiTestCase de API Platform. Los tests usan `dama/doctrine-test-bundle` para envolver cada test en una transacción que se revierte al finalizar, garantizando aislamiento entre pruebas sin necesidad de recargar fixtures.
 
 ### Ejecutar los tests
 
@@ -1662,6 +1662,7 @@ php bin/phpunit
 | `tests/SecurityAndValidationTest.php` | 3     | Vendedor no puede borrar, precio negativo devuelve 422, recurso inexistente devuelve 404                                                                                    |
 | `tests/SimpleFlowTest.php`            | 1     | Flujo completo: login → buscar alquiler → crear reserva CONFIRMED → bloqueo por solapamiento                                                                                |
 | `tests/RegistrationTest.php`          | 3     | Registro de usuario, duplicado devuelve 422, email inválido devuelve 422                                                                                                    |
+| `tests/ApiStructureTest.php`          | 1     | Verifica que el JSON de `/api/vehicles` expone los objetos `brand` y `model` embebidos con su campo `name` (formato esperado por el frontend)                               |
 
 ### Configuración de entorno de test (`.env.test`)
 
