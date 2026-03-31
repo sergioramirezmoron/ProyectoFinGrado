@@ -16,7 +16,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity(repositoryClass: ModelRepository::class)]
 #[ApiResource(
     operations: [
-        new GetCollection(security: "is_granted('PUBLIC_ACCESS')"),
+        new GetCollection(security: "is_granted('PUBLIC_ACCESS')", paginationEnabled: false),
         new Get(security: "is_granted('PUBLIC_ACCESS')"),
 
         new Post(security: "is_granted('ROLE_ADMIN')"),

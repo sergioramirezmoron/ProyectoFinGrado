@@ -40,7 +40,7 @@ const ModelManagement = () => {
       try {
         const [brandsRes, modelsRes] = await Promise.all([
           api.get("/brands"),
-          api.get("/models?itemsPerPage=200"),
+          api.get("/models"),
         ]);
         setBrands(brandsRes.data.member || []);
         setModels(modelsRes.data.member || []);
