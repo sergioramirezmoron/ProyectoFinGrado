@@ -6,8 +6,9 @@ API REST desarrollada con **Symfony 7.3** y **API Platform 4.2** para la platafo
 
 ## Tabla de Contenidos
 
-- [Requisitos previos](#requisitos-previos)
-- [Instalación y configuración](#instalación-y-configuración)
+- [Despliegue con Docker (recomendado)](#despliegue-con-docker-recomendado)
+- [Instalación manual (desarrollo local)](#instalación-manual-desarrollo-local)
+    - [Requisitos previos](#requisitos-previos)
     - [1. Clonar e instalar dependencias](#1-clonar-e-instalar-dependencias)
     - [2. Configurar el archivo .env](#2-configurar-el-archivo-env)
     - [3. Generar las claves JWT](#3-generar-las-claves-jwt)
@@ -15,6 +16,7 @@ API REST desarrollada con **Symfony 7.3** y **API Platform 4.2** para la platafo
     - [5. Cargar datos de prueba (opcional)](#5-cargar-datos-de-prueba-opcional)
     - [6. Arrancar el servidor](#6-arrancar-el-servidor)
 - [Variables de entorno (.env)](#variables-de-entorno-env)
+- [Usuarios de prueba](#usuarios-de-prueba)
 - [Estructura del proyecto](#estructura-del-proyecto)
 - [Autenticación JWT](#autenticación-jwt)
 - [Roles de usuario](#roles-de-usuario)
@@ -45,6 +47,41 @@ API REST desarrollada con **Symfony 7.3** y **API Platform 4.2** para la platafo
 - [Manejo de errores](#manejo-de-errores)
 
 ---
+
+## Despliegue con Docker (recomendado)
+
+> **Si usas Docker Compose desde la raíz del proyecto, no necesitas configurar nada en este directorio.** Toda la configuración del backend se inyecta automáticamente desde el `.env` de la raíz.
+
+El contenedor de backend realiza los siguientes pasos de forma automática al arrancar (`docker/entrypoint.sh`):
+
+1. Escribe el `.env.local` con las variables inyectadas por Docker Compose (`DATABASE_URL`, `APP_SECRET`, `JWT_PASSPHRASE`, `CORS_ALLOW_ORIGIN`).
+2. **Genera las claves JWT** (`private.pem` / `public.pem`) si no existen, usando `lexik:jwt:generate-keypair`.
+3. **Espera a que MySQL esté listo** antes de continuar.
+4. **Ejecuta las migraciones** de Doctrine automáticamente.
+5. Crea el directorio `public/images/vehicles/` con los permisos correctos.
+6. Arranca Apache.
+
+Para levantar el entorno completo (backend incluido), consulta el [README raíz](../README.md):
+
+```bash
+# Desde la raíz del repositorio
+cp .env.example .env      # solo la primera vez
+# Edita .env con tus valores (ver README raíz)
+docker compose up --build
+```
+
+Una vez arrancado:
+
+| Recurso | URL |
+|---|---|
+| **API REST** | http://localhost:8000/api |
+| **Documentación OpenAPI** | http://localhost:8000/api/docs |
+
+---
+
+## Instalación manual (desarrollo local)
+
+Sigue esta sección **solo si quieres ejecutar el backend sin Docker** (por ejemplo, para ejecutar los tests o trabajar con el servidor de desarrollo de Symfony).
 
 ## Requisitos previos
 
@@ -200,6 +237,20 @@ JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
 JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
 JWT_PASSPHRASE=OtraContraseñaMuySegura456
 ```
+
+---
+
+## Usuarios de prueba
+
+El archivo `automocion.sql` (cargado automáticamente en Docker) incluye datos de ejemplo con los siguientes usuarios listos para usar:
+
+| Email | Contraseña | Rol |
+|---|---|---|
+| `admin@concesionario.com` | `admin` | `ROLE_ADMIN` |
+| `ventas1@concesionario.com` | `123456` | `ROLE_SALES` |
+| `salma.ruelas@ybarra.es` | `123456` | `ROLE_USER` |
+
+> En el entorno manual con fixtures (`doctrine:fixtures:load`) revisa `src/DataFixtures/AppFixtures.php` para ver los usuarios generados.
 
 ---
 

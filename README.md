@@ -6,18 +6,21 @@ Aplicación web full-stack para la gestión integral de un concesionario de veh�
 
 ## Tabla de Contenidos
 
-- [Arquitectura general](#arquitectura-general)
-- [Estructura del repositorio](#estructura-del-repositorio)
-- [Stack tecnológico](#stack-tecnológico)
-- [Puesta en marcha con Docker (recomendado)](#puesta-en-marcha-con-docker-recomendado)
-  - [Requisitos](#requisitos)
-  - [Variables de entorno del compose](#variables-de-entorno-del-compose)
-  - [Arrancar el entorno completo](#arrancar-el-entorno-completo)
-  - [Servicios y puertos](#servicios-y-puertos)
-- [Puesta en marcha manual](#puesta-en-marcha-manual)
-- [Base de datos](#base-de-datos)
-- [Backups automáticos](#backups-automáticos)
-- [Documentación detallada](#documentación-detallada)
+- [Luxury Cars — Plataforma de Compra y Alquiler de Vehículos de Lujo](#luxury-cars--plataforma-de-compra-y-alquiler-de-vehículos-de-lujo)
+  - [Tabla de Contenidos](#tabla-de-contenidos)
+  - [Arquitectura general](#arquitectura-general)
+  - [Estructura del repositorio](#estructura-del-repositorio)
+  - [Stack tecnológico](#stack-tecnológico)
+  - [Puesta en marcha con Docker (recomendado)](#puesta-en-marcha-con-docker-recomendado)
+    - [Requisitos](#requisitos)
+    - [Variables de entorno del compose](#variables-de-entorno-del-compose)
+    - [Arrancar el entorno completo](#arrancar-el-entorno-completo)
+    - [Servicios y puertos](#servicios-y-puertos)
+    - [Usuarios de prueba (cargados automáticamente con `automocion.sql`)](#usuarios-de-prueba-cargados-automáticamente-con-automocionsql)
+  - [Puesta en marcha manual](#puesta-en-marcha-manual)
+  - [Base de datos](#base-de-datos)
+  - [Backups automáticos](#backups-automáticos)
+  - [Documentación detallada](#documentación-detallada)
 
 ---
 
@@ -60,7 +63,7 @@ ProyectoFinGrado/
 ├── docker/
 │   └── init-db.sh        # Script de inicialización de la BD en Docker
 │
-├── backups/              # Volcados SQL generados automáticamente
+├── backups/              # Backups SQL generados automáticamente
 ├── automocion.sql        # Dump inicial de la base de datos
 └── docker-compose.yml    # Orquestación completa del entorno
 ```
@@ -91,19 +94,33 @@ Esta es la forma más sencilla de levantar el entorno completo sin necesidad de 
 
 ### Variables de entorno del compose
 
-El `docker-compose.yml` acepta las siguientes variables que puedes definir en un archivo `.env` en la raíz del proyecto (junto al `docker-compose.yml`):
+Crea un archivo `.env` en la raíz del proyecto (junto al `docker-compose.yml`) copiando la plantilla incluida:
 
-| Variable | Descripción | Valor por defecto |
+```bash
+cp .env.example .env
+```
+
+Edita `.env` y rellena los cinco valores requeridos:
+
+| Variable | Descripción | Ejemplo |
 |---|---|---|
-| `APP_SECRET` | Cadena secreta para Symfony. **Cámbiala antes de desplegar en producción.** | `cambia_esto_por_un_secreto_seguro` |
+| `SERVER_URL` | URL pública de la aplicación (sin barra final). Usa `http://localhost` para desarrollo local. | `http://localhost` |
+| `APP_SECRET` | Cadena aleatoria de 32+ caracteres para Symfony. Genera una con `openssl rand -hex 32`. | `a4f8c2e1b9d7...` |
+| `JWT_PASSPHRASE` | Contraseña usada para cifrar la clave privada JWT. Puede ser cualquier cadena larga. | `mi_clave_jwt_segura` |
+| `DB_PASSWORD` | Contraseña del usuario de la base de datos MySQL. | `mi_password_db` |
+| `CORS_ALLOW_ORIGIN` | Expresión regular de los orígenes permitidos para CORS. En local no es necesario cambiarla. | `^https?://(localhost\|127\.0\.0\.1)(:[0-9]+)?$` |
 
-> El resto de variables (credenciales de BD, `JWT_PASSPHRASE`, URLs) están definidas directamente en el `docker-compose.yml`. Revísalo antes de un despliegue en producción y ajusta los valores sensibles.
-
-**Ejemplo de `.env` raíz mínimo:**
+**Ejemplo de `.env` completo para desarrollo local:**
 
 ```env
+SERVER_URL=http://localhost
 APP_SECRET=a4f8c2e1b9d7f3a6c5e2b1d8f4a9c3e7b2d6f1a5c8e3b7d4f2a9c6e1b5d3f8a2
+JWT_PASSPHRASE=mi_clave_jwt_segura_tfg
+DB_PASSWORD=mi_password_db
+CORS_ALLOW_ORIGIN=^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$
 ```
+
+> Estas variables se inyectan automáticamente en todos los servicios Docker (backend, frontend, base de datos). No es necesario tocar ningún `.env` dentro de `backend/` o `frontend/` para el despliegue con Docker.
 
 ### Arrancar el entorno completo
 
@@ -144,9 +161,17 @@ docker compose down -v
 | **Backend API** | http://localhost:8000/api | API REST |
 | **API Docs** | http://localhost:8000/api/docs | Documentación interactiva OpenAPI |
 | **phpMyAdmin** | http://localhost:8080 | Gestión de la base de datos |
-| **MySQL** | localhost:3306 | Acceso directo a la BD (usuario: `pfg_user`, contraseña: `pfg_password`) |
+| **MySQL** | localhost:3306 | Acceso directo a la BD (usuario: `pfg_user`, contraseña: valor de `DB_PASSWORD` en `.env`) |
 
-> Las credenciales anteriores son las del entorno Docker de desarrollo. No usar en producción.
+> El usuario `root` de MySQL tiene contraseña `root` en el contenedor Docker. phpMyAdmin se conecta como `root` automáticamente. Estas credenciales son solo para desarrollo local; cámbialas antes de cualquier despliegue en producción.
+
+### Usuarios de prueba (cargados automáticamente con `automocion.sql`)
+
+| Email | Contraseña | Rol |
+|---|---|---|
+| `admin@concesionario.com` | `admin` | Administrador |
+| `ventas1@concesionario.com` | `123456` | Responsable de ventas |
+| `salma.ruelas@ybarra.es` | `123456` | Usuario cliente |
 
 ---
 

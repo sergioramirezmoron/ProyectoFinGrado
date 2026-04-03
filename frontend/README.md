@@ -223,6 +223,10 @@ frontend/
 
 ## Instalación y Puesta en Marcha
 
+> **Con Docker Compose no es necesario instalar nada manualmente.** El frontend se compila y sirve automáticamente al ejecutar `docker compose up --build` desde la raíz del proyecto. Consulta el [README raíz](../README.md) para instrucciones de Docker.
+
+La siguiente guía es para **ejecutar el frontend en modo desarrollo** (con HMR), sin Docker.
+
 ### 1. Clonar el repositorio
 
 ```bash
@@ -263,17 +267,30 @@ La aplicación estará disponible en `http://localhost:5173`.
 | `VITE_BACKEND_URL` | URL base del backend, usada para construir las URLs absolutas de las imágenes de vehículos | `http://localhost:8000` |
 
 > Las variables en Vite **deben** tener el prefijo `VITE_` para ser accesibles en el código del cliente mediante `import.meta.env.VITE_*`.
+>
+> **Importante:** Vite incrusta las variables de entorno en tiempo de compilación (build time), no en tiempo de ejecución. Esto significa que el valor de `VITE_BACKEND_URL` queda fijado en el bundle generado. Si cambias la URL del backend después de compilar, debes volver a compilar.
 
-**Ejemplo de `.env` para desarrollo:**
+**Ejemplo de `.env` para desarrollo local:**
 
 ```env
 VITE_BACKEND_URL=http://localhost:8000
 ```
 
-**Ejemplo de `.env` para producción:**
+**Ejemplo de `.env` para producción (VPS o dominio propio):**
 
 ```env
 VITE_BACKEND_URL=https://api.luxurycars.example.com
+```
+
+### Variables de entorno en Docker
+
+En el despliegue con Docker Compose, el frontend se compila durante el `docker compose up --build`. El fichero `frontend/.env` es copiado dentro del contenedor durante la fase de build, por lo que **debe existir y tener el valor correcto de `VITE_BACKEND_URL` antes de ejecutar `docker compose up --build`**.
+
+Para desarrollo local con Docker el valor por defecto (`http://localhost:8000`) funciona sin cambios. Para desplegar en un servidor con otra IP o dominio, edita `frontend/.env` antes de lanzar el build:
+
+```env
+# frontend/.env — ajusta si el backend no está en localhost:8000
+VITE_BACKEND_URL=http://TU_IP_O_DOMINIO:8000
 ```
 
 ---
