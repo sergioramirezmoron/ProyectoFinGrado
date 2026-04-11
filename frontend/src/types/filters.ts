@@ -12,6 +12,8 @@ export interface FilterState {
   maxPrice: string;
   minYear: string;
   maxYear: string;
+  minKm: string;
+  maxKm: string;
   province: string;
   color: string;
   bodyType: string;
@@ -33,4 +35,6 @@ export interface FilterProps {
     bodyTypes: SelectOption[];
   };
   mode: "SALE" | "RENT";
+  isOpen?: boolean;
+  onClose?: () => void;
 }

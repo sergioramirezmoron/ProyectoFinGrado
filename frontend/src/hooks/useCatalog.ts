@@ -32,6 +32,8 @@ const EMPTY_FILTERS: FilterState = {
   maxPrice: "",
   minYear: "",
   maxYear: "",
+  minKm: "",
+  maxKm: "",
   province: "",
   color: "",
   bodyType: "",
@@ -45,6 +47,7 @@ export const useCatalog = (mode: "SALE" | "RENT") => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState("createdAt_desc");
+  const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
   const [options, setOptions] = useState({
     brands: [] as SelectOption[],
@@ -93,8 +96,17 @@ export const useCatalog = (mode: "SALE" | "RENT") => {
   }, []);
 
   const filteredVehicles = useMemo(() => {
+    const searchLower = search.trim().toLowerCase();
     return allVehicles.filter((v) => {
       if (v.type !== mode) return false;
+
+      if (searchLower) {
+        const brandName = typeof v.brand === "string" ? "" : v.brand.name.toLowerCase();
+        const modelName = typeof v.model === "string" ? "" : v.model.name.toLowerCase();
+        const fullName = `${brandName} ${modelName}`;
+        const description = (v.description ?? "").toLowerCase();
+        if (!fullName.includes(searchLower) && !description.includes(searchLower)) return false;
+      }
 
       if (mode === "RENT") {
         if (v.status !== "AVAILABLE") return false;
@@ -118,6 +130,8 @@ export const useCatalog = (mode: "SALE" | "RENT") => {
       if (filters.maxPrice && price > toNumber(filters.maxPrice)) return false;
       if (filters.minYear && v.year < Number(filters.minYear)) return false;
       if (filters.maxYear && v.year > Number(filters.maxYear)) return false;
+      if (filters.minKm && v.kilometres < toNumber(filters.minKm)) return false;
+      if (filters.maxKm && v.kilometres > toNumber(filters.maxKm)) return false;
 
       return true;
     });
@@ -135,6 +149,9 @@ export const useCatalog = (mode: "SALE" | "RENT") => {
       } else if (field === "year") {
         vA = a.year;
         vB = b.year;
+      } else if (field === "km") {
+        vA = a.kilometres;
+        vB = b.kilometres;
       } else {
         vA = new Date(a.createdAt).getTime();
         vB = new Date(b.createdAt).getTime();
@@ -147,7 +164,7 @@ export const useCatalog = (mode: "SALE" | "RENT") => {
 
   useEffect(() => {
     setPage(1);
-  }, [filters, mode]);
+  }, [filters, search, mode]);
 
   const totalItems = sortedVehicles.length;
   const totalPages = Math.ceil(totalItems / CATALOG_ITEMS_PER_PAGE) || 1;
@@ -162,7 +179,10 @@ export const useCatalog = (mode: "SALE" | "RENT") => {
     setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleClearFilters = () => setFilters(EMPTY_FILTERS);
+  const handleClearFilters = () => {
+    setFilters(EMPTY_FILTERS);
+    setSearch("");
+  };
 
   return {
     loading,
@@ -170,6 +190,8 @@ export const useCatalog = (mode: "SALE" | "RENT") => {
     setPage,
     sort,
     setSort,
+    search,
+    setSearch,
     options,
     filters,
     totalItems,

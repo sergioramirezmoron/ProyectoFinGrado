@@ -1,16 +1,21 @@
-import { ChevronLeft, ChevronRight, Search, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { ChevronLeft, ChevronRight, Search, Loader2, SlidersHorizontal, X } from "lucide-react";
 import VehicleCard from "../../components/public/VehicleCard";
 import VehicleFilter from "../../components/public/Filter";
 import type { CatalogProps } from "../../types/filters";
 import { useCatalog } from "../../hooks/useCatalog";
 
 const Catalog = ({ mode }: CatalogProps) => {
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
   const {
     loading,
     page,
     setPage,
     sort,
     setSort,
+    search,
+    setSearch,
     options,
     filters,
     totalItems,
@@ -20,6 +25,8 @@ const Catalog = ({ mode }: CatalogProps) => {
     handleClearFilters,
   } = useCatalog(mode);
 
+  const activeFilterCount = Object.values(filters).filter(Boolean).length + (search ? 1 : 0);
+
   return (
     <div className="flex flex-col lg:flex-row gap-8">
       <VehicleFilter
@@ -28,27 +35,77 @@ const Catalog = ({ mode }: CatalogProps) => {
         options={options}
         onChange={handleFilterChange}
         onClear={handleClearFilters}
+        isOpen={filtersOpen}
+        onClose={() => setFiltersOpen(false)}
       />
 
       <main className="lg:w-3/4">
-        <div className="flex justify-between items-center mb-6 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-          <p className="text-sm font-semibold text-slate-600">
-            {totalItems} vehículos{" "}
-            <span className="text-slate-400 font-normal uppercase text-[10px] tracking-widest">
-              {mode === "SALE" ? "en venta" : "en alquiler"}
-            </span>
-          </p>
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-            className="bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg p-2 outline-none"
-          >
-            <option value="createdAt_desc">Más recientes</option>
-            <option value="price_asc">Precio: Menor a Mayor</option>
-            <option value="price_desc">Precio: Mayor a Menor</option>
-            <option value="year_desc">Año: Más nuevos</option>
-          </select>
+        {/* Barra superior */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+          {/* Buscador */}
+          <div className="relative flex-1">
+            <Search
+              size={16}
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+            />
+            <input
+              type="text"
+              placeholder="Buscar por marca, modelo..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-10 pr-10 py-3 bg-white border border-gray-200 rounded-xl outline-none text-sm text-gray-800 placeholder-gray-400 shadow-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-all"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                aria-label="Limpiar búsqueda"
+              >
+                <X size={16} />
+              </button>
+            )}
+          </div>
+
+          {/* Fila inferior: contador + ordenar + botón filtros */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Botón filtros — solo móvil */}
+            <button
+              onClick={() => setFiltersOpen(true)}
+              className="lg:hidden flex items-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 shadow-sm hover:border-blue-400 transition-colors relative"
+            >
+              <SlidersHorizontal size={16} className="text-blue-600" />
+              Filtros
+              {activeFilterCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-blue-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+
+            {/* Ordenar */}
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+              className="bg-white border border-gray-200 text-gray-700 text-sm rounded-xl px-3 py-3 outline-none shadow-sm hover:border-blue-400 focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-all"
+            >
+              <option value="createdAt_desc">Más recientes</option>
+              <option value="price_asc">Precio: Menor a Mayor</option>
+              <option value="price_desc">Precio: Mayor a Menor</option>
+              <option value="year_desc">Año: Más nuevos</option>
+              <option value="year_asc">Año: Más antiguos</option>
+              <option value="km_asc">Km: Menor a Mayor</option>
+              <option value="km_desc">Km: Mayor a Menor</option>
+            </select>
+          </div>
         </div>
+
+        {/* Contador de resultados */}
+        <p className="text-sm font-semibold text-slate-600 mb-4">
+          {totalItems} vehículo{totalItems !== 1 ? "s" : ""}{" "}
+          <span className="text-slate-400 font-normal uppercase text-[10px] tracking-widest">
+            {mode === "SALE" ? "en venta" : "en alquiler"}
+          </span>
+        </p>
 
         {loading && displayedVehicles.length === 0 ? (
           <div className="flex justify-center py-20">
