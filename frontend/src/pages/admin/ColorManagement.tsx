@@ -57,8 +57,16 @@ const ColorManagement = () => {
 
   const handleAddColor = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     setMessage({ text: "", type: "" });
+    const trimmed = newName.trim().toLowerCase();
+    if (colors.some((c) => c.name.trim().toLowerCase() === trimmed)) {
+      setMessage({
+        text: `Ya existe un color con el nombre "${newName.trim()}".`,
+        type: "error",
+      });
+      return;
+    }
+    setIsSubmitting(true);
     try {
       const response = await createColor(newName, newCode);
       setColors((prev) => [...prev, response.data]);

@@ -42,7 +42,9 @@ const Register = () => {
     const fetchProvinces = async () => {
       try {
         const response = await getProvinces();
-        const data = response.data.member || [];
+        const data = (response.data.member || []).sort((a: Province, b: Province) =>
+          a.name.localeCompare(b.name, "es")
+        );
         setProvinces(data);
         if (data.length > 0) {
           setSelectedProvince(data[0]["@id"]);

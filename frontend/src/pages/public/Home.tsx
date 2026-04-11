@@ -65,7 +65,7 @@ const Home = () => {
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img
-            src="https://images.unsplash.com/photo-1503376763036-066120622c74?q=75&w=1920&fm=webp&fit=crop"
+            src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=75&w=1920&fm=webp&fit=crop"
             alt="Luxury Car Background"
             fetchPriority="high"
             className="w-full h-full object-cover scale-105 animate-[pulse_10s_ease-in-out_infinite]"
@@ -73,7 +73,7 @@ const Home = () => {
           <div className="absolute inset-0 bg-linear-to-r from-slate-950 via-slate-900/80 to-transparent"></div>
           <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-slate-950"></div>
         </div>
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mt-10">
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mt-10 pb-20 lg:pb-0">
           <div className="space-y-10 animate-in slide-in-from-bottom-10 fade-in duration-1000">
             <div className="inline-flex items-center gap-2 px-4 py-2 border border-blue-500/30 rounded-full bg-blue-500/10 backdrop-blur-md">
               <span className="relative flex h-2 w-2">

@@ -10,6 +10,7 @@ import {
   Clock,
   CalendarDays,
   ChevronRight,
+  RefreshCw,
 } from "lucide-react";
 import api from "../../api/axios";
 import StatCard from "../../components/ui/StatCard";
@@ -43,7 +44,7 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="flex h-96 items-center justify-center px-4">
+      <div className="flex h-96 items-center justify-center">
         <div className="text-center text-gray-500 flex flex-col items-center gap-2">
           <Loader2 className="animate-spin text-blue-600" size={32} />
           <p className="text-sm">Cargando estadísticas del sistema...</p>
@@ -54,7 +55,7 @@ const Dashboard = () => {
 
   if (!stats)
     return (
-      <div className="text-red-500 px-4 py-8 text-center">
+      <div className="text-red-500 py-8 text-center">
         No se pudieron cargar los datos.
       </div>
     );
@@ -86,17 +87,53 @@ const Dashboard = () => {
     },
   ];
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const pending = reservations.filter((r) => r.status === "PENDING").length;
+  const confirmed = reservations.filter((r) => r.status === "CONFIRMED").length;
+  const activeNow = reservations.filter((r) => {
+    if (r.status !== "CONFIRMED") return false;
+    return new Date(r.startDate) <= today && today <= new Date(r.endDate);
+  }).length;
+
+  const fleetItems = [
+    {
+      label: "Disponibles",
+      value: stats.vehiclesAvailable,
+      bg: "bg-blue-50",
+      border: "border-blue-100",
+      text: "text-blue-700",
+      sub: "text-blue-500",
+    },
+    {
+      label: "Reservados",
+      value: stats.vehiclesReserved,
+      bg: "bg-yellow-50",
+      border: "border-yellow-100",
+      text: "text-yellow-700",
+      sub: "text-yellow-500",
+    },
+    {
+      label: "Vendidos",
+      value: stats.vehiclesSold,
+      bg: "bg-red-50",
+      border: "border-red-100",
+      text: "text-red-700",
+      sub: "text-red-500",
+    },
+  ];
+
   return (
-    <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-500 mt-6 sm:mt-10 px-4 sm:px-6 lg:px-0">
+    <div className="space-y-5 animate-in fade-in duration-500">
       {/* Header */}
-      <div className="flex justify-between items-center gap-3 mb-2">
+      <div className="flex justify-between items-start gap-3">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-800">
             Panel de Control
           </h1>
           <p className="text-gray-500 text-xs sm:text-sm mt-1">
-            Resumen en tiempo real.
-            <span className="text-xs ml-2 opacity-60">
+            Resumen en tiempo real
+            <span className="ml-2 opacity-60">
               (
               {new Date(stats.serverTime.date).toLocaleTimeString([], {
                 hour: "2-digit",
@@ -108,15 +145,15 @@ const Dashboard = () => {
         </div>
         <button
           onClick={fetchStats}
-          className="text-xs sm:text-sm text-white hover:text-blue-800 font-medium flex items-center gap-1 transition-colors border-2 border-blue-900 px-3 py-2 rounded bg-sky-500 hover:cursor-pointer whitespace-nowrap shrink-0"
+          className="flex items-center gap-1.5 text-xs sm:text-sm text-white font-semibold px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition-colors shrink-0 cursor-pointer"
         >
-          <Loader2 size={14} className={loading ? "animate-spin" : "hidden"} />
-          Actualizar
+          <RefreshCw size={13} className={loading ? "animate-spin" : ""} />
+          <span className="hidden sm:inline">Actualizar</span>
         </button>
       </div>
 
-      {/* Stat Cards Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* Stat Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {statCardsData.map((stat, index) => (
           <StatCard
             key={index}
@@ -129,94 +166,63 @@ const Dashboard = () => {
       </div>
 
       {/* Reservations Panel */}
-      {(() => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const pending = reservations.filter((r) => r.status === "PENDING").length;
-        const confirmed = reservations.filter((r) => r.status === "CONFIRMED").length;
-        const activeNow = reservations.filter((r) => {
-          if (r.status !== "CONFIRMED") return false;
-          return new Date(r.startDate) <= today && today <= new Date(r.endDate);
-        }).length;
-
-        return (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-slate-800 flex items-center gap-2 text-sm sm:text-base">
-                <CalendarDays size={18} className="text-blue-500" />
-                Reservas de Alquiler
-              </h3>
-              <Link
-                to="/admin/reservas"
-                className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
-              >
-                Ver todas <ChevronRight size={14} />
-              </Link>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-3 text-center">
-                <p className="text-2xl font-black text-yellow-700">{pending}</p>
-                <p className="text-xs text-yellow-600 font-bold uppercase tracking-wide mt-0.5">Pendientes</p>
-              </div>
-              <div className="bg-green-50 border border-green-100 rounded-xl p-3 text-center">
-                <p className="text-2xl font-black text-green-700">{confirmed}</p>
-                <p className="text-xs text-green-600 font-bold uppercase tracking-wide mt-0.5">Confirmadas</p>
-              </div>
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-center">
-                <p className="text-2xl font-black text-blue-700">{activeNow}</p>
-                <p className="text-xs text-blue-600 font-bold uppercase tracking-wide mt-0.5">Activas hoy</p>
-              </div>
-            </div>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-bold text-slate-800 flex items-center gap-2 text-sm sm:text-base">
+            <CalendarDays size={17} className="text-blue-500" />
+            Reservas de Alquiler
+          </h3>
+          <Link
+            to="/admin/reservas"
+            className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+          >
+            Ver todas <ChevronRight size={14} />
+          </Link>
+        </div>
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-3 text-center">
+            <p className="text-2xl sm:text-3xl font-black text-yellow-700">{pending}</p>
+            <p className="text-[10px] sm:text-xs text-yellow-600 font-bold uppercase tracking-wide mt-1">
+              Pendientes
+            </p>
           </div>
-        );
-      })()}
+          <div className="bg-green-50 border border-green-100 rounded-xl p-3 text-center">
+            <p className="text-2xl sm:text-3xl font-black text-green-700">{confirmed}</p>
+            <p className="text-[10px] sm:text-xs text-green-600 font-bold uppercase tracking-wide mt-1">
+              Confirmadas
+            </p>
+          </div>
+          <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-center">
+            <p className="text-2xl sm:text-3xl font-black text-blue-700">{activeNow}</p>
+            <p className="text-[10px] sm:text-xs text-blue-600 font-bold uppercase tracking-wide mt-1">
+              Activas hoy
+            </p>
+          </div>
+        </div>
+      </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+      {/* Fleet + Sidebar */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
         {/* Fleet Status */}
-        <div className="lg:col-span-2">
-          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 h-full">
-            <h3 className="font-bold text-slate-800 mb-4 sm:mb-6 flex items-center gap-2 text-sm sm:text-base">
-              <TrendingUp size={18} className="text-gray-400" />
-              Estado de la Flota
-            </h3>
-
-            {/* ← clave: en móvil 1 columna, desde sm 3 columnas */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-center mb-4 sm:mb-8">
-              <div className="p-4 sm:p-5 bg-blue-50/50 rounded-xl border border-blue-100 hover:shadow-md transition-shadow flex sm:flex-col items-center sm:items-center justify-between sm:justify-center gap-3 sm:gap-0">
-                <div className="text-xs text-blue-600 uppercase font-bold tracking-wider sm:mb-2 sm:hidden">
-                  Disponibles
-                </div>
-                <div className="text-3xl sm:text-3xl font-extrabold text-blue-700">
-                  {stats.vehiclesAvailable}
-                </div>
-                <div className="text-xs text-blue-600 uppercase font-bold tracking-wider mt-0 sm:mt-1 hidden sm:block">
-                  Disponibles
-                </div>
+        <div className="lg:col-span-2 bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100">
+          <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 text-sm sm:text-base">
+            <TrendingUp size={17} className="text-gray-400" />
+            Estado de la Flota
+          </h3>
+          <div className="grid grid-cols-3 gap-2 sm:gap-4">
+            {fleetItems.map((item) => (
+              <div
+                key={item.label}
+                className={`${item.bg} ${item.border} border rounded-xl p-3 sm:p-5 text-center hover:shadow-md transition-shadow`}
+              >
+                <p className={`text-2xl sm:text-3xl font-extrabold ${item.text}`}>
+                  {item.value}
+                </p>
+                <p className={`text-[10px] sm:text-xs ${item.sub} font-bold uppercase tracking-wide mt-1`}>
+                  {item.label}
+                </p>
               </div>
-              <div className="p-4 sm:p-5 bg-yellow-50/50 rounded-xl border border-yellow-100 hover:shadow-md transition-shadow flex sm:flex-col items-center sm:items-center justify-between sm:justify-center gap-3 sm:gap-0">
-                <div className="text-xs text-yellow-600 uppercase font-bold tracking-wider sm:mb-2 sm:hidden">
-                  Reservados
-                </div>
-                <div className="text-3xl sm:text-3xl font-extrabold text-yellow-700">
-                  {stats.vehiclesReserved}
-                </div>
-                <div className="text-xs text-yellow-600 uppercase font-bold tracking-wider mt-0 sm:mt-1 hidden sm:block">
-                  Reservados
-                </div>
-              </div>
-              <div className="p-4 sm:p-5 bg-red-50/50 rounded-xl border border-red-100 hover:shadow-md transition-shadow flex sm:flex-col items-center sm:items-center justify-between sm:justify-center gap-3 sm:gap-0">
-                <div className="text-xs text-red-600 uppercase font-bold tracking-wider sm:mb-2 sm:hidden">
-                  Vendidos
-                </div>
-                <div className="text-3xl sm:text-3xl font-extrabold text-red-700">
-                  {stats.vehiclesSold}
-                </div>
-                <div className="text-xs text-red-600 uppercase font-bold tracking-wider mt-0 sm:mt-1 hidden sm:block">
-                  Vendidos
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
@@ -237,15 +243,13 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Recent Acti
-          vity */}
+          {/* Recent Activity */}
           <div className="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-gray-100 flex-1 flex flex-col">
-            <h3 className="font-bold text-slate-800 mb-3 sm:mb-4 flex items-center gap-2 text-sm">
+            <h3 className="font-bold text-slate-800 mb-3 flex items-center gap-2 text-sm">
               <Clock size={14} className="text-blue-500" />
               Actividad Reciente
             </h3>
-
-            <div className="space-y-3 overflow-y-auto pr-1 custom-scrollbar flex-1 max-h-64">
+            <div className="space-y-3 overflow-y-auto pr-1 flex-1 max-h-56">
               {stats.recentActivity && stats.recentActivity.length > 0 ? (
                 stats.recentActivity.map((act, i) => (
                   <div
@@ -253,9 +257,9 @@ const Dashboard = () => {
                     className="flex gap-3 items-start relative pb-3 last:pb-0"
                   >
                     {i !== stats.recentActivity.length - 1 && (
-                      <div className="absolute left-1 top-2 bottom-0 w-px bg-gray-100"></div>
+                      <div className="absolute left-1 top-2 bottom-0 w-px bg-gray-100" />
                     )}
-                    <div className="mt-1.5 w-2.5 h-2.5 rounded-full bg-blue-100 border-2 border-blue-500 shrink-0 z-10"></div>
+                    <div className="mt-1.5 w-2.5 h-2.5 rounded-full bg-blue-100 border-2 border-blue-500 shrink-0 z-10" />
                     <div className="min-w-0 flex-1">
                       <p
                         className="text-xs text-slate-600 font-medium leading-snug line-clamp-2"
@@ -263,7 +267,7 @@ const Dashboard = () => {
                       >
                         {act.text.replace("Mensaje en chat", "Chat")}
                       </p>
-                      <span className="text-[10px] text-gray-400 block mt-1">
+                      <span className="text-[10px] text-gray-400 block mt-0.5">
                         {new Date(act.date).toLocaleDateString([], {
                           day: "2-digit",
                           month: "short",

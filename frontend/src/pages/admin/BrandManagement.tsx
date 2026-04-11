@@ -53,8 +53,16 @@ const BrandManagement = () => {
 
   const handleAddBrand = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     setMessage({ text: "", type: "" });
+    const trimmed = newName.trim().toLowerCase();
+    if (brands.some((b) => b.name.trim().toLowerCase() === trimmed)) {
+      setMessage({
+        text: `Ya existe una marca con el nombre "${newName.trim()}".`,
+        type: "error",
+      });
+      return;
+    }
+    setIsSubmitting(true);
     try {
       const response = await createBrand(newName);
       setBrands((prev) => [...prev, response.data]);

@@ -53,8 +53,16 @@ const ProvinceManagement = () => {
 
   const handleAddProvince = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     setMessage({ text: "", type: "" });
+    const trimmed = newName.trim().toLowerCase();
+    if (provinces.some((p) => p.name.trim().toLowerCase() === trimmed)) {
+      setMessage({
+        text: `Ya existe una provincia con el nombre "${newName.trim()}".`,
+        type: "error",
+      });
+      return;
+    }
+    setIsSubmitting(true);
     try {
       const response = await createProvince(newName);
       setProvinces((prev) => [...prev, response.data]);

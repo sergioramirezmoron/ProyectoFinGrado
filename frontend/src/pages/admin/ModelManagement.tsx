@@ -72,8 +72,22 @@ const ModelManagement = () => {
 
   const handleAddModel = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     setMessage({ text: "", type: "" });
+    const trimmed = newName.trim().toLowerCase();
+    if (
+      models.some(
+        (m) =>
+          m.brand["@id"] === selectedBrandIri &&
+          m.name.trim().toLowerCase() === trimmed,
+      )
+    ) {
+      setMessage({
+        text: `Ya existe un modelo con el nombre "${newName.trim()}" para esta marca.`,
+        type: "error",
+      });
+      return;
+    }
+    setIsSubmitting(true);
     try {
       const response = await api.post("/models", {
         name: newName,
