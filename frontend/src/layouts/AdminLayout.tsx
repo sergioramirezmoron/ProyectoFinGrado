@@ -7,7 +7,7 @@ const AdminLayout = () => {
     <div className="min-h-screen bg-gray-100 flex flex-col text-slate-800 font-sans">
       <Header />
 
-      <main className="flex-1 pt-20 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 container mx-auto">
+      <main className="flex-1 pt-20 pb-6 px-4 sm:pb-8 sm:px-6 lg:px-8 container mx-auto">
         <Outlet />
       </main>
 
