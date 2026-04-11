@@ -85,6 +85,20 @@ const LegalNotice = () => {
             transformación o cualquier otra forma de explotación de dichos contenidos sin la
             autorización expresa y por escrito de LuxuryCars, S.L.
           </p>
+          <p className="mt-4 text-slate-400">
+            <span className="text-slate-300 font-medium">Créditos fotográficos:</span> Las
+            fotografías de los vehículos mostradas en este sitio web han sido obtenidas de{" "}
+            <a
+              href="https://olympcars.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:underline"
+            >
+              olympcars.com
+            </a>
+            . LuxuryCars, S.L. reconoce los derechos de imagen de los propietarios originales de
+            dichas fotografías y las utiliza únicamente con fines ilustrativos y demostrativos.
+          </p>
         </section>
 
         {/* 4. Condiciones de acceso */}
