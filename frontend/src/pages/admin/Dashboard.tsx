@@ -145,7 +145,8 @@ const Dashboard = () => {
         </div>
         <button
           onClick={fetchStats}
-          className="flex items-center gap-1.5 text-xs sm:text-sm text-white font-semibold px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition-colors shrink-0 cursor-pointer"
+          disabled={loading}
+          className="flex items-center gap-1.5 text-xs sm:text-sm text-white font-semibold px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition-colors shrink-0 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
         >
           <RefreshCw size={13} className={loading ? "animate-spin" : ""} />
           <span className="hidden sm:inline">Actualizar</span>

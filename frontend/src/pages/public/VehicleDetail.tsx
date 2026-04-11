@@ -181,7 +181,7 @@ const VehicleDetail = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-20">
+      <div className="bg-white border-b border-gray-200 sticky top-16 sm:top-20 z-20">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}
@@ -234,11 +234,11 @@ const VehicleDetail = () => {
               )}
             </div>
 
-            <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-sm border border-gray-100">
               <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
                 <Settings2 className="text-blue-600" /> Ficha Técnica
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-y-8 gap-x-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-y-6 sm:gap-y-8 gap-x-4">
                 <SpecItem
                   icon={<Calendar />}
                   label="Año"
@@ -287,7 +287,7 @@ const VehicleDetail = () => {
                 />
               </div>
             </div>
-            <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-sm border border-gray-100">
               <h3 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
                 <Info className="text-blue-600" /> Descripción
               </h3>

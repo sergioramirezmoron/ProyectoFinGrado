@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import PublicLayout from "./layouts/PublicLayout";
 import AdminLayout from "./layouts/AdminLayout";
 import { ProtectedRoute } from "./helpers/ProtectedRoute";
@@ -26,6 +26,7 @@ const ProvinceManagement = lazy(() => import("./pages/admin/ProvinceManagement")
 const ModelManagement  = lazy(() => import("./pages/admin/ModelManagement"));
 const BrandManagement  = lazy(() => import("./pages/admin/BrandManagement"));
 const AdminReservations = lazy(() => import("./pages/admin/AdminReservations"));
+const NotFound         = lazy(() => import("./pages/public/NotFound"));
 
 // Fallback minimalista que respeta el fondo oscuro de la app
 const PageLoader = () => (
@@ -75,7 +76,7 @@ function App() {
           <Route path="/admin/reservas" element={<AdminReservations />} />
         </Route>
 
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
   );
