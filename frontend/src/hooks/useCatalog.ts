@@ -135,7 +135,7 @@ export const useCatalog = (mode: "SALE" | "RENT") => {
 
       return true;
     });
-  }, [allVehicles, filters, mode]);
+  }, [allVehicles, filters, search, mode]);
 
   const sortedVehicles = useMemo(() => {
     const data = [...filteredVehicles];
