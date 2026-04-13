@@ -76,8 +76,7 @@ class Reservation
     {
         if ($this->vehicle && $this->startDate && $this->endDate) {
             $diff = $this->startDate->diff($this->endDate);
-            $days = $diff->days;
-            if ($days === 0) $days = 1;
+            $days = $diff->days + 1;
 
             $pricePerDay = (float) ($this->vehicle->getDailyPrice() ?? 0);
             $this->totalPrice = $days * $pricePerDay;

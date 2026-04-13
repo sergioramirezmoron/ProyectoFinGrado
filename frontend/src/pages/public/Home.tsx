@@ -246,9 +246,9 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="py-32 bg-slate-950 relative overflow-hidden">
+      <section className="py-16 bg-slate-950 relative overflow-hidden">
   <div className="w-full max-w-7xl mx-auto px-6 relative z-10">
-    <div className="text-center mb-20 space-y-4">
+    <div className="text-center mb-12 space-y-4">
       <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
         Excelencia sin <span className="text-blue-500">Límites</span>
       </h2>
@@ -258,17 +258,17 @@ const Home = () => {
         {
           icon: Shield,
           title: "Garantía Total",
-          desc: "Cobertura integral...",
+          desc: "Cada vehículo pasa por una revisión técnica exhaustiva de 150 puntos. Disfruta de cobertura integral durante 24 meses, con asistencia en carretera incluida y sin letra pequeña.",
         },
         {
           icon: Zap,
           title: "Entrega Express",
-          desc: "Tu vehículo listo en menos de 24h...",
+          desc: "Sabemos que la espera no forma parte del lujo. Coordinamos la entrega en tu domicilio o en nuestras instalaciones en menos de 24 horas, con documentación lista y el depósito lleno.",
         },
         {
           icon: Award,
           title: "Club Elite",
-          desc: "Membresía exclusiva...",
+          desc: "Accede a invitaciones privadas, preventas exclusivas y eventos en circuito reservados para los miembros más selectos. Una experiencia que va mucho más allá de la compra.",
         },
       ].map((feature, idx) => (
         <div
@@ -310,7 +310,7 @@ const Home = () => {
 </section>
 
       {!user && (
-        <section className="py-40 relative overflow-hidden flex items-center justify-center bg-fixed">
+        <section className="py-24 relative overflow-hidden flex items-center justify-center bg-fixed">
           <div className="absolute inset-0">
             <img
               src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=50&w=1200&fm=webp&fit=crop"
