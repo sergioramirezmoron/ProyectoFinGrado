@@ -27,10 +27,13 @@ echo "✔ Dump generado"
 
 # Subir a GitHub
 cd /tmp
+rm -rf backup-repo
+
 git config --global user.email "backup@railway"
 git config --global user.name "Railway Backup"
 
-git clone "https://${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_REPO}.git" backup-repo 2>/dev/null
+echo "▶ Clonando repo de backups..."
+git clone "https://${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_REPO}.git" backup-repo
 cp "${TMPFILE}" backup-repo/
 cd backup-repo
 git add "${FILENAME}"
