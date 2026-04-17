@@ -37,7 +37,7 @@ git clone "https://${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_REPO}.git"
 mkdir -p backup-repo/backups
 cp "${TMPFILE}" backup-repo/backups/
 cd backup-repo
-git add "backups/${FILENAME}"
+git add -f "backups/${FILENAME}"
 git commit -m "backup: ${DATE}"
 git push
 
