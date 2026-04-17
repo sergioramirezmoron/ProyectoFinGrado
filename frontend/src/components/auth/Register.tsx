@@ -74,8 +74,14 @@ const Register = () => {
       const loginResponse = await loginUser(email, password);
       login(loginResponse.data.token);
       navigate("/");
-    } catch (err) {
-      setError(`Error al registrar ${err}`);
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { violations?: { message: string }[]; detail?: string } } };
+      const violations = axiosErr.response?.data?.violations;
+      if (violations && violations.length > 0) {
+        setError(violations[0].message);
+      } else {
+        setError("Error al registrar. Inténtalo de nuevo.");
+      }
     } finally {
       setLoading(false);
     }

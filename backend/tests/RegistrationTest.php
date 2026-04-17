@@ -39,7 +39,7 @@ class RegistrationTest extends ApiTestCase
 
         // 3. MENSAJE DE ERROR
         $this->assertStringContainsString(
-            'Ya existe una cuenta con este email',
+            'Este correo electrónico ya está registrado. Inicia sesión o usa otro correo.',
             $client->getResponse()->getContent(false)
         );
     }

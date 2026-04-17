@@ -20,7 +20,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
-#[UniqueEntity(fields: ['email'], message: 'Ya existe una cuenta con este email')]
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_PHONE', fields: ['phone'])]
+#[UniqueEntity(fields: ['email'], message: 'Este correo electrónico ya está registrado. Inicia sesión o usa otro correo.')]
+#[UniqueEntity(fields: ['phone'], message: 'Este número de teléfono ya está registrado.')]
 #[ApiResource(
     operations: [
         new GetCollection(),
@@ -76,7 +78,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:read', 'user:write', 'reservation:read'])]
     private ?string $surname = null;
 
-    #[ORM\Column(length: 20, nullable: true)]
+    #[ORM\Column(length: 20, nullable: true, unique: true)]
     #[Groups(['user:read', 'user:write'])]
     private ?string $phone = null;
 
