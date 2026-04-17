@@ -7,18 +7,24 @@ TMPFILE="/tmp/${FILENAME}"
 
 echo "▶ Iniciando backup: ${FILENAME}"
 
-# Railway inyecta estas variables automáticamente desde el plugin MySQL
+# Parsear DATABASE_URL: mysql://user:password@host:port/database?params
+DB_USER=$(echo "$DATABASE_URL" | sed 's|mysql://\([^:]*\):.*|\1|')
+DB_PASS=$(echo "$DATABASE_URL" | sed 's|mysql://[^:]*:\([^@]*\)@.*|\1|')
+DB_HOST=$(echo "$DATABASE_URL" | sed 's|mysql://[^@]*@\([^:/]*\).*|\1|')
+DB_PORT=$(echo "$DATABASE_URL" | sed 's|mysql://[^@]*@[^:]*:\([0-9]*\)/.*|\1|')
+DB_NAME=$(echo "$DATABASE_URL" | sed 's|.*/\([^?]*\).*|\1|')
+
 mysqldump \
-  -h "${MYSQLHOST}" \
-  -P "${MYSQLPORT:-3306}" \
-  -u "${MYSQLUSER}" \
-  -p"${MYSQLPASSWORD}" \
-  "${MYSQLDATABASE}" \
+  -h "${DB_HOST}" \
+  -P "${DB_PORT:-3306}" \
+  -u "${DB_USER}" \
+  -p"${DB_PASS}" \
+  "${DB_NAME}" \
   > "${TMPFILE}"
 
-echo "✔ Dump generado: ${TMPFILE}"
+echo "✔ Dump generado"
 
-# Clonar el repo de backups y subir el archivo
+# Subir a GitHub
 cd /tmp
 git config --global user.email "backup@railway"
 git config --global user.name "Railway Backup"
