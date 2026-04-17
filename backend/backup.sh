@@ -33,12 +33,16 @@ git config --global user.email "backup@railway"
 git config --global user.name "Railway Backup"
 
 echo "▶ Clonando repo de backups..."
-git clone "https://${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_REPO}.git" backup-repo
-mkdir -p backup-repo/backups
-cp "${TMPFILE}" backup-repo/backups/
+git clone --branch main "https://${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_REPO}.git" backup-repo
 cd backup-repo
+
+# Usar rama 'backups' para no disparar deploys de Railway
+git checkout backups 2>/dev/null || git checkout -b backups
+
+mkdir -p backups
+cp "${TMPFILE}" backups/
 git add -f "backups/${FILENAME}"
-git commit -m "backup: ${DATE} [skip ci]"
-git push
+git commit -m "backup: ${DATE}"
+git push origin backups
 
 echo "✔ Backup subido a GitHub: ${FILENAME}"
