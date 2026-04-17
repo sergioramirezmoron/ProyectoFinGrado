@@ -63,7 +63,10 @@ ProyectoFinGrado/
 ├── docker/
 │   └── init-db.sh        # Script de inicialización de la BD en Docker
 │
-├── backups/              # Backups SQL generados automáticamente
+├── backup-cron/          # Servicio Railway de backup diario automático
+│   ├── Dockerfile        # Imagen con mysql-client y git
+│   └── backup.sh         # Script que hace mysqldump y sube a GitHub
+│
 ├── automocion.sql        # Dump inicial de la base de datos
 └── docker-compose.yml    # Orquestación completa del entorno
 ```
@@ -206,12 +209,45 @@ php bin/console doctrine:fixtures:load
 
 ## Backups automáticos
 
-El compose incluye un servicio `backup` que realiza un volcado diario de la base de datos. Los archivos se guardan en el directorio `backups/` con el formato `backup_YYYYMMDD_HHMMSS.sql`. Los backups con más de 7 días se eliminan automáticamente.
+El sistema de backups funciona en dos momentos:
 
-Para realizar un backup manual en cualquier momento:
+### En cada deploy (producción — Railway)
+
+Antes de ejecutar las migraciones, el pre-deploy command lanza `backend/backup.sh`, que:
+
+1. Parsea `DATABASE_URL` para extraer las credenciales de la BD.
+2. Ejecuta `mysqldump` contra la base de datos de Railway.
+3. Clona el repositorio, cambia a la rama `backups` y sube el archivo `.sql`.
+
+Esto garantiza que siempre hay un backup del estado anterior antes de aplicar cualquier migración.
+
+### Diariamente a las 2:00 AM (producción — Railway)
+
+El servicio `backup-cron` (directorio `backup-cron/`) corre en Railway como un servicio independiente con cron schedule `0 2 * * *`. Ejecuta el mismo `backup.sh` de forma autónoma, independientemente de si hay o no un deploy ese día.
+
+### Dónde se guardan
+
+Los backups se guardan en la rama **`backups`** de este mismo repositorio, dentro de la carpeta `backups/`, con el formato:
+
+```
+backups/backup_YYYY-MM-DD_HH-MM-SS.sql
+```
+
+Al usar una rama separada, los commits de backup no disparan nuevos deploys en Railway.
+
+### Variables de entorno necesarias (Railway)
+
+| Variable | Descripción |
+|---|---|
+| `DATABASE_URL` | Cadena de conexión MySQL (Railway la inyecta automáticamente) |
+| `GITHUB_TOKEN` | Personal Access Token con permisos `repo` |
+| `GITHUB_USER` | Usuario de GitHub |
+| `GITHUB_REPO` | Nombre del repositorio donde se guardan los backups |
+
+### Backup manual en local (Docker)
 
 ```bash
-docker exec pfg_db mysqldump -u root -proot pfg > backups/backup_manual.sql
+docker exec pfg_db mysqldump -u root -proot pfg > backup_manual.sql
 ```
 
 ---
