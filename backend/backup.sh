@@ -38,7 +38,7 @@ mkdir -p backup-repo/backups
 cp "${TMPFILE}" backup-repo/backups/
 cd backup-repo
 git add -f "backups/${FILENAME}"
-git commit -m "backup: ${DATE}"
+git commit -m "backup: ${DATE} [skip ci]"
 git push
 
 echo "✔ Backup subido a GitHub: ${FILENAME}"
