@@ -34,9 +34,10 @@ git config --global user.name "Railway Backup"
 
 echo "▶ Clonando repo de backups..."
 git clone "https://${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_REPO}.git" backup-repo
-cp "${TMPFILE}" backup-repo/
+mkdir -p backup-repo/backups
+cp "${TMPFILE}" backup-repo/backups/
 cd backup-repo
-git add "${FILENAME}"
+git add "backups/${FILENAME}"
 git commit -m "backup: ${DATE}"
 git push
 
