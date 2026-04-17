@@ -13,7 +13,7 @@ import {
 import { useFavorite } from "../../hooks/useFavorite";
 import { useAuth } from "../../hooks/useAuth";
 import type { VehicleCardProps } from "../../types/vehicle";
-import { formatPrice } from "../../utils/formatters";
+import { formatPrice, formatDailyPrice } from "../../utils/formatters";
 import { getMainVehicleImage } from "../../utils/vehicleImages";
 
 const VehicleCard = ({ vehicle }: VehicleCardProps) => {
@@ -128,7 +128,7 @@ const VehicleCard = ({ vehicle }: VehicleCardProps) => {
             <p className="text-2xl font-black text-slate-900 tracking-tight">
               {vehicle.type === "SALE"
                 ? formatPrice(vehicle.price)
-                : formatPrice(vehicle.dailyPrice) + "/día"}
+                : formatDailyPrice(vehicle.dailyPrice) + "/día"}
             </p>
           </div>
           <div className="h-10 w-10 bg-slate-100 rounded-full flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 shadow-sm">
