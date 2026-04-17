@@ -27,12 +27,13 @@ use Symfony\Component\Validator\Constraints as Assert;
     operations: [
         new GetCollection(),
         new Get(),
-        new Post(processor: UserPasswordHasher::class), // Procesa la contraseña al crear
-        new Patch(processor: UserPasswordHasher::class), // Procesa la contraseña al editar
+        new Post(processor: UserPasswordHasher::class),
+        new Patch(processor: UserPasswordHasher::class),
         new Delete(),
     ],
     normalizationContext: ['groups' => ['user:read']],
     denormalizationContext: ['groups' => ['user:write']],
+    paginationClientEnabled: true,
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {

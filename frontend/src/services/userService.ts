@@ -1,6 +1,6 @@
 import api from "../api/axios";
 
-export const getUsers = () => api.get("/users");
+export const getUsers = () => api.get("/users?pagination=false");
 
 export const updateUserRoles = (id: number, roles: string[]) =>
   api.patch(
