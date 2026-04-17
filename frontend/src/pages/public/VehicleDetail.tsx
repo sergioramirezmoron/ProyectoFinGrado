@@ -34,7 +34,7 @@ import {
   createReservation,
   getVehicleReservations,
 } from "../../services/reservationService";
-import { formatPrice } from "../../utils/formatters";
+import { formatPrice, formatDailyPrice } from "../../utils/formatters";
 import { buildImageUrl } from "../../utils/vehicleImages";
 
 registerLocale("es", es);
@@ -111,7 +111,7 @@ const VehicleDetail = () => {
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
       if (diffDays > 0 && endDate >= startDate) {
-        setTotalPrice(diffDays * Number(vehicle.dailyPrice));
+        setTotalPrice(Math.round(diffDays * Number(vehicle.dailyPrice) * 100) / 100);
         setReserveError("");
       } else {
         setTotalPrice(null);
@@ -320,7 +320,7 @@ const VehicleDetail = () => {
                     <span className="text-4xl font-black text-slate-900">
                       {vehicle.type === "SALE"
                         ? formatPrice(vehicle.price)
-                        : formatPrice(vehicle.dailyPrice)}
+                        : formatDailyPrice(vehicle.dailyPrice)}
                     </span>
                     {vehicle.type === "RENT" && (
                       <span className="text-lg text-gray-500 font-medium">

@@ -79,7 +79,7 @@ class Reservation
             $days = $diff->days + 1;
 
             $pricePerDay = (float) ($this->vehicle->getDailyPrice() ?? 0);
-            $this->totalPrice = $days * $pricePerDay;
+            $this->totalPrice = round($days * $pricePerDay, 2);
         }
     }
 

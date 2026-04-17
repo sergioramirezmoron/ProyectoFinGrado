@@ -11,6 +11,20 @@ export const formatPrice = (amount: number | string | undefined | null): string 
 };
 
 /**
+ * Format a daily rental price showing 0-2 decimal places (trims trailing zeros).
+ * Shows "Consultar" for falsy values.
+ */
+export const formatDailyPrice = (amount: number | string | undefined | null): string => {
+  if (!amount) return "Consultar";
+  return new Intl.NumberFormat("es-ES", {
+    style: "currency",
+    currency: "EUR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(Number(amount));
+};
+
+/**
  * Format a monetary amount with full decimals (for totals, reservation prices, etc.)
  */
 export const formatCurrency = (amount: number): string =>
