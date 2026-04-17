@@ -19,6 +19,7 @@ mysqldump \
   -P "${DB_PORT:-3306}" \
   -u "${DB_USER}" \
   -p"${DB_PASS}" \
+  --ssl=false \
   "${DB_NAME}" \
   > "${TMPFILE}"
 
