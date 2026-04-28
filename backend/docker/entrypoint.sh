@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+echo "📦 Instalando dependencias PHP..."
+cd /var/www/html
+composer install --optimize-autoloader --no-dev --no-interaction --no-scripts
+composer dump-autoload --optimize --no-dev
+
 echo "⚙️  Configurando variables de entorno..."
 cat > /var/www/html/.env.local << ENVEOF
 DATABASE_URL=${DATABASE_URL}
