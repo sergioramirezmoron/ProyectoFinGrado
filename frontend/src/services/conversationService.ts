@@ -2,7 +2,7 @@ import api from "../api/axios";
 import type { ConversationPayloadInterface } from "../types/message";
 
 export const getConversations = (isAdmin: boolean, userEmail?: string) => {
-  let url = "/conversations";
+  let url = isAdmin ? "/conversations?itemsPerPage=500" : "/conversations";
   if (!isAdmin && userEmail) url += `?contactEmail=${userEmail}`;
   return api.get(url);
 };

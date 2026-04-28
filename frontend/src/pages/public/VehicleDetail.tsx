@@ -152,11 +152,10 @@ const VehicleDetail = () => {
     } catch (error) {
       console.error("Error reservando", error);
       const err = error as AxiosError<ApiError>;
-      if (err.response?.data?.detail) {
-        setReserveError(err.response.data.detail);
-      } else {
-        setReserveError("Error al procesar. Verifica las fechas.");
-      }
+      const msg =
+        err.response?.data?.detail ??
+        err.response?.data?.["hydra:description"];
+      setReserveError(msg ?? "Error al procesar. Verifica las fechas.");
     } finally {
       setReserving(false);
     }
@@ -389,7 +388,7 @@ const VehicleDetail = () => {
                                   selectsEnd
                                   startDate={startDate}
                                   endDate={endDate}
-                                  minDate={startDate || new Date()}
+                                  minDate={startDate ? new Date(startDate.getTime() + 86_400_000) : new Date()}
                                   filterDate={(date) => !isDateBlocked(date)}
                                   placeholderText="Devolución"
                                   locale="es"

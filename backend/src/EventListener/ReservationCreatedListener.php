@@ -38,7 +38,7 @@ class ReservationCreatedListener
             "🚀 NUEVA SOLICITUD DE RESERVA\n\n📅 Fechas: %s al %s\n💰 Total: %s€\n\nPor favor, revisa la disponibilidad y acepta o rechaza la solicitud.",
             $reservation->getStartDate()->format('d/m/Y'),
             $reservation->getEndDate()->format('d/m/Y'),
-            $reservation->getTotalPrice()
+            number_format((float) $reservation->getTotalPrice(), 2, ',', '.')
         );
 
         $message = new Message();

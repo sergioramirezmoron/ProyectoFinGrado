@@ -22,10 +22,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
 )]
 #[ApiResource(
     operations: [
-        new GetCollection(),
-        new Post(),
-        new Get(),
-        new Delete(),
+        new GetCollection(security: "is_granted('IS_AUTHENTICATED_FULLY')"),
+        new Post(security: "is_granted('IS_AUTHENTICATED_FULLY')"),
+        new Get(security: "is_granted('IS_AUTHENTICATED_FULLY')"),
+        new Delete(security: "is_granted('IS_AUTHENTICATED_FULLY')"),
     ],
     normalizationContext: ['groups' => ['favorite:read']],
     denormalizationContext: ['groups' => ['favorite:write']],

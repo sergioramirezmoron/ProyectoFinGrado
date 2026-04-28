@@ -10,7 +10,7 @@ export const getUserReservations = (userId: number) =>
 
 export const getAllReservations = (status?: string) =>
   api.get<HydraResponse<Reservation>>(
-    `/reservations${status ? `?status=${status}` : ""}`
+    `/reservations?itemsPerPage=500${status ? `&status=${status}` : ""}`
   );
 
 export const updateReservationStatus = (id: number, status: string) =>

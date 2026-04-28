@@ -19,11 +19,17 @@ use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     operations: [
-        new GetCollection(),
-        new Get(),
-        new Post(validationContext: ['groups' => ['Default', 'reservation:create']]),
-        new Patch(validationContext: ['groups' => ['Default']]),
-        new Delete()
+        new GetCollection(security: "is_granted('PUBLIC_ACCESS')"),
+        new Get(security: "is_granted('PUBLIC_ACCESS')"),
+        new Post(
+            security: "is_granted('IS_AUTHENTICATED_FULLY')",
+            validationContext: ['groups' => ['Default', 'reservation:create']]
+        ),
+        new Patch(
+            security: "is_granted('IS_AUTHENTICATED_FULLY')",
+            validationContext: ['groups' => ['Default']]
+        ),
+        new Delete(security: "is_granted('ROLE_SALES')")
     ],
     normalizationContext: ['groups' => ['reservation:read']],
     denormalizationContext: ['groups' => ['reservation:write']],
