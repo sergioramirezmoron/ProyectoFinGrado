@@ -15,7 +15,7 @@ export interface User {
   roles: string[];
   name?: string;
   surname?: string;
-  phone?: string;
+  phone?: string | null;
 }
 
 export interface LoginResponse {
