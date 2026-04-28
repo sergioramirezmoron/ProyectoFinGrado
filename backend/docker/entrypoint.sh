@@ -25,15 +25,27 @@ else
     echo "✅ Claves JWT ya existen."
 fi
 
+echo "🔄 Limpiando caché de Symfony..."
+php bin/console cache:clear --env=prod --no-debug || true
+php bin/console cache:warmup --env=prod --no-debug || true
+
 echo "⏳ Esperando a que MySQL esté listo..."
 until php bin/console doctrine:query:sql "SELECT 1" > /dev/null 2>&1; do
     sleep 2
 done
 
-echo "✅ MySQL listo. Sincronizando migraciones..."
-php bin/console doctrine:migrations:sync-metadata-storage --no-interaction || true
-php bin/console doctrine:migrations:version --add --all --no-interaction 2>/dev/null || true
-php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
+echo "✅ MySQL listo. Comprobando estado de la base de datos..."
+TABLES=$(php bin/console doctrine:query:sql "SHOW TABLES" 2>/dev/null | grep -c "Tables_in" || echo "0")
+
+if [ "$TABLES" -eq "0" ]; then
+    echo "📝 Base de datos nueva — ejecutando migraciones para crear tablas..."
+    php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
+else
+    echo "📝 Base de datos existente — sincronizando historial de migraciones..."
+    php bin/console doctrine:migrations:sync-metadata-storage --no-interaction || true
+    php bin/console doctrine:migrations:version --add --all --no-interaction 2>/dev/null || true
+    php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
+fi
 
 echo "📁 Asegurando directorio de imágenes..."
 mkdir -p /var/www/html/public/images/vehicles
