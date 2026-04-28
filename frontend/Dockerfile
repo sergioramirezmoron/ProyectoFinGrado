@@ -9,6 +9,13 @@ RUN npm ci
 
 # Copiar fuentes y compilar
 COPY . .
+
+# Recibir URL del backend como build arg (inyectada por docker-compose o --build-arg)
+ARG VITE_API_URL
+ARG VITE_BACKEND_URL
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_BACKEND_URL=$VITE_BACKEND_URL
+
 RUN npm run build
 
 # ── Etapa 2: Servir con Nginx ──────────────────────────────────────────────────

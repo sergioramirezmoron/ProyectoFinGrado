@@ -1,13 +1,12 @@
 # Frontend — Luxury Cars
 
-Aplicación web SPA (Single Page Application) desarrollada con **React 19**, **TypeScript** y **Vite** para la gestión integral de un concesionario de vehículos de lujo. Incluye catálogo público, sistema de reservas, mensajería, panel de administración y autenticación basada en JWT.
+Aplicación web desarrollada con **React 19**, **TypeScript** y **Vite** para la gestión de un concesionario de vehículos de lujo. Incluye catálogo público, sistema de reservas, mensajería, panel de administración y autenticación JWT.
 
 ---
 
 ## Tabla de Contenidos
 
 - [Stack Tecnológico](#stack-tecnológico)
-- [Arquitectura](#arquitectura)
 - [Estructura del Proyecto](#estructura-del-proyecto)
 - [Requisitos Previos](#requisitos-previos)
 - [Instalación y Puesta en Marcha](#instalación-y-puesta-en-marcha)
@@ -42,56 +41,6 @@ Aplicación web SPA (Single Page Application) desarrollada con **React 19**, **T
 | **Lucide React** | 0.563 | Librería de iconos SVG tree-shakeable; sólo se incluyen en el bundle los iconos realmente usados |
 | **date-fns** | 4.1 | Manipulación de fechas modular y ligera, sin necesidad de cargar toda la librería (a diferencia de moment.js) |
 | **clsx / tailwind-merge** | — | Utilidades para combinar clases de Tailwind de forma condicional y sin duplicados |
-
----
-
-## Arquitectura
-
-El frontend sigue una **arquitectura MVC adaptada al paradigma de React**, con separación clara de responsabilidades entre las distintas capas:
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         VISTA (View)                            │
-│          pages/  ·  components/  ·  layouts/                    │
-│   Componentes React puramente visuales y de interacción         │
-└────────────────────────────┬────────────────────────────────────┘
-                             │ usa
-┌────────────────────────────▼────────────────────────────────────┐
-│                     CONTROLADOR (Controller)                     │
-│                           hooks/                                 │
-│   Lógica de negocio UI: filtros, paginación, estado local,      │
-│   llamadas a servicios y transformación de datos                 │
-└──────────────┬───────────────────────────┬──────────────────────┘
-               │ usa                       │ usa
-┌──────────────▼──────────┐   ┌───────────▼──────────────────────┐
-│       MODELO (Model)    │   │         ESTADO GLOBAL            │
-│        services/        │   │           context/               │
-│  Llamadas HTTP al API.  │   │  AuthContext · FavoriteContext   │
-│  Una función = un       │   │  ChatContext                     │
-│  endpoint REST          │   │  Compartido via React Context    │
-└──────────────┬──────────┘   └──────────────────────────────────┘
-               │
-┌──────────────▼──────────┐
-│     CLIENTE HTTP        │
-│      api/axios.ts       │
-│  Instancia Axios con    │
-│  interceptor JWT        │
-└─────────────────────────┘
-```
-
-### Decisiones arquitectónicas relevantes
-
-**¿Por qué Context API y no Redux?**
-El estado global de esta aplicación se reduce a tres dominios: sesión del usuario, favoritos y contador de mensajes no leídos. Redux añadiría boilerplate innecesario para un volumen de estado tan acotado. Context API junto con hooks proporciona la misma reactividad sin dependencias extra.
-
-**¿Por qué una capa de servicios separada?**
-Centralizar todas las llamadas HTTP en `services/` desacopla los componentes de la implementación del API. Si el backend cambia un endpoint, sólo hay que modificar un fichero de servicio, no rastrear todas las vistas que lo usan.
-
-**¿Por qué hooks personalizados como "controladores"?**
-Mover la lógica de negocio de los componentes a hooks (`useCatalog`, `useMyReservations`, etc.) hace que las páginas sean declarativas y fáciles de leer, y que la lógica sea reutilizable y testeable de forma independiente.
-
-**¿Por qué dos layouts (`PublicLayout` / `AdminLayout`)?**
-La zona pública y el panel de administración tienen estructuras HTML, navegación y estilos completamente distintos. Encapsularlos en layouts propios evita condicionales en los componentes de página y hace el enrutamiento más legible.
 
 ---
 
@@ -135,8 +84,8 @@ frontend/
 │   ├── hooks/
 │   │   ├── useAuth.ts                # Acceso tipado a AuthContext
 │   │   ├── useCatalog.ts             # Filtrado, ordenación y paginación del catálogo
-│   │   ├── useChat.ts                # Acceso tipado a ChatContext
-│   │   ├── useChatNotification.ts    # Wrapper para el contador de no leídos
+│   │   ├── useChat.ts                # Lógica completa de la página de chat (conversaciones, mensajes, acciones admin)
+│   │   ├── useChatNotification.ts    # Wrapper para el contador de no leídos (acceso a ChatContext)
 │   │   ├── useFavorite.ts            # Acceso tipado a FavoriteContext
 │   │   ├── useAdminReservations.ts   # Fetch y gestión de reservas (admin)
 │   │   └── useMyReservations.ts      # Fetch de reservas del usuario autenticado
@@ -225,7 +174,7 @@ frontend/
 
 > **Con Docker Compose no es necesario instalar nada manualmente.** El frontend se compila y sirve automáticamente al ejecutar `docker compose up --build` desde la raíz del proyecto. Consulta el [README raíz](../README.md) para instrucciones de Docker.
 
-La siguiente guía es para **ejecutar el frontend en modo desarrollo** (con HMR), sin Docker.
+La siguiente guía es para **ejecutar el frontend en modo desarrollo**, sin Docker.
 
 ### 1. Clonar el repositorio
 
@@ -268,7 +217,7 @@ La aplicación estará disponible en `http://localhost:5173`.
 
 > Las variables en Vite **deben** tener el prefijo `VITE_` para ser accesibles en el código del cliente mediante `import.meta.env.VITE_*`.
 >
-> **Importante:** Vite incrusta las variables de entorno en tiempo de compilación (build time), no en tiempo de ejecución. Esto significa que el valor de `VITE_BACKEND_URL` queda fijado en el bundle generado. Si cambias la URL del backend después de compilar, debes volver a compilar.
+> **Importante:** Vite mete las variables de entorno en tiempo de compilación, no en tiempo de ejecución. Esto significa que el valor de `VITE_BACKEND_URL` queda fijado en el bundle generado. Si cambias la URL del backend después de compilar, debes volver a compilar.
 
 **Ejemplo de `.env` para desarrollo local:**
 
@@ -284,13 +233,13 @@ VITE_BACKEND_URL=https://api.luxurycars.example.com
 
 ### Variables de entorno en Docker
 
-En el despliegue con Docker Compose, el frontend se compila durante el `docker compose up --build`. El fichero `frontend/.env` es copiado dentro del contenedor durante la fase de build, por lo que **debe existir y tener el valor correcto de `VITE_BACKEND_URL` antes de ejecutar `docker compose up --build`**.
+En el despliegue con Docker Compose, la URL del backend se inyecta automáticamente desde la variable `SERVER_URL` del `.env` de la raíz del proyecto. **No es necesario tocar `frontend/.env` para el despliegue con Docker.**
 
-Para desarrollo local con Docker el valor por defecto (`http://localhost:8000`) funciona sin cambios. Para desplegar en un servidor con otra IP o dominio, edita `frontend/.env` antes de lanzar el build:
+El Dockerfile del frontend recibe `VITE_BACKEND_URL` como build arg desde docker-compose, lo que permite cambiar la URL simplemente editando `SERVER_URL` en el `.env` raíz:
 
 ```env
-# frontend/.env — ajusta si el backend no está en localhost:8000
-VITE_BACKEND_URL=http://TU_IP_O_DOMINIO:8000
+# .env de la raíz — solo cambia SERVER_URL
+SERVER_URL=http://TU_IP_O_DOMINIO
 ```
 
 ---
@@ -395,7 +344,7 @@ El componente `ProtectedRoute` envuelve todas las rutas de `/admin`. Si el usuar
 | Mensajes (`/admin/mensajes`) | `ROLE_ADMIN` y `ROLE_SALES` |
 | Usuarios, Colores, Ciudades, Marcas, Modelos | Solo `ROLE_ADMIN` |
 
-Los iconos de gestión de tablas maestras (en morado) son exclusivos del administrador. El icono del dashboard y los de operativa diaria (en azul) son visibles para todo el personal.
+Los iconos de gestión de tablas maestras (en morado) son exclusivos del administrador. El icono del dashboard y los de operativa diaria (en azul) son visibles para todo el personal administrador.
 
 ---
 
@@ -414,7 +363,7 @@ Gestiona la sesión del usuario en toda la aplicación.
 | `isAuthenticated` | `boolean` | `true` si hay usuario activo |
 | `isAdmin` | `boolean` | `true` si el usuario tiene `ROLE_ADMIN` o `ROLE_SALES` |
 | `login(token)` | función | Guarda el token y decodifica el usuario |
-| `logout()` | función | Limpia token y estado; redirige al inicio |
+| `logout()` | función | Limpia token y estado del contexto y de `localStorage` |
 | `updateUser(fields)` | función | Actualización parcial (nombre, teléfono) sin re-login |
 
 #### `FavoriteContext`
@@ -453,7 +402,7 @@ El orden importa: `ChatProvider` y `FavoriteProvider` necesitan acceso a `AuthCo
 
 ### Capa de Servicios
 
-Cada fichero en `services/` encapsula todas las llamadas HTTP a un recurso del API. Ningún componente o hook llama directamente a Axios; toda la comunicación con el backend pasa por esta capa.
+Cada fichero en `services/` encapsula todas las llamadas HTTP a un recurso del API. Ningún componente o hook llama directamente a Axios, toda la comunicación con el backend pasa por esta capa.
 
 ```
 components / pages
@@ -490,7 +439,7 @@ Los hooks actúan como la capa de controlador: coordinan servicios, estado local
 El hook más completo de la aplicación. Gestiona:
 
 - Carga inicial de vehículos y opciones de filtro.
-- Aplicación de hasta 8 filtros simultáneos (marca, combustible, cambio, precio mín/máx, año mín/máx, provincia, color, carrocería).
+- Aplicación de hasta 10 filtros simultáneos (marca, combustible, cambio, precio mín/máx, año mín/máx, km mín/máx, provincia, color, carrocería, estado).
 - Ordenación por precio, año o fecha de alta (ascendente/descendente).
 - **Paginación cliente-side** con 12 vehículos por página.
 - Handlers listos para conectar directamente a los `onChange` de los inputs del componente `Filter`.
@@ -503,9 +452,13 @@ Obtiene las reservas del usuario autenticado. Depende de `AuthContext` para obte
 
 Obtiene todas las reservas del sistema. Sólo accesible desde rutas protegidas de administrador.
 
-#### `useAuth()`, `useFavorite()`, `useChat()`
+#### `useAuth()`, `useFavorite()`, `useChatNotification()`
 
 Wrappers tipados sobre sus respectivos contextos. Lanzan un error descriptivo si se usan fuera del árbol de providers, facilitando el debugging.
+
+#### `useChat()`
+
+Hook de lógica completa para la página de chat. Gestiona: lista de conversaciones con polling cada 10 segundos, mensajes con polling cada 3 segundos, envío de mensajes, búsqueda y filtrado por tipo (SALE/RENT), marcado como leído, y acciones de administrador (confirmar/rechazar reservas, cambiar estado de vehículo).
 
 ---
 
@@ -529,11 +482,11 @@ Conversation
 
 **Flujo:**
 
-1. Un visitante (autenticado o no) abre el `ContactModal` en la página de detalle de un vehículo.
-2. Se crea una `Conversation` vinculada al vehículo.
-3. La cabecera del admin muestra el contador de mensajes sin leer que se actualiza cada 10 segundos.
-4. Desde `/admin/mensajes`, el personal responde. El estado de la conversación cambia de `NEW_FROM_CLIENT` a `NEW_FROM_ADMIN`.
-5. El cliente ve la respuesta en `/mis-chats`.
+1. Un usuario **autenticado** abre el `ContactModal` en la página de detalle de un vehículo (nombre y email se pre-rellenan del token JWT).
+2. Se crea una `Conversation` vinculada al vehículo y se envía el mensaje inicial.
+3. La cabecera muestra el contador de mensajes sin leer, actualizado cada 10 segundos por `ChatContext`.
+4. Desde `/admin/mensajes`, el personal responde. La conversación se marca como `READ` al abrirla.
+5. El cliente ve la respuesta en `/mis-chats`. Los mensajes dentro de una conversación abierta se refrescan cada **3 segundos**.
 
 ---
 
@@ -546,8 +499,8 @@ Sólo disponible para vehículos de tipo `RENT`. Accesible desde la página de d
 1. El cliente selecciona un rango de fechas en el calendario interactivo (`react-datepicker`).
 2. Las fechas ya ocupadas por reservas confirmadas se muestran como deshabilitadas (obtenidas de `reservationService.getVehicleReservations()`).
 3. El precio total se calcula automáticamente: `días × precio diario`.
-4. Al confirmar, se crea la reserva con estado `PENDING`.
-5. El administrador aprueba o rechaza desde `/admin/reservas`.
+4. Al confirmar, se crea la reserva con estado `PENDING`. Las fechas recién reservadas se bloquean en el calendario de forma inmediata (actualización optimista local).
+5. El administrador **aprueba o rechaza** desde el chat en `/admin/mensajes`. Desde `/admin/reservas` solo puede **cancelar** reservas ya confirmadas cuya fecha de fin no haya pasado.
 6. Los posibles estados son: `PENDING → CONFIRMED | REJECTED | CANCELLED`.
 
 ---

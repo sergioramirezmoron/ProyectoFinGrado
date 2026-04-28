@@ -3,9 +3,9 @@ export interface JWTPayload {
   roles: string[];
   exp: number;
   iat: number;
-  id?: number;
-  name?: string;
-  phone?: string;
+  id: number;
+  name: string;
+  phone: string | null;
 }
 
 export interface User {

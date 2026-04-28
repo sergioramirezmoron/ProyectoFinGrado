@@ -16,7 +16,7 @@ const decodeTokenIfValid = (token: string): User | null => {
       email: decoded.username,
       roles: decoded.roles,
       id: decoded.id,
-      "@id": decoded.id ? `/api/users/${decoded.id}` : undefined,
+      "@id": `/api/users/${decoded.id}`,
       name: decoded.name,
       phone: decoded.phone,
     };
