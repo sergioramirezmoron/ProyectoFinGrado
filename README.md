@@ -1,6 +1,6 @@
 # Luxury Cars — Plataforma de Compra y Alquiler de Vehículos de Lujo
 
-Aplicación web full-stack para la gestión integral de un concesionario de vehículos de lujo. Permite la compra y el alquiler de vehículos, con sistema de reservas, mensajería cliente-concesionario, panel de administración y autenticación basada en JWT.
+Aplicación web full-stack para la gestión de un concesionario de vehículos de lujo. Permite la compra y el alquiler de vehículos, con sistema de reservas, mensajería cliente-concesionario, panel de administración y autenticación basada en JWT.
 
 ---
 
@@ -39,7 +39,7 @@ Aplicación web full-stack para la gestión integral de un concesionario de veh�
                                 └──────────────────────────┘
 ```
 
-En producción (contenedores), el frontend incluye un **proxy Nginx** que redirige internamente las peticiones `/api/*` al servicio `backend`, evitando problemas de CORS y sin exponer el backend directamente al cliente.
+En producción, el frontend incluye un **proxy Nginx** que redirige internamente las peticiones `/api/*` al servicio `backend`, evitando problemas de CORS y sin exponer el backend directamente al cliente.
 
 ---
 
@@ -51,13 +51,16 @@ ProyectoFinGrado/
 │   ├── src/
 │   ├── config/
 │   ├── migrations/
+│   ├── docker/           # Configuración Apache, PHP y entrypoint del contenedor
+│   ├── tests/
 │   ├── Dockerfile
 │   └── README.md         # Documentación completa del backend
 │
 ├── frontend/             # SPA (React 19 + TypeScript + Vite)
 │   ├── src/
+│   ├── public/
 │   ├── Dockerfile        # Multi-stage build (Node → Nginx)
-│   ├── nginx.conf        # Configuración Nginx para SPA + proxy API
+│   ├── nginx.conf        # Configuración Nginx para SPA
 │   └── README.md         # Documentación completa del frontend
 │
 ├── docker/
@@ -67,8 +70,12 @@ ProyectoFinGrado/
 │   ├── Dockerfile        # Imagen con mysql-client y git
 │   └── backup.sh         # Script que hace mysqldump y sube a GitHub
 │
+├── backups/              # SQLs de backup generados automáticamente (gitignored salvo .gitkeep)
+│
 ├── automocion.sql        # Dump inicial de la base de datos
-└── docker-compose.yml    # Orquestación completa del entorno
+├── docker-compose.yml    # Orquestación completa del entorno
+├── .env.example          # Plantilla de variables de entorno para Docker Compose
+└── PROYECTO-FIN-DE-GRADO.docx.pdf
 ```
 
 ---
@@ -77,9 +84,9 @@ ProyectoFinGrado/
 
 | Capa | Tecnología |
 |---|---|
-| **Backend** | PHP 8.2 · Symfony 7.3 · API Platform 4.2 · Doctrine ORM 3.5 |
-| **Frontend** | React 19 · TypeScript 5.9 · Vite 7.2 · Tailwind CSS 4.1 |
-| **Base de datos** | MySQL 8.0 |
+| **Backend** | PHP · Symfony · API Platform · Doctrine ORM |
+| **Frontend** | React 19 · TypeScript · Vite · Tailwind CSS 4.1 |
+| **Base de datos** | MySQL |
 | **Autenticación** | JWT (LexikJWTAuthenticationBundle) |
 | **Servidor web** | Apache (backend) · Nginx (frontend) |
 | **Contenerización** | Docker · Docker Compose |
