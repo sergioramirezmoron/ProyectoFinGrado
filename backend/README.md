@@ -6,7 +6,7 @@ API REST desarrollada con **Symfony 7.3** y **API Platform 4.2** para la platafo
 
 ## Tabla de Contenidos
 
-- [Despliegue con Docker (recomendado)](#despliegue-con-docker-recomendado)
+- [Despliegue con Docker](#despliegue-con-docker)
 - [Instalación manual (desarrollo local)](#instalación-manual-desarrollo-local)
     - [Requisitos previos](#requisitos-previos)
     - [1. Clonar e instalar dependencias](#1-clonar-e-instalar-dependencias)
@@ -48,9 +48,9 @@ API REST desarrollada con **Symfony 7.3** y **API Platform 4.2** para la platafo
 
 ---
 
-## Despliegue con Docker (recomendado)
+## Despliegue con Docker
 
-> **Si usas Docker Compose desde la raíz del proyecto, no necesitas configurar nada en este directorio.** Toda la configuración del backend se inyecta automáticamente desde el `.env` de la raíz.
+> **Si usas Docker Compose desde la raíz del proyecto, no necesitas configurar nada aquí.** Toda la configuración del backend se inyecta automáticamente desde el `.env` de la raíz.
 
 El contenedor de backend realiza los siguientes pasos de forma automática al arrancar (`docker/entrypoint.sh`):
 
@@ -81,7 +81,7 @@ Una vez arrancado:
 
 ## Instalación manual (desarrollo local)
 
-Sigue esta sección **solo si quieres ejecutar el backend sin Docker** (por ejemplo, para ejecutar los tests o trabajar con el servidor de desarrollo de Symfony).
+Sigue esta sección **si quieres ejecutar el backend sin Docker** (por ejemplo, para ejecutar los tests o trabajar con el servidor de desarrollo de Symfony).
 
 ## Requisitos previos
 
@@ -108,28 +108,26 @@ composer install
 
 ### 2. Configurar el archivo .env
 
-Copia el archivo `.env` y crea un `.env.local` con tus valores reales (el `.env.local` nunca se sube a git):
+Crea un `.env.local` a partir de la plantilla (el `.env.local` nunca se sube a git):
 
 ```bash
-cp .env .env.local
+cp .env.example .env.local
 ```
 
 Edita `.env.local` con tus datos. Consulta la sección [Variables de entorno](#variables-de-entorno-env) para ver qué significa cada una.
 
 **Ejemplo de `.env.local` mínimo para desarrollo:**
 
+Solo necesitas sobreescribir las variables que difieren del `.env` base. El resto ya tiene valores correctos por defecto.
+
 ```dotenv
 APP_ENV=dev
-APP_SECRET=cambia_esto_por_una_cadena_aleatoria_larga
-
-DATABASE_URL="mysql://usuario:contraseña@127.0.0.1:3306/luxury_cars?serverVersion=8.0.32&charset=utf8mb4"
-
-CORS_ALLOW_ORIGIN='^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$'
-
-JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
-JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
-JWT_PASSPHRASE=tu_passphrase_segura
+APP_SECRET=hadh87d2y37hankjn2y3r8iwe09fipaij9oaisdiuhkjbc8732
+DATABASE_URL=mysql://root:@127.0.0.1:3306/automocion?serverVersion=8.0.32&charset=utf8mb4
+JWT_PASSPHRASE=mi_secreto_tfg
 ```
+
+> `CORS_ALLOW_ORIGIN`, `JWT_SECRET_KEY`, `JWT_PUBLIC_KEY` y `DEFAULT_URI` ya están definidos correctamente en `.env` y **no hace falta repetirlos** en `.env.local`.
 
 ### 3. Generar las claves JWT
 
@@ -196,12 +194,6 @@ Con Symfony CLI (recomendado):
 symfony server:start
 ```
 
-O con el servidor integrado de PHP:
-
-```bash
-php -S localhost:8000 -t public/
-```
-
 La API quedará disponible en: `http://localhost:8000/api`
 
 La documentación interactiva de OpenAPI en: `http://localhost:8000/api/docs`
@@ -214,27 +206,22 @@ La documentación interactiva de OpenAPI en: `http://localhost:8000/api/docs`
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ----------- |
 | `APP_ENV`                 | Entorno de ejecución. Usa `dev` en local y `prod` en producción.                                                    | `dev`                                              | Sí          |
 | `APP_SECRET`              | Cadena aleatoria usada para firmar tokens CSRF y cookies. Debe ser única y secreta.                                 | vacío                                              | Sí          |
-| `DATABASE_URL`            | Cadena de conexión completa a la base de datos. Cambia `usuario`, `contraseña`, `host` y `nombre_bd` por los tuyos. | `mysql://app:!ChangeMe!@127.0.0.1:3306/app`        | Sí          |
+| `DATABASE_URL`            | Cadena de conexión completa a la base de datos. Cambia `usuario`, `contraseña`, `host` y `nombre_bd` por los tuyos. | `mysql://root:@127.0.0.1:3306/automocion`          | Sí          |
 | `CORS_ALLOW_ORIGIN`       | Expresión regular de los orígenes permitidos para CORS. En producción, cambia `localhost` por tu dominio real.      | `'^https?://(localhost\|127\.0\.0\.1)(:[0-9]+)?$'` | Sí          |
 | `JWT_SECRET_KEY`          | Ruta a la clave privada PEM para firmar tokens JWT. No cambiar si usaste el comando `lexik:jwt:generate-keypair`.   | `%kernel.project_dir%/config/jwt/private.pem`      | Sí          |
 | `JWT_PUBLIC_KEY`          | Ruta a la clave pública PEM para verificar tokens JWT.                                                              | `%kernel.project_dir%/config/jwt/public.pem`       | Sí          |
-| `JWT_PASSPHRASE`          | Contraseña con la que se cifró la clave privada JWT. Debe coincidir con la usada al generarla.                      | `!ChangeMe!`                                       | Sí          |
+| `JWT_PASSPHRASE`          | Contraseña con la que se cifró la clave privada JWT. Debe coincidir con la usada al generarla.                      | `mi_secreto_tfg`                                   | Sí          |
 | `DEFAULT_URI`             | URI base para generar URLs en contextos no-HTTP (comandos de consola).                                              | `http://localhost`                                 | No          |
 | `MESSENGER_TRANSPORT_DSN` | DSN del transporte para Symfony Messenger. Con `doctrine://default` usa la propia BD.                               | `doctrine://default?auto_setup=0`                  | No          |
 | `MAILER_DSN`              | DSN del servidor de correo. `null://null` desactiva el envío real.                                                  | `null://null`                                      | No          |
 
-**Ejemplo completo de `.env.local` para producción:**
+**Ejemplo de `.env.local` para producción:**
 
 ```dotenv
 APP_ENV=prod
 APP_SECRET=a4f8c2e1b9d7f3a6c5e2b1d8f4a9c3e7b2d6f1a5c8e3b7d4f2a9c6e1b5d3f8a2
-
-DATABASE_URL="mysql://luxury_user:SuperPassword123@127.0.0.1:3306/luxury_cars_prod?serverVersion=8.0.32&charset=utf8mb4"
-
+DATABASE_URL="mysql://usuario:contraseña@127.0.0.1:3306/automocion_prod?serverVersion=8.0.32&charset=utf8mb4"
 CORS_ALLOW_ORIGIN='^https?://(tudominio\.com)(:[0-9]+)?$'
-
-JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
-JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
 JWT_PASSPHRASE=OtraContraseñaMuySegura456
 ```
 
@@ -315,7 +302,7 @@ El token expira en **24 horas** por defecto (configurable en `config/packages/le
 
 | Rol          | Descripción                                                  | Permisos principales                                                                                                           |
 | ------------ | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-| `ROLE_USER`  | Usuario registrado (asignado automáticamente al registrarse) | Crear y cancelar sus propias reservas, enviar mensajes, gestionar favoritos, actualizar su perfil                              |
+| `ROLE_USER`  | Usuario registrado (asignado automáticamente al registrarse) | Crear y cancelar sus propias reservas, contactar con administración, gestionar favoritos, actualizar su perfil                              |
 | `ROLE_SALES` | Responsable de ventas                                        | Todo lo de `ROLE_USER` + crear/editar vehículos, ver todas las conversaciones y reservas, acceder al dashboard de estadísticas |
 | `ROLE_ADMIN` | Administrador total                                          | Acceso completo: usuarios, vehículos, reservas, conversaciones, catálogos, dashboard y tablas de referencia                    |
 
