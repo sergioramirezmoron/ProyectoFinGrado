@@ -21,10 +21,18 @@ RUN npm run build
 # ── Etapa 2: Servir con Nginx ──────────────────────────────────────────────────
 FROM nginx:alpine
 
-# Copiar el build de Vite al directorio de Nginx
-COPY --from=builder /app/dist /usr/share/nginx/html
+# URLs inyectadas en build-time para CSP y proxy de imágenes
+ARG VITE_API_URL=""
+ARG NGINX_BACKEND_URL="https://proyectofingrado-production.up.railway.app"
 
-# Configuración de Nginx para SPA (React Router)
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx.conf.template /tmp/nginx.conf.template
+
+# Sustituir sólo las variables propias; las variables de nginx ($uri, $remote_addr…) quedan intactas
+RUN VITE_API_URL="${VITE_API_URL}" \
+    NGINX_BACKEND_URL="${NGINX_BACKEND_URL}" \
+    envsubst '${VITE_API_URL}${NGINX_BACKEND_URL}' \
+      < /tmp/nginx.conf.template \
+      > /etc/nginx/conf.d/default.conf
 
 EXPOSE 80

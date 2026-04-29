@@ -10,14 +10,13 @@ server {
     add_header Permissions-Policy           "camera=(), microphone=(), geolocation=()"         always;
     add_header Cross-Origin-Opener-Policy   "same-origin"                                      always;
     add_header Strict-Transport-Security    "max-age=31536000; includeSubDomains; preload"     always;
-    # CSP: recursos propios + Unsplash para imágenes + cualquier backend HTTPS
-    add_header Content-Security-Policy "default-src 'self'; img-src 'self' https: data: blob:; connect-src 'self' https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; font-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self';" always;
+    # VITE_API_URL se inyecta en build-time para permitir el origen del backend (http en local, https en prod)
+    add_header Content-Security-Policy "default-src 'self'; img-src 'self' https: data: blob:; connect-src 'self' https: ${VITE_API_URL}; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; font-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self';" always;
 
     # ─── Proxy imágenes de vehículos al backend ───────────────────────────────
     location ^~ /images/ {
-        proxy_pass https://proyectofingrado-production.up.railway.app/images/;
+        proxy_pass ${NGINX_BACKEND_URL}/images/;
         proxy_ssl_server_name on;
-        proxy_set_header Host proyectofingrado-production.up.railway.app;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_cache_bypass $http_upgrade;
     }
