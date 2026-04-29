@@ -7,12 +7,20 @@ composer install --optimize-autoloader --no-dev --no-interaction --no-scripts
 composer dump-autoload --optimize --no-dev
 
 echo "⚙️  Configurando variables de entorno..."
+DEFAULT_CORS_ALLOW_ORIGIN='^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$|^https://luxurycars\.up\.railway\.app$'
+RAILWAY_FRONTEND_ORIGIN='^https://luxurycars\.up\.railway\.app$'
+if [ -n "$CORS_ALLOW_ORIGIN" ]; then
+    EFFECTIVE_CORS_ALLOW_ORIGIN="${CORS_ALLOW_ORIGIN}|${RAILWAY_FRONTEND_ORIGIN}"
+else
+    EFFECTIVE_CORS_ALLOW_ORIGIN="$DEFAULT_CORS_ALLOW_ORIGIN"
+fi
+
 cat > /var/www/html/.env.local << ENVEOF
 DATABASE_URL=${DATABASE_URL}
 JWT_PASSPHRASE=${JWT_PASSPHRASE:-changeme_railway}
 APP_SECRET=${APP_SECRET}
 APP_ENV=${APP_ENV:-prod}
-CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN:-'^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$'}
+CORS_ALLOW_ORIGIN='$EFFECTIVE_CORS_ALLOW_ORIGIN'
 ENVEOF
 
 echo "🔑 Generando claves JWT si no existen..."
