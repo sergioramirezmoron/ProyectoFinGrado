@@ -6,8 +6,7 @@ import {
 } from "../../utils/vehicleImages";
 import type { VehicleImage } from "../../types/vehicle";
 
-const BACKEND_URL = "http://localhost:8000";
-const PLACEHOLDER = "https://via.placeholder.com/600x400?text=Sin+Foto";
+const PLACEHOLDER = "https://placehold.co/600x400?text=Sin+Foto";
 
 describe("buildImageUrl", () => {
   it("returns an absolute URL unchanged (http)", () => {
@@ -20,19 +19,19 @@ describe("buildImageUrl", () => {
     expect(buildImageUrl(url)).toBe(url);
   });
 
-  it("prepends BACKEND_URL to a relative path", () => {
+  it("returns a proxy-served relative path unchanged", () => {
     const path = "/images/vehicles/abc123.jpg";
-    expect(buildImageUrl(path)).toBe(`${BACKEND_URL}${path}`);
+    expect(buildImageUrl(path)).toBe(path);
   });
 
   it("handles relative paths without leading slash", () => {
     const path = "images/vehicles/abc123.jpg";
-    expect(buildImageUrl(path)).toBe(`${BACKEND_URL}${path}`);
+    expect(buildImageUrl(path)).toBe(path);
   });
 
   it("handles deeply nested relative paths", () => {
     const path = "/images/enviromentalBadges/eco.png";
-    expect(buildImageUrl(path)).toBe(`${BACKEND_URL}${path}`);
+    expect(buildImageUrl(path)).toBe(path);
   });
 });
 
@@ -66,9 +65,7 @@ describe("getMainVehicleImage", () => {
         main: true,
       },
     ];
-    expect(getMainVehicleImage(images)).toBe(
-      `${BACKEND_URL}/images/vehicles/main.jpg`
-    );
+    expect(getMainVehicleImage(images)).toBe("/images/vehicles/main.jpg");
   });
 
   it("returns the first image when no image is marked as main", () => {
@@ -88,9 +85,7 @@ describe("getMainVehicleImage", () => {
         main: false,
       },
     ];
-    expect(getMainVehicleImage(images)).toBe(
-      `${BACKEND_URL}/images/vehicles/first.jpg`
-    );
+    expect(getMainVehicleImage(images)).toBe("/images/vehicles/first.jpg");
   });
 
   it("returns built URL for a single image", () => {
@@ -103,9 +98,7 @@ describe("getMainVehicleImage", () => {
         main: true,
       },
     ];
-    expect(getMainVehicleImage(images)).toBe(
-      `${BACKEND_URL}/images/vehicles/only.jpg`
-    );
+    expect(getMainVehicleImage(images)).toBe("/images/vehicles/only.jpg");
   });
 
   it("does not prepend BACKEND_URL to absolute image URLs", () => {
@@ -142,9 +135,7 @@ describe("getMainImageOrNull", () => {
       { imageUrl: "/images/vehicles/secondary.jpg", main: false },
       { imageUrl: "/images/vehicles/main.jpg", main: true },
     ];
-    expect(getMainImageOrNull(images)).toBe(
-      `${BACKEND_URL}/images/vehicles/main.jpg`
-    );
+    expect(getMainImageOrNull(images)).toBe("/images/vehicles/main.jpg");
   });
 
   it("returns first image URL when no main is set", () => {
@@ -152,9 +143,7 @@ describe("getMainImageOrNull", () => {
       { imageUrl: "/images/vehicles/first.jpg", main: false },
       { imageUrl: "/images/vehicles/second.jpg", main: false },
     ];
-    expect(getMainImageOrNull(images)).toBe(
-      `${BACKEND_URL}/images/vehicles/first.jpg`
-    );
+    expect(getMainImageOrNull(images)).toBe("/images/vehicles/first.jpg");
   });
 
   it("returns null (not placeholder) when empty — differs from getMainVehicleImage", () => {

@@ -72,9 +72,12 @@ export const getAllVehicles = async (): Promise<Vehicle[]> => {
       `/vehicles?page=${currentPage}&itemsPerPage=${PAGE_SIZE}`,
     );
     const data = response.data;
-    const batch: Vehicle[] = data.member ?? (Array.isArray(data) ? data : []);
+    const batch: Vehicle[] =
+      data.member ?? data["hydra:member"] ?? (Array.isArray(data) ? data : []);
 
-    if (currentPage === 1) totalItems = data.totalItems ?? batch.length;
+    if (currentPage === 1) {
+      totalItems = data.totalItems ?? data["hydra:totalItems"] ?? batch.length;
+    }
 
     collected = [...collected, ...batch];
     if (batch.length === 0 || collected.length >= totalItems) break;
@@ -88,7 +91,7 @@ export const getFeaturedVehicles = async (): Promise<Vehicle[]> => {
   const response = await api.get<HydraResponse<Vehicle>>("/vehicles", {
     params: { type: "SALE", status: "AVAILABLE" },
   });
-  return (response.data.member || [])
+  return (response.data.member ?? response.data["hydra:member"] ?? [])
     .filter((v) => v.type === "SALE" && v.status === "AVAILABLE")
     .sort(
       (a, b) =>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useAuth } from "./useAuth";
 import { useChatNotification } from "./useChatNotification";
 import {
@@ -54,72 +54,48 @@ export const useChat = () => {
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (user) {
-      fetchConversations();
-      const interval = setInterval(() => fetchConversations(true), 10000);
-      return () => clearInterval(interval);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (selectedChat) {
-      fetchMessages(selectedChat.id);
-      if (hasUnreadMessages(selectedChat)) markAsRead(selectedChat);
-      const interval = setInterval(() => fetchMessages(selectedChat.id), 3000);
-      return () => clearInterval(interval);
-    }
-  }, [selectedChat]);
-
-  useEffect(() => {
-    if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTo({
-        top: messagesContainerRef.current.scrollHeight,
-        behavior: "smooth",
-      });
-    }
-  }, [messages]);
-
-  const fetchConversations = async (isPolling = false) => {
+  const fetchConversations = useCallback(async (isPolling = false) => {
     try {
       if (!isPolling) setLoading(true);
       const response = await getConversations(isAdmin, user?.email);
-      setConversations(response.data.member || []);
+      setConversations(response.data.member ?? response.data["hydra:member"] ?? []);
     } catch (error) {
       console.error("Error cargando chats", error);
     } finally {
       if (!isPolling) setLoading(false);
     }
-  };
+  }, [isAdmin, user?.email]);
 
-  const fetchMessages = async (id: number) => {
+  const fetchMessages = useCallback(async (id: number) => {
     try {
       const response = await getConversation(id);
       setMessages(response.data.messages || []);
-      if (isAdmin && selectedChat) {
+      if (isAdmin) {
         const updatedReservation = response.data.reservation;
-        if (
-          JSON.stringify(selectedChat.reservation) !==
-          JSON.stringify(updatedReservation)
-        ) {
-          setSelectedChat((prev) =>
-            prev ? { ...prev, reservation: updatedReservation } : null,
-          );
-        }
+        setSelectedChat((prev) => {
+          if (
+            !prev ||
+            JSON.stringify(prev.reservation) === JSON.stringify(updatedReservation)
+          ) {
+            return prev;
+          }
+
+          return { ...prev, reservation: updatedReservation };
+        });
       }
     } catch (error) {
       console.error(error);
     }
-  };
+  }, [isAdmin]);
 
-  const hasUnreadMessages = (chat: Conversation) => {
+  const hasUnreadMessages = useCallback((chat: Conversation) => {
     if (!chat.messages?.length) return false;
     const lastMsg = chat.messages[chat.messages.length - 1];
     const isSenderOther = isAdmin ? !lastMsg.isAdmin : lastMsg.isAdmin;
     return isSenderOther && chat.status !== "READ";
-  };
+  }, [isAdmin]);
 
-  const markAsRead = async (chat: Conversation) => {
+  const markAsRead = useCallback(async (chat: Conversation) => {
     setConversations((prev) =>
       prev.map((c) => (c.id === chat.id ? { ...c, status: "READ" } : c)),
     );
@@ -129,7 +105,33 @@ export const useChat = () => {
     } catch (e) {
       console.error(e);
     }
-  };
+  }, [refreshUnreadCount]);
+
+  useEffect(() => {
+    if (user) {
+      fetchConversations();
+      const interval = setInterval(() => fetchConversations(true), 10000);
+      return () => clearInterval(interval);
+    }
+  }, [fetchConversations, user]);
+
+  useEffect(() => {
+    if (selectedChat) {
+      fetchMessages(selectedChat.id);
+      if (hasUnreadMessages(selectedChat)) markAsRead(selectedChat);
+      const interval = setInterval(() => fetchMessages(selectedChat.id), 3000);
+      return () => clearInterval(interval);
+    }
+  }, [fetchMessages, hasUnreadMessages, markAsRead, selectedChat]);
+
+  useEffect(() => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  }, [messages]);
 
   const handleSendMessage = async (
     e?: React.FormEvent,

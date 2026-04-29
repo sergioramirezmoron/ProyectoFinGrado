@@ -4,7 +4,7 @@ export const getUsers = () => api.get("/users?pagination=false");
 
 export const updateUserRoles = (id: number, roles: string[]) =>
   api.patch(
-    `/users/${id}`,
+    `/users/${id}/roles`,
     { roles },
     {
       headers: { "Content-Type": "application/merge-patch+json" },

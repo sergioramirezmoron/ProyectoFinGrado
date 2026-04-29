@@ -12,8 +12,10 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Entity\Reservation;
+use App\State\ConversationProcessor;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ApiResource(
@@ -21,8 +23,9 @@ use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
         // PUBLICO: Crear
         new Post(
             uriTemplate: '/conversations',
-            security: "is_granted('PUBLIC_ACCESS')",
-            denormalizationContext: ['groups' => ['conversation:write']]
+            security: "is_granted('IS_AUTHENTICATED_FULLY')",
+            processor: ConversationProcessor::class,
+            denormalizationContext: ['groups' => ['conversation:create']]
         ),
         // ADMIN: Ver lista
         new GetCollection(
@@ -31,13 +34,13 @@ use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
         ),
         // ADMIN: Ver detalle
         new Get(
-            security: "is_granted('IS_AUTHENTICATED_FULLY')",
+            security: "is_granted('IS_AUTHENTICATED_FULLY') and (is_granted('ROLE_SALES') or object.getUser() == user or object.getContactEmail() == user.getEmail())",
             normalizationContext: ['groups' => ['conversation:read', 'conversation:detail']]
         ),
         // ADMIN: Editar (Para marcar como LEIDO) - Y ahora también el USUARIO propietario (por ID o por EMAIL)
         new Patch(
-            security: "is_granted('ROLE_ADMIN') or object.getUser() == user or object.getContactEmail() == user.getEmail()",
-            denormalizationContext: ['groups' => ['conversation:write']]
+            security: "is_granted('IS_AUTHENTICATED_FULLY') and (is_granted('ROLE_SALES') or object.getUser() == user or object.getContactEmail() == user.getEmail())",
+            denormalizationContext: ['groups' => ['conversation:status:write']]
         )
     ],
     order: ['updatedAt' => 'DESC']
@@ -56,20 +59,20 @@ class Conversation
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['conversation:read', 'conversation:write'])]
+    #[Groups(['conversation:read'])]
     private ?string $contactName = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['conversation:read', 'conversation:write'])]
+    #[Groups(['conversation:read'])]
     private ?string $contactEmail = null;
 
     #[ORM\Column(length: 20, nullable: true)]
-    #[Groups(['conversation:read', 'conversation:write'])]
+    #[Groups(['conversation:read', 'conversation:create'])]
     private ?string $contactPhone = null;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['conversation:read', 'conversation:write'])]
+    #[Groups(['conversation:read', 'conversation:create'])]
     private ?Vehicle $vehicle = null;
 
     #[ORM\OneToMany(mappedBy: 'conversation', targetEntity: Message::class, cascade: ['persist', 'remove'])]
@@ -85,16 +88,17 @@ class Conversation
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(length: 20)]
-    #[Groups(['conversation:read', 'conversation:write'])]
+    #[Groups(['conversation:read', 'conversation:status:write'])]
+    #[Assert\Choice(choices: ['NEW', 'READ', 'ARCHIVED', 'NEW_FROM_ADMIN', 'NEW_FROM_CLIENT'], message: "Estado de conversacion no valido")]
     private ?string $status = 'NEW'; // NEW, READ, ARCHIVED
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[Groups(['conversation:read', 'conversation:write'])]
+    #[Groups(['conversation:read'])]
     private ?User $user = null;
 
     #[ORM\OneToOne(targetEntity: Reservation::class, cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: true)]
-    #[Groups(['conversation:read', 'conversation:write'])]
+    #[Groups(['conversation:read'])]
     private ?Reservation $reservation = null;
 
     public function __construct()

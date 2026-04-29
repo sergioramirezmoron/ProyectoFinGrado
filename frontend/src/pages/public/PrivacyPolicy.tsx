@@ -204,7 +204,7 @@ const PrivacyPolicy = () => {
             {[
               { title: "Acceso", desc: "Conocer qué datos tratamos sobre usted (Art. 15 RGPD)." },
               { title: "Rectificación", desc: "Solicitar la corrección de datos inexactos (Art. 16 RGPD)." },
-              { title: "Supresión", desc: 'Solicitar el \"derecho al olvido\" cuando proceda (Art. 17 RGPD).' },
+              { title: "Supresión", desc: 'Solicitar el "derecho al olvido" cuando proceda (Art. 17 RGPD).' },
               { title: "Portabilidad", desc: "Recibir sus datos en formato estructurado (Art. 20 RGPD)." },
               { title: "Oposición", desc: "Oponerse al tratamiento basado en interés legítimo (Art. 21 RGPD)." },
               { title: "Limitación", desc: "Solicitar la restricción del tratamiento (Art. 18 RGPD)." },

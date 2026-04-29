@@ -20,9 +20,9 @@ export const markConversationAsRead = (id: number) =>
 
 export const sendMessage = (
   content: string,
-  isAdmin: boolean,
+  _isAdmin: boolean,
   conversationIri: string,
-) => api.post("/messages", { content, isAdmin, conversation: conversationIri });
+) => api.post("/messages", { content, conversation: conversationIri });
 
 export const updateVehicleStatus = (
   vehicleId: string | number,
@@ -42,6 +42,5 @@ export const createConversation = (payload: ConversationPayloadInterface) =>
 export const sendPublicMessage = (content: string, conversationIri: string) =>
   api.post("/messages", {
     content,
-    isAdmin: false,
     conversation: conversationIri,
   });

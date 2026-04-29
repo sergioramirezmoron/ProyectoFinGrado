@@ -17,7 +17,8 @@ import {
   CalendarDays,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
-import { FavoriteContext } from "../../context/FavoriteContext";
+import { FavoriteContext } from "../../context/favoriteContextValue";
+import type { FavoriteItem } from "../../context/favoriteContextValue";
 import type { Vehicle } from "../../types/vehicle";
 import FavCard from "../../components/public/FavCard";
 import type { EditField, UserProfilePanelProps } from "../../types/auth";
@@ -26,10 +27,12 @@ import { getFavoriteVehicles } from "../../services/favoriteService";
 import { formatPrice } from "../../utils/formatters";
 import { getMainVehicleImage } from "../../utils/vehicleImages";
 
+const EMPTY_FAVORITES: FavoriteItem[] = [];
+
 const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
   const { user, logout, updateUser } = useAuth();
   const favoriteCtx = useContext(FavoriteContext);
-  const favorites = favoriteCtx?.favorites ?? [];
+  const favorites = favoriteCtx?.favorites ?? EMPTY_FAVORITES;
 
   const [editField, setEditField] = useState<EditField>(null);
   const [editValue, setEditValue] = useState("");

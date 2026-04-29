@@ -1,6 +1,6 @@
 import { ChevronRight, Trash2 } from "lucide-react";
 import { useContext } from "react";
-import { FavoriteContext } from "../../context/FavoriteContext";
+import { FavoriteContext } from "../../context/favoriteContextValue";
 import type { Vehicle } from "../../types/vehicle";
 import { Link } from "react-router-dom";
 

@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Validator\NoOverlappingReservation;
+use App\State\ReservationProcessor;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 
@@ -19,20 +20,30 @@ use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     operations: [
-        new GetCollection(security: "is_granted('PUBLIC_ACCESS')"),
-        new Get(security: "is_granted('PUBLIC_ACCESS')"),
+        new GetCollection(security: "is_granted('IS_AUTHENTICATED_FULLY')"),
+        new GetCollection(
+            uriTemplate: '/reservations/availability',
+            security: "is_granted('PUBLIC_ACCESS')",
+            normalizationContext: ['groups' => ['reservation:availability:read']]
+        ),
+        new Get(security: "is_granted('IS_AUTHENTICATED_FULLY') and (is_granted('ROLE_SALES') or object.getUser() == user)"),
         new Post(
             security: "is_granted('IS_AUTHENTICATED_FULLY')",
+            securityPostDenormalize: "is_granted('ROLE_SALES') or object.getUser() == user",
+            processor: ReservationProcessor::class,
+            denormalizationContext: ['groups' => ['reservation:create']],
             validationContext: ['groups' => ['Default', 'reservation:create']]
         ),
         new Patch(
-            security: "is_granted('IS_AUTHENTICATED_FULLY')",
+            security: "is_granted('IS_AUTHENTICATED_FULLY') and (is_granted('ROLE_SALES') or object.getUser() == user)",
+            securityPostDenormalize: "is_granted('ROLE_SALES') or object.getStatus() == 'CANCELLED'",
+            processor: ReservationProcessor::class,
+            denormalizationContext: ['groups' => ['reservation:status:write']],
             validationContext: ['groups' => ['Default']]
         ),
         new Delete(security: "is_granted('ROLE_SALES')")
     ],
     normalizationContext: ['groups' => ['reservation:read']],
-    denormalizationContext: ['groups' => ['reservation:write']],
     order: ['id' => 'DESC']
 )]
 #[NoOverlappingReservation]
@@ -46,20 +57,21 @@ class Reservation
     private ?int $id = null;
 
     #[ORM\Column(type: 'date')]
-    #[Groups(['reservation:read', 'reservation:write', 'conversation:read'])]
+    #[Groups(['reservation:read', 'reservation:create', 'reservation:availability:read', 'conversation:read'])]
     #[Assert\NotBlank]
     #[Assert\GreaterThan('today', message: "La fecha de inicio debe ser futura", groups: ['reservation:create'])]
     private ?\DateTimeInterface $startDate = null;
 
     #[ORM\Column(type: 'date')]
-    #[Groups(['reservation:read', 'reservation:write', 'conversation:read'])]
+    #[Groups(['reservation:read', 'reservation:create', 'reservation:availability:read', 'conversation:read'])]
     #[Assert\NotBlank]
     #[Assert\GreaterThan(propertyPath: 'startDate', message: "La fecha fin debe ser posterior a la de inicio", groups: ['reservation:create'])]
     #[Assert\GreaterThanOrEqual('today', message: "No se puede modificar una reserva que ya ha finalizado")]
     private ?\DateTimeInterface $endDate = null;
 
     #[ORM\Column(length: 20)]
-    #[Groups(['reservation:read', 'reservation:write', 'conversation:read'])]
+    #[Groups(['reservation:read', 'reservation:status:write', 'reservation:availability:read', 'conversation:read'])]
+    #[Assert\Choice(choices: ['PENDING', 'CONFIRMED', 'REJECTED', 'CANCELLED'], message: "Estado de reserva no valido")]
     private ?string $status = 'PENDING';
 
     #[ORM\Column]
@@ -68,12 +80,12 @@ class Reservation
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['reservation:read', 'reservation:write'])]
+    #[Groups(['reservation:read', 'reservation:create'])]
     private ?Vehicle $vehicle = null;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['reservation:read', 'reservation:write'])]
+    #[Groups(['reservation:read', 'reservation:create'])]
     private ?User $user = null;
 
     // --- MÉTODOS ---

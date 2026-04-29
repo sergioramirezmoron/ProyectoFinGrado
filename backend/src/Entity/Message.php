@@ -4,9 +4,11 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Post;
+use App\State\MessageProcessor;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ORM\HasLifecycleCallbacks]
@@ -15,6 +17,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
         // Enviar mensaje (Puede ser el Admin respondiendo o el Cliente escribiendo más)
         new Post(
             security: "is_granted('IS_AUTHENTICATED_FULLY')",
+            processor: MessageProcessor::class,
             denormalizationContext: ['groups' => ['message:write']]
         )
     ]
@@ -30,6 +33,7 @@ class Message
     #[ORM\Column(type: Types::TEXT)]
     // ✅ AÑADIDO 'conversation:read' para que se vea el texto en la lista
     #[Groups(['conversation:detail', 'conversation:write', 'message:write', 'conversation:read'])]
+    #[Assert\NotBlank(message: 'El mensaje no puede estar vacio.')]
     private ?string $content = null;
 
     #[ORM\Column]
@@ -39,7 +43,7 @@ class Message
 
     #[ORM\Column]
     // ✅ AÑADIDO 'conversation:read' para el PUNTO ROJO (saber quién escribió)
-    #[Groups(['conversation:detail', 'message:write', 'conversation:read'])]
+    #[Groups(['conversation:detail', 'conversation:read'])]
     private ?bool $isAdmin = false;
 
     #[ORM\ManyToOne(inversedBy: 'messages')]

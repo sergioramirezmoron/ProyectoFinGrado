@@ -25,14 +25,30 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[UniqueEntity(fields: ['phone'], message: 'Este número de teléfono ya está registrado.')]
 #[ApiResource(
     operations: [
-        new GetCollection(),
-        new Get(),
-        new Post(processor: UserPasswordHasher::class),
-        new Patch(processor: UserPasswordHasher::class),
-        new Delete(),
+        new GetCollection(security: "is_granted('ROLE_SALES')"),
+        new Get(security: "is_granted('ROLE_SALES') or object == user"),
+        new Post(
+            security: "is_granted('PUBLIC_ACCESS')",
+            processor: UserPasswordHasher::class,
+            denormalizationContext: ['groups' => ['user:create']],
+            validationContext: ['groups' => ['Default', 'user:create']]
+        ),
+        new Patch(
+            security: "is_granted('ROLE_ADMIN') or object == user",
+            processor: UserPasswordHasher::class,
+            denormalizationContext: ['groups' => ['user:profile:write']],
+            validationContext: ['groups' => ['Default']]
+        ),
+        new Patch(
+            uriTemplate: '/users/{id}/roles',
+            security: "is_granted('ROLE_ADMIN')",
+            processor: UserPasswordHasher::class,
+            denormalizationContext: ['groups' => ['user:roles:write']],
+            validationContext: ['groups' => ['Default', 'user:roles']]
+        ),
+        new Delete(security: "is_granted('ROLE_ADMIN')"),
     ],
     normalizationContext: ['groups' => ['user:read']],
-    denormalizationContext: ['groups' => ['user:write']],
     paginationClientEnabled: true,
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -44,7 +60,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
-    #[Groups(['user:read', 'user:write', 'reservation:read'])]
+    #[Groups(['user:read', 'user:create', 'reservation:read'])]
     #[Assert\NotBlank(message: "El email es obligatorio")]
     #[Assert\Email(message: "El formato del email no es válido")]
     private ?string $email = null;
@@ -53,7 +69,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var list<string> The user roles
      */
     #[ORM\Column]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['user:read', 'user:roles:write'])]
+    #[Assert\All(
+        constraints: [
+            new Assert\Choice(choices: ['ROLE_USER', 'ROLE_SALES', 'ROLE_ADMIN'], message: 'Rol no valido.')
+        ],
+        groups: ['user:roles']
+    )]
     private array $roles = [];
 
     /**
@@ -63,7 +85,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     // Usamos plainPassword para recibir el texto plano desde el frontend
-    #[Groups(['user:write'])]
+    #[Groups(['user:create', 'user:profile:write'])]
     #[Assert\NotBlank(groups: ['user:create'])]
     #[Assert\Length(min: 6, minMessage: "La contraseña debe tener al menos 6 caracteres")]
     private ?string $plainPassword = null;
@@ -71,20 +93,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     // --- DATOS DE PERFIL ---
 
     #[ORM\Column(length: 255)]
-    #[Groups(['user:read', 'user:write', 'reservation:read'])]
+    #[Groups(['user:read', 'user:create', 'user:profile:write', 'reservation:read'])]
     #[Assert\NotBlank(message: "El nombre es obligatorio")]
     private ?string $name = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['user:read', 'user:write', 'reservation:read'])]
+    #[Groups(['user:read', 'user:create', 'user:profile:write', 'reservation:read'])]
     private ?string $surname = null;
 
     #[ORM\Column(length: 20, nullable: true, unique: true)]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['user:read', 'user:create', 'user:profile:write'])]
     private ?string $phone = null;
 
     #[ORM\ManyToOne]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['user:read', 'user:create', 'user:profile:write'])]
     private ?Province $province = null;
 
     public function __construct()

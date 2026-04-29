@@ -139,7 +139,6 @@ const VehicleDetail = () => {
         endDate: formatDateAPI(endDate),
         vehicle: `/api/vehicles/${id}`,
         user: user["@id"] || `/api/users/${user.id}`,
-        status: "PENDING",
       });
 
       setReserveSuccess(true);

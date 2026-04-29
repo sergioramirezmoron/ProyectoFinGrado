@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { Cookie, Trash2 } from "lucide-react";
-import { getCookieConsent } from "../../components/ui/CookieBanner";
-
-const CONSENT_KEY = "luxurycars_cookie_consent";
+import { CONSENT_KEY, getCookieConsent } from "../../utils/cookieConsent";
 
 const CookiePolicy = () => {
   const [consent, setConsent] = useState(getCookieConsent());

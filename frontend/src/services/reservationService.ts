@@ -3,7 +3,9 @@ import type { HydraResponse } from "../types/vehicle";
 import type { Reservation } from "../types/reservation";
 
 export const getVehicleReservations = (vehicleId: string) =>
-  api.get<HydraResponse<Reservation>>(`/reservations?vehicle.id=${vehicleId}&status=CONFIRMED`);
+  api.get<HydraResponse<Reservation>>(
+    `/reservations/availability?vehicle.id=${vehicleId}&status=CONFIRMED`,
+  );
 
 export const getUserReservations = (userId: number) =>
   api.get<HydraResponse<Reservation>>(`/reservations?user.id=${userId}`);
@@ -25,5 +27,4 @@ export const createReservation = (payload: {
   endDate: string;
   vehicle: string;
   user: string;
-  status: string;
 }) => api.post<Reservation>("/reservations", payload);

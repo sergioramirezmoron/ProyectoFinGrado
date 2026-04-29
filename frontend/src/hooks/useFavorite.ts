@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { FavoriteContext } from "../context/FavoriteContext";
+import { FavoriteContext } from "../context/favoriteContextValue";
 
 export const useFavorite = (vehicleIri: string) => {
   const context = useContext(FavoriteContext);

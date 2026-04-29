@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, act } from "@testing-library/react";
 import { useContext } from "react";
-import { FavoriteContext, FavoriteProvider } from "../../context/FavoriteContext";
+import { FavoriteProvider } from "../../context/FavoriteContext";
+import { FavoriteContext } from "../../context/favoriteContextValue";
 
 vi.mock("../../hooks/useAuth", () => ({
   useAuth: vi.fn(),

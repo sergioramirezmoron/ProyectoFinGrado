@@ -1,21 +1,9 @@
-import { createContext, useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { ReactNode } from "react";
 import api from "../api/axios";
 import { useAuth } from "../hooks/useAuth";
-
-interface FavoriteItem {
-  id: number;
-  vehicleIri: string;
-}
-
-interface FavoriteContextType {
-  favorites: FavoriteItem[];
-  isFavorite: (vehicleIri: string) => boolean;
-  toggleFavorite: (vehicleIri: string, e: React.MouseEvent) => Promise<void>;
-  loading: boolean;
-}
-
-export const FavoriteContext = createContext<FavoriteContextType | null>(null);
+import { FavoriteContext } from "./favoriteContextValue";
+import type { FavoriteItem } from "./favoriteContextValue";
 
 export const FavoriteProvider = ({ children }: { children: ReactNode }) => {
   const { isAuthenticated, user } = useAuth();
@@ -39,7 +27,7 @@ export const FavoriteProvider = ({ children }: { children: ReactNode }) => {
         });
         if (cancelled) return;
 
-        const members = response.data.member ?? [];
+        const members = response.data.member ?? response.data["hydra:member"] ?? [];
 
         setFavorites(
           members.map((f: { id: number; vehicle: { "@id": string } }) => ({
@@ -101,7 +89,7 @@ export const FavoriteProvider = ({ children }: { children: ReactNode }) => {
           const response = await api.get("/favorites", {
             params: { user: userIri, itemsPerPage: 200 },
           });
-          const members = response.data.member ?? [];
+          const members = response.data.member ?? response.data["hydra:member"] ?? [];
           setFavorites(
             members.map((f: { id: number; vehicle: { "@id": string } }) => ({
               id: f.id,

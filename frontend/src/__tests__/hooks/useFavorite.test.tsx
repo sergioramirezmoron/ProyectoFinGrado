@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { useFavorite } from "../../hooks/useFavorite";
-import { FavoriteContext } from "../../context/FavoriteContext";
+import { FavoriteContext } from "../../context/favoriteContextValue";
 import type { ReactNode } from "react";
 
 const makeMockContext = (overrides = {}) => ({

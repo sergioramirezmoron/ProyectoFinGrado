@@ -25,9 +25,19 @@ final class CreateVehicleImageAction extends AbstractController
             throw new BadRequestHttpException('No se ha enviado ningún archivo');
         }
 
+        $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!in_array($uploadedFile->getMimeType(), $allowedMimeTypes, true)) {
+            throw new BadRequestHttpException('Formato de imagen no permitido. Usa JPG, PNG o WEBP.');
+        }
+
+        if ($uploadedFile->getSize() > 5 * 1024 * 1024) {
+            throw new BadRequestHttpException('La imagen no puede superar los 5 MB.');
+        }
+
         // 3. Subimos el archivo
         $destination = $this->getParameter('kernel.project_dir') . '/public/images/vehicles';
-        $newFilename = uniqid() . '.' . $uploadedFile->guessExtension();
+        $extension = $uploadedFile->guessExtension() ?: 'jpg';
+        $newFilename = uniqid('', true) . '.' . $extension;
 
         try {
             $uploadedFile->move($destination, $newFilename);

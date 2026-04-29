@@ -42,7 +42,8 @@ const Register = () => {
     const fetchProvinces = async () => {
       try {
         const response = await getProvinces();
-        const data = (response.data.member || []).sort((a: Province, b: Province) =>
+        const provincesResponse = response.data.member ?? response.data["hydra:member"] ?? [];
+        const data = provincesResponse.sort((a: Province, b: Province) =>
           a.name.localeCompare(b.name, "es")
         );
         setProvinces(data);

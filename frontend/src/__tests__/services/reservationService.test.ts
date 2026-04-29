@@ -27,7 +27,7 @@ describe("getVehicleReservations", () => {
     await getVehicleReservations("425");
 
     expect(api.get).toHaveBeenCalledWith(
-      "/reservations?vehicle.id=425&status=CONFIRMED"
+      "/reservations/availability?vehicle.id=425&status=CONFIRMED"
     );
   });
 
@@ -37,7 +37,7 @@ describe("getVehicleReservations", () => {
     await getVehicleReservations("999");
 
     expect(api.get).toHaveBeenCalledWith(
-      "/reservations?vehicle.id=999&status=CONFIRMED"
+      "/reservations/availability?vehicle.id=999&status=CONFIRMED"
     );
   });
 });
@@ -70,7 +70,7 @@ describe("getAllReservations", () => {
 
     await getAllReservations();
 
-    expect(api.get).toHaveBeenCalledWith("/reservations");
+    expect(api.get).toHaveBeenCalledWith("/reservations?itemsPerPage=500");
   });
 
   it("appends status param when status is provided", async () => {
@@ -78,7 +78,9 @@ describe("getAllReservations", () => {
 
     await getAllReservations("PENDING");
 
-    expect(api.get).toHaveBeenCalledWith("/reservations?status=PENDING");
+    expect(api.get).toHaveBeenCalledWith(
+      "/reservations?itemsPerPage=500&status=PENDING"
+    );
   });
 
   it("works with CONFIRMED status filter", async () => {
@@ -86,7 +88,9 @@ describe("getAllReservations", () => {
 
     await getAllReservations("CONFIRMED");
 
-    expect(api.get).toHaveBeenCalledWith("/reservations?status=CONFIRMED");
+    expect(api.get).toHaveBeenCalledWith(
+      "/reservations?itemsPerPage=500&status=CONFIRMED"
+    );
   });
 
   it("works with CANCELLED status filter", async () => {
@@ -94,7 +98,9 @@ describe("getAllReservations", () => {
 
     await getAllReservations("CANCELLED");
 
-    expect(api.get).toHaveBeenCalledWith("/reservations?status=CANCELLED");
+    expect(api.get).toHaveBeenCalledWith(
+      "/reservations?itemsPerPage=500&status=CANCELLED"
+    );
   });
 });
 
@@ -147,7 +153,6 @@ describe("createReservation", () => {
       endDate: "2026-05-15",
       vehicle: "/api/vehicles/425",
       user: "/api/users/3",
-      status: "PENDING",
     };
     vi.mocked(api.post).mockResolvedValueOnce({ data: { id: 17, ...payload } });
 
@@ -162,7 +167,6 @@ describe("createReservation", () => {
       endDate: "2026-06-05",
       vehicle: "/api/vehicles/1",
       user: "/api/users/1",
-      status: "PENDING",
     };
     vi.mocked(api.post).mockResolvedValueOnce({
       data: { id: 99, ...payload, totalPrice: 84 },

@@ -1,56 +1,32 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Cookie, ChevronDown, ChevronUp, X } from "lucide-react";
-
-type ConsentState = {
-  essential: boolean;
-  functional: boolean;
-};
-
-const CONSENT_KEY = "luxurycars_cookie_consent";
-const CONSENT_VERSION = "1.0";
-
-export function getCookieConsent(): (ConsentState & { version: string }) | null {
-  try {
-    const stored = localStorage.getItem(CONSENT_KEY);
-    if (!stored) return null;
-    return JSON.parse(stored);
-  } catch {
-    return null;
-  }
-}
-
-function saveConsent(consent: ConsentState) {
-  localStorage.setItem(
-    CONSENT_KEY,
-    JSON.stringify({ ...consent, version: CONSENT_VERSION })
-  );
-}
+import {
+  CONSENT_VERSION,
+  getCookieConsent,
+  saveCookieConsent,
+} from "../../utils/cookieConsent";
 
 const CookieBanner = () => {
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(() => {
+    const stored = getCookieConsent();
+    return !stored || stored.version !== CONSENT_VERSION;
+  });
   const [expanded, setExpanded] = useState(false);
   const [functional, setFunctional] = useState(true);
 
-  useEffect(() => {
-    const stored = getCookieConsent();
-    if (!stored || stored.version !== CONSENT_VERSION) {
-      setVisible(true);
-    }
-  }, []);
-
   const acceptAll = () => {
-    saveConsent({ essential: true, functional: true });
+    saveCookieConsent({ essential: true, functional: true });
     setVisible(false);
   };
 
   const acceptEssential = () => {
-    saveConsent({ essential: true, functional: false });
+    saveCookieConsent({ essential: true, functional: false });
     setVisible(false);
   };
 
   const savePreferences = () => {
-    saveConsent({ essential: true, functional });
+    saveCookieConsent({ essential: true, functional });
     setVisible(false);
   };
 

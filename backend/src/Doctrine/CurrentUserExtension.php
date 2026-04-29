@@ -6,8 +6,10 @@ use ApiPlatform\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Doctrine\Orm\Extension\QueryItemExtensionInterface;
 use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\Operation;
+use App\Entity\Conversation;
+use App\Entity\Favorite;
 use App\Entity\Message;
-use App\Entity\User;
+use App\Entity\Reservation;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Bundle\SecurityBundle\Security;
 
@@ -19,38 +21,62 @@ final class CurrentUserExtension implements QueryCollectionExtensionInterface, Q
 
     public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, Operation $operation = null, array $context = []): void
     {
-        $this->addWhere($queryBuilder, $resourceClass);
+        $this->addWhere($queryBuilder, $resourceClass, $operation);
     }
 
     public function applyToItem(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, array $identifiers, Operation $operation = null, array $context = []): void
     {
-        $this->addWhere($queryBuilder, $resourceClass);
+        $this->addWhere($queryBuilder, $resourceClass, $operation);
     }
 
-    private function addWhere(QueryBuilder $queryBuilder, string $resourceClass): void
+    private function addWhere(QueryBuilder $queryBuilder, string $resourceClass, ?Operation $operation): void
     {
-        // 1. Solo aplicamos esto a la entidad Message
-        if (Message::class !== $resourceClass) {
+        $restrictedResources = [
+            Conversation::class,
+            Favorite::class,
+            Message::class,
+            Reservation::class,
+        ];
+
+        if (!in_array($resourceClass, $restrictedResources, true)) {
             return;
         }
 
-        // 2. Obtenemos el usuario logueado
+        if (Reservation::class === $resourceClass && $operation?->getUriTemplate() === '/reservations/availability') {
+            return;
+        }
+
+        if ($this->security->isGranted('ROLE_SALES')) {
+            return;
+        }
+
         $user = $this->security->getUser();
+        $rootAlias = $queryBuilder->getRootAliases()[0];
 
-        // Si no hay usuario, no ve nada
         if (!$user) {
+            $queryBuilder->andWhere('1 = 0');
             return;
         }
 
-        // 3. SI ERES ADMIN O VENTAS -> VES TODO
-        if ($this->security->isGranted('ROLE_ADMIN') || $this->security->isGranted('ROLE_SALES')) {
-            return; 
+        if (Conversation::class === $resourceClass) {
+            $queryBuilder
+                ->andWhere(sprintf('%s.user = :current_user OR %s.contactEmail = :current_email', $rootAlias, $rootAlias))
+                ->setParameter('current_user', $user)
+                ->setParameter('current_email', $user->getUserIdentifier());
+            return;
         }
 
-        // 4. SI ERES UN CLIENTE NORMAL -> Solo ves mensajes de tus conversaciones
-        $rootAlias = $queryBuilder->getRootAliases()[0];
-        $queryBuilder->innerJoin(sprintf('%s.conversation', $rootAlias), 'msg_conv')
-            ->andWhere('msg_conv.user = :current_user')
+        if (Message::class === $resourceClass) {
+            $queryBuilder
+                ->innerJoin(sprintf('%s.conversation', $rootAlias), 'msg_conv')
+                ->andWhere('msg_conv.user = :current_user OR msg_conv.contactEmail = :current_email')
+                ->setParameter('current_user', $user)
+                ->setParameter('current_email', $user->getUserIdentifier());
+            return;
+        }
+
+        $queryBuilder
+            ->andWhere(sprintf('%s.user = :current_user', $rootAlias))
             ->setParameter('current_user', $user);
     }
 }

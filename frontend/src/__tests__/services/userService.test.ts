@@ -23,7 +23,7 @@ describe("userService", () => {
     it("calls GET /users", async () => {
       vi.mocked(api.get).mockResolvedValueOnce({ data: { member: [] } });
       await getUsers();
-      expect(api.get).toHaveBeenCalledWith("/users");
+      expect(api.get).toHaveBeenCalledWith("/users?pagination=false");
     });
   });
 
@@ -32,7 +32,7 @@ describe("userService", () => {
       vi.mocked(api.patch).mockResolvedValueOnce({ data: {} });
       await updateUserRoles(3, ["ROLE_USER", "ROLE_SALES"]);
       expect(api.patch).toHaveBeenCalledWith(
-        "/users/3",
+        "/users/3/roles",
         { roles: ["ROLE_USER", "ROLE_SALES"] },
         { headers: { "Content-Type": "application/merge-patch+json" } }
       );
@@ -42,7 +42,7 @@ describe("userService", () => {
       vi.mocked(api.patch).mockResolvedValueOnce({ data: {} });
       await updateUserRoles(1, ["ROLE_ADMIN"]);
       expect(api.patch).toHaveBeenCalledWith(
-        "/users/1",
+        "/users/1/roles",
         { roles: ["ROLE_ADMIN"] },
         expect.anything()
       );

@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Delete;
+use App\State\FavoriteProcessor;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -23,9 +24,13 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiResource(
     operations: [
         new GetCollection(security: "is_granted('IS_AUTHENTICATED_FULLY')"),
-        new Post(security: "is_granted('IS_AUTHENTICATED_FULLY')"),
-        new Get(security: "is_granted('IS_AUTHENTICATED_FULLY')"),
-        new Delete(security: "is_granted('IS_AUTHENTICATED_FULLY')"),
+        new Post(
+            security: "is_granted('IS_AUTHENTICATED_FULLY')",
+            securityPostDenormalize: "object.getUser() == user",
+            processor: FavoriteProcessor::class
+        ),
+        new Get(security: "is_granted('IS_AUTHENTICATED_FULLY') and object.getUser() == user"),
+        new Delete(security: "is_granted('IS_AUTHENTICATED_FULLY') and object.getUser() == user"),
     ],
     normalizationContext: ['groups' => ['favorite:read']],
     denormalizationContext: ['groups' => ['favorite:write']],

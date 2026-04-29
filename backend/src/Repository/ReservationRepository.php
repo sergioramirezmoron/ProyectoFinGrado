@@ -21,8 +21,8 @@ class ReservationRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('r')
             ->andWhere('r.vehicle = :vehicle')
-            ->andWhere('r.startDate < :end')
-            ->andWhere('r.endDate > :start')
+            ->andWhere('r.startDate <= :end')
+            ->andWhere('r.endDate >= :start')
             ->andWhere('r.status NOT IN (:ignoredStatuses)')
             ->setParameter('ignoredStatuses', ['REJECTED', 'PENDING', 'CANCELLED'])
             ->setParameter('vehicle', $vehicle)

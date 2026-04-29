@@ -23,7 +23,7 @@ const UserManagement = () => {
   const fetchUsers = async () => {
     try {
       const response = await getUsers();
-      setUsers(response.data.member || []);
+      setUsers(response.data.member ?? response.data["hydra:member"] ?? []);
     } catch (error) {
       console.error("Error cargando usuarios", error);
     } finally {

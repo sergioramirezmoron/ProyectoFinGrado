@@ -29,7 +29,7 @@ describe("getConversations", () => {
 
     await getConversations(true);
 
-    expect(api.get).toHaveBeenCalledWith("/conversations");
+    expect(api.get).toHaveBeenCalledWith("/conversations?itemsPerPage=500");
   });
 
   it("calls GET /conversations with contactEmail filter for regular user", async () => {
@@ -90,26 +90,24 @@ describe("markConversationAsRead", () => {
 describe("sendMessage", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("calls POST /messages with content, isAdmin, and conversation IRI", async () => {
+  it("calls POST /messages with content and conversation IRI", async () => {
     vi.mocked(api.post).mockResolvedValueOnce({ data: { id: 47 } });
 
     await sendMessage("Hola!", false, "/api/conversations/12");
 
     expect(api.post).toHaveBeenCalledWith("/messages", {
       content: "Hola!",
-      isAdmin: false,
       conversation: "/api/conversations/12",
     });
   });
 
-  it("sets isAdmin=true for admin messages", async () => {
+  it("does not send client-side admin flags", async () => {
     vi.mocked(api.post).mockResolvedValueOnce({ data: { id: 48 } });
 
     await sendMessage("Respuesta del admin", true, "/api/conversations/12");
 
     expect(api.post).toHaveBeenCalledWith("/messages", {
       content: "Respuesta del admin",
-      isAdmin: true,
       conversation: "/api/conversations/12",
     });
   });
@@ -164,14 +162,13 @@ describe("createConversation", () => {
 describe("sendPublicMessage", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("calls POST /messages with isAdmin=false always", async () => {
+  it("calls POST /messages without client-side admin flag", async () => {
     vi.mocked(api.post).mockResolvedValueOnce({ data: { id: 50 } });
 
     await sendPublicMessage("Mensaje público", "/api/conversations/5");
 
     expect(api.post).toHaveBeenCalledWith("/messages", {
       content: "Mensaje público",
-      isAdmin: false,
       conversation: "/api/conversations/5",
     });
   });

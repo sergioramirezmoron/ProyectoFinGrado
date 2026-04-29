@@ -16,14 +16,15 @@ use Symfony\Component\Serializer\Annotation\SerializedName; // Importante para m
 #[ORM\Entity(repositoryClass: VehicleImageRepository::class)]
 #[ApiResource(
     operations: [
-        new Get(),
+        new Get(security: "is_granted('PUBLIC_ACCESS')"),
         new Post(
+            security: "is_granted('ROLE_SALES')",
             controller: CreateVehicleImageAction::class,
             deserialize: false,
             inputFormats: ['multipart' => ['multipart/form-data']],
         ),
-        new Delete(),
-        new Patch(),
+        new Delete(security: "is_granted('ROLE_SALES')"),
+        new Patch(security: "is_granted('ROLE_SALES')"),
     ],
     normalizationContext: ['groups' => ['vehicleImage:read']],
     denormalizationContext: ['groups' => ['vehicleImage:write']]
