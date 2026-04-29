@@ -9,10 +9,6 @@ import type { VehicleImage } from "../../types/vehicle";
 const PLACEHOLDER = "https://placehold.co/600x400?text=Sin+Foto";
 
 describe("buildImageUrl", () => {
-  beforeEach(() => {
-    vi.stubEnv("VITE_BACKEND_URL", "");
-  });
-
   afterEach(() => {
     vi.unstubAllEnvs();
   });
@@ -32,9 +28,10 @@ describe("buildImageUrl", () => {
     expect(buildImageUrl(path)).toBe(path);
   });
 
-  it("handles relative paths without leading slash", () => {
-    const path = "images/vehicles/abc123.jpg";
-    expect(buildImageUrl(path)).toBe(path);
+  it("adds leading slash to relative paths without one", () => {
+    expect(buildImageUrl("images/vehicles/abc123.jpg")).toBe(
+      "/images/vehicles/abc123.jpg",
+    );
   });
 
   it("handles deeply nested relative paths", () => {
@@ -42,10 +39,10 @@ describe("buildImageUrl", () => {
     expect(buildImageUrl(path)).toBe(path);
   });
 
-  it("prepends VITE_BACKEND_URL to relative image paths when configured", () => {
+  it("ignores VITE_BACKEND_URL — relative paths always stay relative for proxy", () => {
     vi.stubEnv("VITE_BACKEND_URL", "https://backend.example.com/");
     expect(buildImageUrl("/images/vehicles/abc123.jpg")).toBe(
-      "https://backend.example.com/images/vehicles/abc123.jpg"
+      "/images/vehicles/abc123.jpg",
     );
   });
 });

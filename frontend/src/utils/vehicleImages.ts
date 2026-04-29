@@ -7,14 +7,9 @@ import type { VehicleImage } from "../types/vehicle";
  */
 export const buildImageUrl = (path: string): string => {
   if (!path) return "https://placehold.co/600x400?text=Sin+Foto";
-  // Already a full URL
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
-
-  const backendUrl = import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, "");
-  if (!backendUrl) return path;
-
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  return `${backendUrl}${normalizedPath}`;
+  // Relative paths are served via the nginx/Vite proxy — always keep them relative
+  return path.startsWith("/") ? path : `/${path}`;
 };
 
 /**
