@@ -2,8 +2,9 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import api from "../../api/axios";
 
 describe("api/axios instance", () => {
-  it("has baseURL set to /api", () => {
-    expect(api.defaults.baseURL).toBe("/api");
+  it("has baseURL resolved from VITE_API_URL or /api fallback", () => {
+    const apiUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, "");
+    expect(api.defaults.baseURL).toBe(apiUrl ? `${apiUrl}/api` : "/api");
   });
 
   it("is an axios instance with get, post, patch, delete methods", () => {

@@ -9,8 +9,12 @@ export const buildImageUrl = (path: string): string => {
   if (!path) return "https://placehold.co/600x400?text=Sin+Foto";
   // Already a full URL
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
-  // Relative path — nginx proxies /images/ to the backend
-  return path;
+
+  const backendUrl = import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, "");
+  if (!backendUrl) return path;
+
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return `${backendUrl}${normalizedPath}`;
 };
 
 /**

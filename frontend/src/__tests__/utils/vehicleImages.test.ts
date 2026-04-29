@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import {
   buildImageUrl,
   getMainVehicleImage,
@@ -9,6 +9,14 @@ import type { VehicleImage } from "../../types/vehicle";
 const PLACEHOLDER = "https://placehold.co/600x400?text=Sin+Foto";
 
 describe("buildImageUrl", () => {
+  beforeEach(() => {
+    vi.stubEnv("VITE_BACKEND_URL", "");
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("returns an absolute URL unchanged (http)", () => {
     const url = "http://example.com/images/car.jpg";
     expect(buildImageUrl(url)).toBe(url);
@@ -33,9 +41,24 @@ describe("buildImageUrl", () => {
     const path = "/images/enviromentalBadges/eco.png";
     expect(buildImageUrl(path)).toBe(path);
   });
+
+  it("prepends VITE_BACKEND_URL to relative image paths when configured", () => {
+    vi.stubEnv("VITE_BACKEND_URL", "https://backend.example.com/");
+    expect(buildImageUrl("/images/vehicles/abc123.jpg")).toBe(
+      "https://backend.example.com/images/vehicles/abc123.jpg"
+    );
+  });
 });
 
 describe("getMainVehicleImage", () => {
+  beforeEach(() => {
+    vi.stubEnv("VITE_BACKEND_URL", "");
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("returns placeholder when images is null", () => {
     expect(getMainVehicleImage(null)).toBe(PLACEHOLDER);
   });
@@ -118,6 +141,14 @@ describe("getMainVehicleImage", () => {
 });
 
 describe("getMainImageOrNull", () => {
+  beforeEach(() => {
+    vi.stubEnv("VITE_BACKEND_URL", "");
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("returns null when images is null", () => {
     expect(getMainImageOrNull(null)).toBeNull();
   });
