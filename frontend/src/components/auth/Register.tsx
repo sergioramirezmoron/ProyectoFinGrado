@@ -57,9 +57,26 @@ const Register = () => {
     fetchProvinces();
   }, []);
 
+  const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚàèìòùÀÈÌÒÙäëïöüÄËÏÖÜñÑçÇ\s'\-]+$/;
+  const phoneRegex = /^\+?[\d\s\-]{9,15}$/;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!nameRegex.test(name.trim())) {
+      setError("El nombre solo puede contener letras.");
+      return;
+    }
+    if (!nameRegex.test(surname.trim())) {
+      setError("Los apellidos solo pueden contener letras.");
+      return;
+    }
+    if (!phoneRegex.test(phone.trim())) {
+      setError("El teléfono solo puede contener dígitos (9-15 caracteres).");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -123,6 +140,8 @@ const Register = () => {
                   onChange={(e) => setName(e.target.value)}
                   className="auth-input-icon"
                   placeholder="Ej: John"
+                  pattern="[a-zA-ZáéíóúÁÉÍÓÚàèìòùÀÈÌÒÙäëïöüÄËÏÖÜñÑçÇ\s'\-]+"
+                  title="Solo letras, sin números ni símbolos"
                   required
                 />
               </div>
@@ -137,6 +156,8 @@ const Register = () => {
                   onChange={(e) => setSurname(e.target.value)}
                   className="auth-input"
                   placeholder="Ej: Doe"
+                  pattern="[a-zA-ZáéíóúÁÉÍÓÚàèìòùÀÈÌÒÙäëïöüÄËÏÖÜñÑçÇ\s'\-]+"
+                  title="Solo letras, sin números ni símbolos"
                   required
                 />
               </div>
@@ -173,6 +194,8 @@ const Register = () => {
                   onChange={(e) => setPhone(e.target.value)}
                   className="auth-input-icon"
                   placeholder="600 000 000"
+                  pattern="\+?[\d\s\-]{9,15}"
+                  title="Solo dígitos, entre 9 y 15 caracteres"
                   required
                 />
               </div>
