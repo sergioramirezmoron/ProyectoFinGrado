@@ -33,6 +33,8 @@ interface EntityWithId {
   "@id"?: string;
 }
 
+type FieldErrors = Record<string, string>;
+
 const VehicleForm = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -40,6 +42,8 @@ const VehicleForm = () => {
 
   const [loading, setLoading] = useState(false);
   const [dataReady, setDataReady] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [generalError, setGeneralError] = useState("");
   const [options, setOptions] = useState<FormOptions>({
     brands: [],
     fuels: [],
@@ -174,6 +178,9 @@ const VehicleForm = () => {
     >,
   ) => {
     const { name, value } = e.target;
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => { const next = { ...prev }; delete next[name]; return next; });
+    }
     setFormData((prev) =>
       name === "brand"
         ? { ...prev, [name]: value, model: "" }
@@ -207,6 +214,8 @@ const VehicleForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setFieldErrors({});
+    setGeneralError("");
 
     try {
       // 1. Eliminar explícitamente las imágenes borradas por el usuario
@@ -272,10 +281,24 @@ const VehicleForm = () => {
         await createVehicle(vehiclePayload);
       }
 
+      setFieldErrors({});
+      setGeneralError("");
       navigate("/admin/coches");
-    } catch (error) {
-      console.error(error);
-      alert("Error al guardar. Revisa la consola.");
+    } catch (error: unknown) {
+      const axiosErr = error as {
+        response?: { status?: number; data?: { violations?: { propertyPath: string; message: string }[] } };
+      };
+      if (axiosErr.response?.status === 422) {
+        const violations = axiosErr.response?.data?.violations ?? [];
+        const errors: FieldErrors = {};
+        for (const v of violations) {
+          errors[v.propertyPath] = v.message;
+        }
+        setFieldErrors(errors);
+        setGeneralError("Revisa los campos marcados antes de continuar.");
+      } else {
+        setGeneralError("Error al guardar. Inténtalo de nuevo.");
+      }
     } finally {
       setLoading(false);
     }
@@ -283,7 +306,15 @@ const VehicleForm = () => {
 
   const inputClass =
     "w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 hover:bg-white";
+  const inputErrorClass =
+    "w-full p-3 border border-red-400 rounded-xl focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-red-50";
   const labelClass = "text-sm font-semibold text-gray-700 mb-1 block";
+
+  const ic = (field: string) => (fieldErrors[field] ? inputErrorClass : inputClass);
+  const FieldError = ({ field }: { field: string }) =>
+    fieldErrors[field] ? (
+      <p className="text-red-500 text-xs mt-1">{fieldErrors[field]}</p>
+    ) : null;
 
   if (isEditMode && !dataReady) {
     return (
@@ -312,6 +343,12 @@ const VehicleForm = () => {
         </button>
       </div>
 
+      {generalError && (
+        <div className="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm font-medium">
+          {generalError}
+        </div>
+      )}
+
       <form
         onSubmit={handleSubmit}
         className="grid grid-cols-1 xl:grid-cols-3 gap-8"
@@ -331,7 +368,7 @@ const VehicleForm = () => {
                   name="brand"
                   value={formData.brand}
                   onChange={handleChange}
-                  className={inputClass}
+                  className={ic("brand")}
                   required
                 >
                   <option value="">Seleccionar marca...</option>
@@ -341,6 +378,7 @@ const VehicleForm = () => {
                     </option>
                   ))}
                 </select>
+                <FieldError field="brand" />
               </div>
               <div>
                 <label className={labelClass}>Modelo *</label>
@@ -348,7 +386,7 @@ const VehicleForm = () => {
                   name="model"
                   value={formData.model}
                   onChange={handleChange}
-                  className={`${inputClass} disabled:opacity-50 disabled:cursor-not-allowed`}
+                  className={`${ic("model")} disabled:opacity-50 disabled:cursor-not-allowed`}
                   required
                   disabled={!formData.brand}
                 >
@@ -363,6 +401,7 @@ const VehicleForm = () => {
                     </option>
                   ))}
                 </select>
+                <FieldError field="model" />
               </div>
               <div>
                 <label className={labelClass}>Carrocería</label>
@@ -495,9 +534,10 @@ const VehicleForm = () => {
                   placeholder="150"
                   onChange={handleChange}
                   onWheel={(e) => e.currentTarget.blur()}
-                  className={inputClass}
+                  className={ic("power")}
                   required
                 />
+                <FieldError field="power" />
               </div>
               <div>
                 <label className={labelClass}>CC</label>
@@ -508,8 +548,9 @@ const VehicleForm = () => {
                   placeholder="2000"
                   onChange={handleChange}
                   onWheel={(e) => e.currentTarget.blur()}
-                  className={inputClass}
+                  className={ic("displacement")}
                 />
+                <FieldError field="displacement" />
               </div>
               <div>
                 <label className={labelClass}>Año</label>
@@ -519,9 +560,10 @@ const VehicleForm = () => {
                   value={formData.year}
                   onChange={handleChange}
                   onWheel={(e) => e.currentTarget.blur()}
-                  className={inputClass}
+                  className={ic("year")}
                   required
                 />
+                <FieldError field="year" />
               </div>
               <div>
                 <label className={labelClass}>Km</label>
@@ -532,9 +574,10 @@ const VehicleForm = () => {
                   placeholder="0"
                   onChange={handleChange}
                   onWheel={(e) => e.currentTarget.blur()}
-                  className={inputClass}
+                  className={ic("kilometres")}
                   required
                 />
+                <FieldError field="kilometres" />
               </div>
               <div>
                 <label className={labelClass}>Dueños</label>
@@ -544,10 +587,11 @@ const VehicleForm = () => {
                   value={formData.owners}
                   onChange={handleChange}
                   onWheel={(e) => e.currentTarget.blur()}
-                  className={inputClass}
+                  className={ic("owners")}
                   min="1"
                   required
                 />
+                <FieldError field="owners" />
               </div>
               <div>
                 <label className={labelClass}>Puertas</label>
@@ -557,11 +601,12 @@ const VehicleForm = () => {
                   value={formData.doors}
                   onChange={handleChange}
                   onWheel={(e) => e.currentTarget.blur()}
-                  className={inputClass}
+                  className={ic("doors")}
                   min="2"
                   max="10"
                   required
                 />
+                <FieldError field="doors" />
               </div>
             </div>
           </div>
@@ -625,7 +670,11 @@ const VehicleForm = () => {
                   }
                   onChange={handleChange}
                   onWheel={(e) => e.currentTarget.blur()}
-                  className="w-full p-4 pl-4 text-2xl font-bold text-gray-900 border-2 border-blue-100 rounded-xl focus:border-blue-500 focus:outline-none bg-blue-50/30"
+                  className={
+                    fieldErrors[formData.type === "SALE" ? "price" : "dailyPrice"]
+                      ? "w-full p-4 pl-4 text-2xl font-bold text-gray-900 border-2 border-red-400 rounded-xl focus:border-red-400 focus:outline-none bg-red-50"
+                      : "w-full p-4 pl-4 text-2xl font-bold text-gray-900 border-2 border-blue-100 rounded-xl focus:border-blue-500 focus:outline-none bg-blue-50/30"
+                  }
                   placeholder="0"
                   required
                 />
@@ -633,6 +682,7 @@ const VehicleForm = () => {
                   €
                 </span>
               </div>
+              <FieldError field={formData.type === "SALE" ? "price" : "dailyPrice"} />
             </div>
           </div>
 
@@ -702,7 +752,7 @@ const VehicleForm = () => {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || Object.keys(fieldErrors).length > 0}
             className="w-full py-4 bg-linear-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-indigo-700 transition-all active:scale-[0.98] flex items-center justify-center gap-3 text-lg disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {loading ? (
