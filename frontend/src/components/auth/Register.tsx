@@ -64,15 +64,20 @@ const Register = () => {
     e.preventDefault();
     setError("");
 
-    if (!nameRegex.test(name.trim())) {
+    const cleanName = name.trim().replace(/\s+/g, " ");
+    const cleanSurname = surname.trim().replace(/\s+/g, " ");
+    const cleanPhone = phone.trim();
+    const cleanEmail = email.trim();
+
+    if (!nameRegex.test(cleanName)) {
       setError("El nombre solo puede contener letras.");
       return;
     }
-    if (!nameRegex.test(surname.trim())) {
+    if (!nameRegex.test(cleanSurname)) {
       setError("Los apellidos solo pueden contener letras.");
       return;
     }
-    if (!phoneRegex.test(phone.trim())) {
+    if (!phoneRegex.test(cleanPhone)) {
       setError("El teléfono solo puede contener dígitos (9-15 caracteres).");
       return;
     }
@@ -81,11 +86,11 @@ const Register = () => {
 
     try {
       await registerUser({
-        email,
+        email: cleanEmail,
         plainPassword: password,
-        name,
-        surname,
-        phone,
+        name: cleanName,
+        surname: cleanSurname,
+        phone: cleanPhone,
         province: selectedProvince,
       });
 
