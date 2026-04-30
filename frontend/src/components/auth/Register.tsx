@@ -69,6 +69,11 @@ const Register = () => {
     const cleanPhone = phone.trim();
     const cleanEmail = email.trim();
 
+    setName(cleanName);
+    setSurname(cleanSurname);
+    setPhone(cleanPhone);
+    setEmail(cleanEmail);
+
     if (!nameRegex.test(cleanName)) {
       setError("El nombre solo puede contener letras.");
       return;
@@ -143,6 +148,7 @@ const Register = () => {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  onBlur={(e) => setName(e.target.value.trim().replace(/\s+/g, " "))}
                   className="auth-input-icon"
                   placeholder="Ej: John"
                   pattern="[a-zA-ZáéíóúÁÉÍÓÚàèìòùÀÈÌÒÙäëïöüÄËÏÖÜñÑçÇ\s'\-]+"
@@ -159,6 +165,7 @@ const Register = () => {
                   type="text"
                   value={surname}
                   onChange={(e) => setSurname(e.target.value)}
+                  onBlur={(e) => setSurname(e.target.value.trim().replace(/\s+/g, " "))}
                   className="auth-input"
                   placeholder="Ej: Doe"
                   pattern="[a-zA-ZáéíóúÁÉÍÓÚàèìòùÀÈÌÒÙäëïöüÄËÏÖÜñÑçÇ\s'\-]+"

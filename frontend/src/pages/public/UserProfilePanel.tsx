@@ -108,11 +108,14 @@ const UserProfilePanel = ({ isOpen, onClose }: UserProfilePanelProps) => {
 
   const saveEdit = async () => {
     if (!user?.id || !editField) return;
+    const cleanValue = editField === "name"
+      ? editValue.trim().replace(/\s+/g, " ")
+      : editValue.trim();
     setIsSaving(true);
     try {
-      await updateUserProfile(user.id, editField, editValue);
-      setLocalUser((prev) => ({ ...prev, [editField]: editValue }));
-      updateUser({ [editField]: editValue });
+      await updateUserProfile(user.id, editField, cleanValue);
+      setLocalUser((prev) => ({ ...prev, [editField]: cleanValue }));
+      updateUser({ [editField]: cleanValue });
       setProfileUpdated(true);
       cancelEdit();
     } catch (e) {
