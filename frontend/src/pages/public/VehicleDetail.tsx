@@ -411,7 +411,7 @@ const VehicleDetail = () => {
                               Total Estimado
                             </span>
                             <span className="text-xl font-black text-indigo-900">
-                              {formatPrice(totalPrice)}
+                              {formatDailyPrice(totalPrice)}
                             </span>
                           </div>
                         )}
