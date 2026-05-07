@@ -66,7 +66,7 @@ class Reservation
     #[Groups(['reservation:read', 'reservation:create', 'reservation:availability:read', 'conversation:read'])]
     #[Assert\NotBlank]
     #[Assert\GreaterThan(propertyPath: 'startDate', message: "La fecha fin debe ser posterior a la de inicio", groups: ['reservation:create'])]
-    #[Assert\GreaterThanOrEqual('today', message: "No se puede modificar una reserva que ya ha finalizado")]
+    #[Assert\GreaterThanOrEqual('today', message: "La fecha fin no puede estar en el pasado", groups: ['reservation:create'])]
     private ?\DateTimeInterface $endDate = null;
 
     #[ORM\Column(length: 20)]

@@ -61,3 +61,10 @@ export const isReservationCancellable = (r: Reservation): boolean => {
   today.setHours(0, 0, 0, 0);
   return new Date(r.endDate) >= today;
 };
+
+/** Returns true if the reservation end date has already passed. */
+export const isReservationExpired = (r: Reservation): boolean => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return new Date(r.endDate) < today;
+};

@@ -19,6 +19,7 @@ import { Link } from "react-router-dom";
 import Toast from "../../helpers/Toast";
 import ConfirmModal from "../../helpers/ConfirmModal";
 import { useChat } from "../../hooks/useChat";
+import { isReservationExpired } from "../../constants/reservationStatus";
 import { formatDateTime, formatCurrency } from "../../utils/formatters";
 
 const Chat = () => {
@@ -66,6 +67,10 @@ const Chat = () => {
         return "bg-gray-100 text-gray-700 border-gray-200";
     }
   };
+
+  const selectedReservationExpired = selectedChat?.reservation
+    ? isReservationExpired(selectedChat.reservation)
+    : false;
 
   if (!user)
     return (
@@ -352,6 +357,11 @@ const Chat = () => {
                     <h4 className="font-bold text-slate-800 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
                       <CalendarClock size={14} className="text-orange-500" />
                       Solicitud de Reserva
+                      {selectedReservationExpired && (
+                        <span className="text-[9px] sm:text-[10px] font-bold bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">
+                          VENCIDA
+                        </span>
+                      )}
                     </h4>
                     <p className="text-[10px] sm:text-xs text-slate-500 mt-1 ml-0 sm:ml-6">
                       {formatDateTime(selectedChat.reservation.startDate)} -{" "}
@@ -373,7 +383,13 @@ const Chat = () => {
                       </button>
                       <button
                         onClick={() => setConfirmAction({ status: "CONFIRMED" })}
-                        className="flex-1 sm:flex-none px-2.5 sm:px-3 py-1 sm:py-1.5 bg-slate-900 text-white hover:bg-slate-800 rounded-lg text-[10px] sm:text-xs font-bold flex items-center justify-center gap-1 shadow-md"
+                        disabled={selectedReservationExpired}
+                        title={
+                          selectedReservationExpired
+                            ? "No se puede aceptar una reserva vencida"
+                            : undefined
+                        }
+                        className="flex-1 sm:flex-none px-2.5 sm:px-3 py-1 sm:py-1.5 bg-slate-900 text-white hover:bg-slate-800 rounded-lg text-[10px] sm:text-xs font-bold flex items-center justify-center gap-1 shadow-md disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-slate-900"
                       >
                         <CheckCircle2 size={12} className="sm:w-3.5 sm:h-3.5" />{" "}
                         Aceptar

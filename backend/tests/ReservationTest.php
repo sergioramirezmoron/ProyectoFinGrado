@@ -3,6 +3,10 @@
 namespace App\Tests;
 
 use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
+use App\Entity\Reservation;
+use App\Repository\UserRepository;
+use App\Repository\VehicleRepository;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * Tests de la lógica de negocio de reservas:
@@ -40,6 +44,32 @@ class ReservationTest extends ApiTestCase
             'auth_bearer' => $token,
         ])->toArray();
         return $users[$this->getKey($users)][0]['@id'];
+    }
+
+    private function createExpiredPendingReservation(): Reservation
+    {
+        $container = static::getContainer();
+        $em = $container->get(EntityManagerInterface::class);
+        $vehicle = $container->get(VehicleRepository::class)->findOneBy(['type' => 'RENT']);
+        $user = $container->get(UserRepository::class)->findOneBy([]);
+
+        $this->assertNotNull(
+            $vehicle,
+            'Se necesita al menos un vehiculo de alquiler para la prueba.'
+        );
+        $this->assertNotNull($user, 'Se necesita al menos un usuario para la prueba.');
+
+        $reservation = new Reservation();
+        $reservation->setVehicle($vehicle);
+        $reservation->setUser($user);
+        $reservation->setStartDate(new \DateTimeImmutable('2020-05-05'));
+        $reservation->setEndDate(new \DateTimeImmutable('2020-05-08'));
+        $reservation->setStatus('PENDING');
+
+        $em->persist($reservation);
+        $em->flush();
+
+        return $reservation;
     }
 
     // --- VALIDACIONES DE FECHAS ---
@@ -170,6 +200,37 @@ class ReservationTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
         $this->assertEquals('CANCELLED', $client->getResponse()->toArray()['status']);
+    }
+
+    public function testCanRejectExpiredPendingReservation(): void
+    {
+        $client = static::createClient();
+        $token = $this->login($client, 'ventas1@concesionario.com', '123456');
+        $reservation = $this->createExpiredPendingReservation();
+
+        $client->request('PATCH', '/api/reservations/' . $reservation->getId(), [
+            'auth_bearer' => $token,
+            'headers' => ['Content-Type' => 'application/merge-patch+json'],
+            'body' => json_encode(['status' => 'REJECTED']),
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertEquals('REJECTED', $client->getResponse()->toArray()['status']);
+    }
+
+    public function testCannotConfirmExpiredPendingReservation(): void
+    {
+        $client = static::createClient();
+        $token = $this->login($client, 'ventas1@concesionario.com', '123456');
+        $reservation = $this->createExpiredPendingReservation();
+
+        $client->request('PATCH', '/api/reservations/' . $reservation->getId(), [
+            'auth_bearer' => $token,
+            'headers' => ['Content-Type' => 'application/merge-patch+json'],
+            'body' => json_encode(['status' => 'CONFIRMED']),
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
     }
 
     public function testCancelledReservationFreesUpDates(): void

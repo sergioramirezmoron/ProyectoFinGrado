@@ -9,8 +9,11 @@ import {
   updateVehicleStatus,
 } from "../services/conversationService";
 import { updateReservationStatus } from "../services/reservationService";
+import { isReservationExpired } from "../constants/reservationStatus";
 import type { Message, ApiResource } from "../types/message";
 import type { Conversation } from "../types/reservation";
+import { getApiErrorMessage } from "../utils/apiErrors";
+import { areChatMessagesEqual, isNearChatBottom } from "../utils/chatScroll";
 import { buildImageUrl } from "../utils/vehicleImages";
 
 /** Extract a numeric or string ID from a Hydra API resource object. */
@@ -53,6 +56,8 @@ export const useChat = () => {
   } | null>(null);
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const shouldScrollMessagesRef = useRef(false);
+  const selectedChatIdRef = useRef<number | null>(null);
 
   const fetchConversations = useCallback(async (isPolling = false) => {
     try {
@@ -66,10 +71,26 @@ export const useChat = () => {
     }
   }, [isAdmin, user?.email]);
 
-  const fetchMessages = useCallback(async (id: number) => {
+  const fetchMessages = useCallback(async (
+    id: number,
+    options: { forceScroll?: boolean } = {},
+  ) => {
     try {
       const response = await getConversation(id);
-      setMessages(response.data.messages || []);
+      const nextMessages = response.data.messages || [];
+      const container = messagesContainerRef.current;
+      const shouldScroll =
+        options.forceScroll || (container ? isNearChatBottom(container) : true);
+
+      setMessages((currentMessages) => {
+        if (areChatMessagesEqual(currentMessages, nextMessages)) {
+          return currentMessages;
+        }
+
+        shouldScrollMessagesRef.current = shouldScroll;
+        return nextMessages;
+      });
+
       if (isAdmin) {
         const updatedReservation = response.data.reservation;
         setSelectedChat((prev) => {
@@ -117,7 +138,10 @@ export const useChat = () => {
 
   useEffect(() => {
     if (selectedChat) {
-      fetchMessages(selectedChat.id);
+      const isNewSelectedChat = selectedChatIdRef.current !== selectedChat.id;
+      selectedChatIdRef.current = selectedChat.id;
+
+      fetchMessages(selectedChat.id, { forceScroll: isNewSelectedChat });
       if (hasUnreadMessages(selectedChat)) markAsRead(selectedChat);
       const interval = setInterval(() => fetchMessages(selectedChat.id), 3000);
       return () => clearInterval(interval);
@@ -125,7 +149,8 @@ export const useChat = () => {
   }, [fetchMessages, hasUnreadMessages, markAsRead, selectedChat]);
 
   useEffect(() => {
-    if (messagesContainerRef.current) {
+    if (messagesContainerRef.current && shouldScrollMessagesRef.current) {
+      shouldScrollMessagesRef.current = false;
       messagesContainerRef.current.scrollTo({
         top: messagesContainerRef.current.scrollHeight,
         behavior: "smooth",
@@ -147,7 +172,7 @@ export const useChat = () => {
         selectedChat["@id"] || `/api/conversations/${selectedChat.id}`;
       await sendMessage(content, isAdmin, conversationIri);
       setNewMessage("");
-      fetchMessages(selectedChat.id);
+      fetchMessages(selectedChat.id, { forceScroll: true });
       fetchConversations(true);
     } catch (error) {
       setToast({ msg: "Error al enviar el mensaje", type: "error" });
@@ -228,6 +253,15 @@ export const useChat = () => {
     const { status } = confirmAction;
     const reservationId = getUniqueId(selectedChat.reservation);
     setConfirmAction(null);
+
+    if (status === "CONFIRMED" && isReservationExpired(selectedChat.reservation)) {
+      setToast({
+        msg: "No se puede aceptar una reserva que ya ha finalizado. Rechazala para cerrar la solicitud.",
+        type: "error",
+      });
+      return;
+    }
+
     setUpdatingStatus(true);
     try {
       await updateReservationStatus(Number(reservationId!), status);
@@ -254,7 +288,10 @@ export const useChat = () => {
       });
     } catch (e) {
       setToast({
-        msg: "Error procesando reserva. Es posible que el vehiculo ya esté reservado en esta fecha.",
+        msg: getApiErrorMessage(
+          e,
+          "Error procesando reserva. Es posible que el vehiculo ya este reservado en esta fecha.",
+        ),
         type: "error",
       });
       console.error(e);

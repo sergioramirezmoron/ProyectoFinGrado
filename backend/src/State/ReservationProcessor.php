@@ -3,12 +3,14 @@
 namespace App\State;
 
 use ApiPlatform\Metadata\Operation;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use App\Entity\Reservation;
 use App\Entity\User;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 final class ReservationProcessor implements ProcessorInterface
@@ -39,6 +41,29 @@ final class ReservationProcessor implements ProcessorInterface
             $data->setStatus('PENDING');
         }
 
+        if (
+            $operation instanceof Patch
+            && $data->getStatus() === 'CONFIRMED'
+            && $this->hasReservationEnded($data)
+        ) {
+            throw new UnprocessableEntityHttpException(
+                'No se puede confirmar una reserva finalizada. Rechazala para cerrar la solicitud.'
+            );
+        }
+
         return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+    }
+
+    private function hasReservationEnded(Reservation $reservation): bool
+    {
+        $endDate = $reservation->getEndDate();
+        if (!$endDate instanceof \DateTimeInterface) {
+            return false;
+        }
+
+        $reservationEnd = \DateTimeImmutable::createFromInterface($endDate)->setTime(0, 0);
+        $today = new \DateTimeImmutable('today');
+
+        return $reservationEnd < $today;
     }
 }

@@ -3,6 +3,7 @@ import {
   RESERVATION_STATUS_CONFIG,
   RESERVATION_STATUS_OPTIONS,
   isReservationActiveToday,
+  isReservationExpired,
 } from "../../constants/reservationStatus";
 import type { Reservation } from "../../types/reservation";
 
@@ -152,5 +153,25 @@ describe("isReservationActiveToday", () => {
   it("returns true when reservation started in the past and ends today", () => {
     const r = makeReservation("CONFIRMED", -5, 0);
     expect(isReservationActiveToday(r)).toBe(true);
+  });
+});
+
+describe("isReservationExpired", () => {
+  it("returns true when end date is before today", () => {
+    const r = makeReservation("PENDING", -10, -5);
+
+    expect(isReservationExpired(r)).toBe(true);
+  });
+
+  it("returns false when end date is today", () => {
+    const r = makeReservation("PENDING", -2, 0);
+
+    expect(isReservationExpired(r)).toBe(false);
+  });
+
+  it("returns false when end date is in the future", () => {
+    const r = makeReservation("PENDING", 1, 5);
+
+    expect(isReservationExpired(r)).toBe(false);
   });
 });
